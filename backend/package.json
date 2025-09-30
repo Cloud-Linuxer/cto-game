@@ -1,0 +1,34 @@
+{
+  "name": "cto-game-backend",
+  "version": "1.0.0",
+  "description": "AWS CTO Infrastructure Strategy Game Backend",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "NODE_ENV=test jest --coverage",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "migrate": "node migrations/run.js",
+    "migrate:down": "node migrations/run.js down"
+  },
+  "keywords": ["aws", "game", "education", "simulation"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "joi": "^17.11.0",
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0"
+  }
+}

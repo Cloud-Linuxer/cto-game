@@ -1,0 +1,119 @@
+{
+  "common": {
+    "start": "시작",
+    "continue": "계속",
+    "cancel": "취소",
+    "confirm": "확인",
+    "close": "닫기",
+    "save": "저장",
+    "load": "불러오기",
+    "settings": "설정",
+    "back": "뒤로",
+    "next": "다음",
+    "delete": "삭제",
+    "edit": "편집"
+  },
+  "menu": {
+    "title": "AWS CTO 전략 게임",
+    "subtitle": "전략 게임을 통한 클라우드 아키텍처 학습",
+    "newGame": "새 게임",
+    "loadGame": "게임 불러오기",
+    "tutorial": "튜토리얼",
+    "instructions": "게임 방법",
+    "about": "정보"
+  },
+  "game": {
+    "turn": "턴",
+    "of": "/",
+    "endTurn": "턴 종료",
+    "endTurnShortcut": "(E)",
+    "actionsRemaining": "남은 행동 수",
+    "loading": "로딩 중...",
+    "calculating": "턴 계산 중...",
+    "victory": "승리!",
+    "defeat": "게임 오버"
+  },
+  "metrics": {
+    "mau": "월간 활성 사용자",
+    "latency": "응답 시간",
+    "security": "보안 점수",
+    "cash": "보유 현금",
+    "burn": "월간 비용"
+  },
+  "resources": {
+    "ec2": "EC2 인스턴스",
+    "alb": "로드 밸런서",
+    "rds": "RDS 데이터베이스",
+    "elasticache": "ElastiCache",
+    "cloudfront": "CloudFront CDN",
+    "waf": "웹 방화벽",
+    "autoscaling": "오토 스케일링",
+    "obs": "관측성"
+  },
+  "actions": {
+    "ec2_add": "EC2 인스턴스 추가",
+    "ec2_remove": "EC2 인스턴스 제거",
+    "enable_rds": "RDS 활성화",
+    "enable_alb": "로드 밸런서 활성화",
+    "enable_elasticache": "ElastiCache 활성화",
+    "enable_cloudfront": "CloudFront 활성화",
+    "enable_waf": "WAF 활성화",
+    "enable_autoscaling": "오토 스케일링 활성화",
+    "enable_obs": "관측성 활성화",
+    "buy_ri": "예약 인스턴스 구매",
+    "migrate_graviton": "Graviton으로 마이그레이션",
+    "query_tuning": "데이터베이스 쿼리 최적화"
+  },
+  "events": {
+    "title": "이벤트",
+    "choose": "옵션을 선택하세요:",
+    "majorEvent": "주요 이벤트",
+    "microEvent": "미니 이벤트",
+    "trafficSurge": "트래픽 급증!",
+    "securityAudit": "보안 감사",
+    "costReview": "비용 검토"
+  },
+  "results": {
+    "title": "게임 결과",
+    "finalScore": "최종 점수",
+    "grade": "등급",
+    "bronze": "브론즈",
+    "silver": "실버",
+    "gold": "골드",
+    "playAgain": "다시 플레이",
+    "mainMenu": "메인 메뉴",
+    "summary": "성과 요약",
+    "achievements": "업적"
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "sound": "효과음",
+    "animations": "애니메이션",
+    "theme": "테마",
+    "light": "밝게",
+    "dark": "어둡게"
+  },
+  "errors": {
+    "generic": "오류가 발생했습니다. 다시 시도해주세요.",
+    "network": "네트워크 오류. 연결을 확인해주세요.",
+    "unauthorized": "세션이 만료되었습니다. 다시 로그인해주세요.",
+    "invalidAction": "이 작업을 수행할 수 없습니다.",
+    "insufficientFunds": "이 작업에 필요한 자금이 부족합니다."
+  },
+  "tooltips": {
+    "mau": "매월 서비스에 접속하는 고유 사용자 수",
+    "latency": "평균 응답 시간 (밀리초)",
+    "security": "전체 보안 상태 점수 (0-100)",
+    "cash": "인프라에 사용 가능한 예산",
+    "burn": "월간 운영 비용",
+    "ec2": "애플리케이션을 실행하는 가상 서버",
+    "alb": "여러 서버에 트래픽을 분산",
+    "rds": "관리형 관계형 데이터베이스 서비스",
+    "elasticache": "성능 향상을 위한 인메모리 캐싱",
+    "cloudfront": "전 세계 저지연을 위한 콘텐츠 전송 네트워크",
+    "waf": "보안을 위한 웹 애플리케이션 방화벽",
+    "autoscaling": "수요에 따라 용량을 자동으로 조정",
+    "obs": "모니터링 및 로깅 서비스"
+  }
+}

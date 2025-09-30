@@ -1,0 +1,119 @@
+{
+  "common": {
+    "start": "Start",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "load": "Load",
+    "settings": "Settings",
+    "back": "Back",
+    "next": "Next",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "menu": {
+    "title": "AWS CTO Strategy Game",
+    "subtitle": "Learn cloud architecture through strategic gameplay",
+    "newGame": "New Game",
+    "loadGame": "Load Game",
+    "tutorial": "Tutorial",
+    "instructions": "Instructions",
+    "about": "About"
+  },
+  "game": {
+    "turn": "Turn",
+    "of": "of",
+    "endTurn": "End Turn",
+    "endTurnShortcut": "(E)",
+    "actionsRemaining": "Actions Remaining",
+    "loading": "Loading...",
+    "calculating": "Calculating turn...",
+    "victory": "Victory!",
+    "defeat": "Game Over"
+  },
+  "metrics": {
+    "mau": "Monthly Active Users",
+    "latency": "Latency",
+    "security": "Security Score",
+    "cash": "Cash",
+    "burn": "Monthly Burn"
+  },
+  "resources": {
+    "ec2": "EC2 Instances",
+    "alb": "Load Balancer",
+    "rds": "RDS Database",
+    "elasticache": "ElastiCache",
+    "cloudfront": "CloudFront CDN",
+    "waf": "WAF",
+    "autoscaling": "Auto Scaling",
+    "obs": "Observability"
+  },
+  "actions": {
+    "ec2_add": "Add EC2 Instance",
+    "ec2_remove": "Remove EC2 Instance",
+    "enable_rds": "Enable RDS",
+    "enable_alb": "Enable Load Balancer",
+    "enable_elasticache": "Enable ElastiCache",
+    "enable_cloudfront": "Enable CloudFront",
+    "enable_waf": "Enable WAF",
+    "enable_autoscaling": "Enable Auto Scaling",
+    "enable_obs": "Enable Observability",
+    "buy_ri": "Purchase Reserved Instances",
+    "migrate_graviton": "Migrate to Graviton",
+    "query_tuning": "Optimize Database Queries"
+  },
+  "events": {
+    "title": "Event",
+    "choose": "Choose an option:",
+    "majorEvent": "Major Event",
+    "microEvent": "Micro Event",
+    "trafficSurge": "Traffic Surge!",
+    "securityAudit": "Security Audit",
+    "costReview": "Cost Review"
+  },
+  "results": {
+    "title": "Game Results",
+    "finalScore": "Final Score",
+    "grade": "Grade",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "playAgain": "Play Again",
+    "mainMenu": "Main Menu",
+    "summary": "Performance Summary",
+    "achievements": "Achievements"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "sound": "Sound Effects",
+    "animations": "Animations",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "Session expired. Please log in again.",
+    "invalidAction": "This action is not available.",
+    "insufficientFunds": "Insufficient funds for this action."
+  },
+  "tooltips": {
+    "mau": "Number of unique users accessing your service monthly",
+    "latency": "Average response time in milliseconds",
+    "security": "Overall security posture score (0-100)",
+    "cash": "Available budget for infrastructure",
+    "burn": "Monthly operational costs",
+    "ec2": "Virtual servers running your application",
+    "alb": "Distributes traffic across multiple servers",
+    "rds": "Managed relational database service",
+    "elasticache": "In-memory caching for improved performance",
+    "cloudfront": "Content delivery network for global low latency",
+    "waf": "Web application firewall for security",
+    "autoscaling": "Automatically adjusts capacity based on demand",
+    "obs": "Monitoring and logging services"
+  }
+}
