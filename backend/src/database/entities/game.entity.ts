@@ -57,6 +57,15 @@ export class Game {
   @Column({ type: 'int', default: 100 })
   equityPercentage: number; // 남은 지분율 (%)
 
+  @Column({ type: 'boolean', default: false })
+  multiChoiceEnabled: boolean; // 개발자 고용 시 다음 턴에 2개 선택 가능
+
+  @Column({ type: 'float', default: 1.0 })
+  userAcquisitionMultiplier: number; // 디자이너 고용 시 유저 획득 배율 (1.5배)
+
+  @Column({ type: 'int', default: 10000 })
+  maxUserCapacity: number; // 인프라가 수용 가능한 최대 유저 수
+
   @CreateDateColumn()
   createdAt: Date;
 

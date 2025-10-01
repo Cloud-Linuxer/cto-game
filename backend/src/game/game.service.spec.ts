@@ -73,6 +73,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -105,6 +108,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -142,6 +148,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -198,6 +207,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         updatedAt: new Date(),
       };
 
@@ -220,6 +232,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -254,6 +269,9 @@ describe('GameService', () => {
         hasDR: false,
         investmentRounds: 0,
         equityPercentage: 100,
+        multiChoiceEnabled: false,
+        userAcquisitionMultiplier: 1.0,
+        maxUserCapacity: 10000,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

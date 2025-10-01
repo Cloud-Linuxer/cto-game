@@ -34,6 +34,9 @@ export class GameService {
     game.status = GameStatus.PLAYING;
     game.investmentRounds = 0; // 투자 라운드 0회
     game.equityPercentage = 100; // 지분율 100%
+    game.multiChoiceEnabled = false; // 멀티 선택 비활성화
+    game.userAcquisitionMultiplier = 1.0; // 기본 배율
+    game.maxUserCapacity = 10000; // 초기 EC2 용량
 
     const savedGame = await this.gameRepository.save(game);
     return this.toDto(savedGame);
@@ -88,7 +91,10 @@ export class GameService {
     }
 
     // 3. 효과 적용
-    game.users += choice.effects.users;
+    // 유저 획득 배율 적용 (디자이너 고용 효과)
+    const userGain = Math.floor(choice.effects.users * game.userAcquisitionMultiplier);
+    game.users = Math.min(game.users + userGain, game.maxUserCapacity); // 최대 용량 제한
+
     game.cash += choice.effects.cash;
     game.trust += choice.effects.trust;
     game.infrastructure = this.mergeInfrastructure(
@@ -100,6 +106,36 @@ export class GameService {
     if (choice.effects.infra.includes('dr-configured')) {
       game.hasDR = true;
     }
+
+    // 개발자 고용 감지 (category가 "인력" 이고 text에 "개발자"가 포함)
+    if (choice.category === '인력' && choice.text.includes('개발자')) {
+      game.multiChoiceEnabled = true;
+    }
+
+    // 디자이너 고용 감지 (category가 "인력" 이고 text에 "디자이너"가 포함)
+    if (choice.category === '인력' && choice.text.includes('디자이너')) {
+      game.userAcquisitionMultiplier = 1.5;
+    }
+
+    // 인프라 개선 감지 - 최대 용량 증가
+    const infraCapacityMap = {
+      'EC2': 10000,
+      'RDS': 20000,
+      'Auto Scaling': 50000,
+      'ECS': 80000,
+      'EKS': 150000,
+      'Aurora Global DB': 300000,
+      'CloudFront': 500000,
+    };
+
+    // 현재 인프라에서 최대 용량 계산
+    let maxCapacity = 10000; // 기본값
+    for (const infra of game.infrastructure) {
+      if (infraCapacityMap[infra] && infraCapacityMap[infra] > maxCapacity) {
+        maxCapacity = infraCapacityMap[infra];
+      }
+    }
+    game.maxUserCapacity = maxCapacity;
 
     // 4. 선택 히스토리 저장
     const history = new ChoiceHistory();

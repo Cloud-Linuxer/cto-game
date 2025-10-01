@@ -20,11 +20,14 @@ async function seedDatabase() {
   await dataSource.synchronize();
 
   console.log('📊 Reading game choices data...');
+  const jsonPath = path.join(__dirname, '../../../game_choices_db.json');
+  console.log(`  Reading from: ${jsonPath}`);
   const gameData = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../../../game_choices_db.json'), 'utf8')
+    fs.readFileSync(jsonPath, 'utf8')
   );
 
   console.log(`Found ${gameData.length} turns`);
+  console.log(`  Turn 2 has ${gameData.find(t => t.turn === 2)?.choices.length} choices`);
 
   // Clear existing data (check if tables exist first)
   console.log('🗑️  Clearing existing data...');
@@ -45,22 +48,28 @@ async function seedDatabase() {
       [turnData.turn, turnData.event, '']
     );
 
+    console.log(`  📝 Turn ${turnData.turn} has ${turnData.choices.length} choices in JSON:`, turnData.choices.map(c => c.id));
+
     // Insert choices
     for (const choiceData of turnData.choices) {
-      await dataSource.query(
-        `INSERT INTO choices (
-          "choiceId", "turnNumber", text, effects, "nextTurn", category, description
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [
-          choiceData.id,
-          turnData.turn,
-          choiceData.text,
-          JSON.stringify(choiceData.effects),
-          choiceData.next_turn || turnData.turn + 1,
-          '',
-          ''
-        ]
-      );
+      try {
+        await dataSource.query(
+          `INSERT INTO choices (
+            "choiceId", "turnNumber", text, effects, "nextTurn", category, description
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            choiceData.id,
+            turnData.turn,
+            choiceData.text,
+            JSON.stringify(choiceData.effects),
+            choiceData.next_turn || turnData.turn + 1,
+            choiceData.category || '',
+            choiceData.description || ''
+          ]
+        );
+      } catch (error) {
+        console.error(`❌ Failed to insert choice ${choiceData.id} for turn ${turnData.turn}:`, error.message);
+      }
     }
 
     console.log(`✅ Turn ${turnData.turn} imported with ${turnData.choices.length} choices`);
