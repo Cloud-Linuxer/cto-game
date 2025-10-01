@@ -1,0 +1,3702 @@
+[
+  {
+    "turn": 1,
+    "event": "1턴 이벤트: 스타트업 진행 상황 (성장 단계 1)",
+    "choices": [
+      {
+        "id": 1,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 13078,
+          "cash": 1718648,
+          "infra": [
+            "Aurora",
+            "EKS",
+            "S3"
+          ],
+          "trust": 18
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 2,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 16654,
+          "cash": 2908244,
+          "infra": [
+            "EC2",
+            "Redis"
+          ],
+          "trust": -2
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 3,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 10939,
+          "cash": 4979556,
+          "infra": [
+            "S3",
+            "EKS",
+            "CloudFront"
+          ],
+          "trust": -9
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 4,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 19334,
+          "cash": 1824172,
+          "infra": [
+            "S3",
+            "Redis"
+          ],
+          "trust": 3
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 5,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 16236,
+          "cash": 1145816,
+          "infra": [
+            "CloudFront",
+            "Lambda",
+            "EC2"
+          ],
+          "trust": -6
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 6,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 11460,
+          "cash": 1806189,
+          "infra": [
+            "S3",
+            "Lambda"
+          ],
+          "trust": -3
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 7,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 1364,
+          "cash": 4955068,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -7
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 8,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 18701,
+          "cash": 2017316,
+          "infra": [
+            "Redis"
+          ],
+          "trust": 0
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 9,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 4294,
+          "cash": 2368921,
+          "infra": [
+            "CloudFront"
+          ],
+          "trust": 8
+        },
+        "next_turn": 2
+      },
+      {
+        "id": 10,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 17115,
+          "cash": 1552848,
+          "infra": [
+            "Lambda",
+            "CloudFront",
+            "Bedrock"
+          ],
+          "trust": -9
+        },
+        "next_turn": 2
+      }
+    ]
+  },
+  {
+    "turn": 2,
+    "event": "2턴 이벤트: 스타트업 진행 상황 (성장 단계 2)",
+    "choices": [
+      {
+        "id": 11,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 11517,
+          "cash": 623756,
+          "infra": [
+            "S3",
+            "Redis",
+            "Bedrock"
+          ],
+          "trust": 5
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 12,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 16827,
+          "cash": 2422568,
+          "infra": [
+            "RDS",
+            "S3"
+          ],
+          "trust": -5
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 13,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 4512,
+          "cash": -16510,
+          "infra": [
+            "CloudFront"
+          ],
+          "trust": 13
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 14,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 3585,
+          "cash": 4421787,
+          "infra": [
+            "CloudFront",
+            "EKS",
+            "Lambda"
+          ],
+          "trust": 15
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 15,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 17451,
+          "cash": 4077554,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 1
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 16,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 18680,
+          "cash": 4003133,
+          "infra": [
+            "SageMaker",
+            "Lambda",
+            "CloudFront"
+          ],
+          "trust": 17
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 17,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 8392,
+          "cash": -340506,
+          "infra": [
+            "Bedrock"
+          ],
+          "trust": -10
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 18,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 12236,
+          "cash": 2921279,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": 14
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 19,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 4284,
+          "cash": 1842110,
+          "infra": [
+            "EC2",
+            "EKS"
+          ],
+          "trust": 3
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 20,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 12601,
+          "cash": -665821,
+          "infra": [
+            "CloudFront",
+            "Redis"
+          ],
+          "trust": 9
+        },
+        "next_turn": 3
+      },
+      {
+        "id": 21,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 4548,
+          "cash": 2633697,
+          "infra": [
+            "Lambda",
+            "CloudFront",
+            "RDS"
+          ],
+          "trust": 17
+        },
+        "next_turn": 3
+      }
+    ]
+  },
+  {
+    "turn": 3,
+    "event": "3턴 이벤트: 스타트업 진행 상황 (성장 단계 3)",
+    "choices": [
+      {
+        "id": 22,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 17617,
+          "cash": 3354194,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 9
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 23,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 18255,
+          "cash": 4905661,
+          "infra": [
+            "EC2"
+          ],
+          "trust": 10
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 24,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 11746,
+          "cash": 1957727,
+          "infra": [
+            "CloudFront",
+            "Redis"
+          ],
+          "trust": 17
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 25,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 5946,
+          "cash": 2184475,
+          "infra": [
+            "EC2"
+          ],
+          "trust": -3
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 26,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 10642,
+          "cash": 3401537,
+          "infra": [
+            "CloudFront"
+          ],
+          "trust": -5
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 27,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 1715,
+          "cash": -540,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": 16
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 28,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 161,
+          "cash": -849647,
+          "infra": [
+            "RDS",
+            "EC2",
+            "Lambda"
+          ],
+          "trust": 12
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 29,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 5511,
+          "cash": 34598,
+          "infra": [
+            "Bedrock",
+            "Aurora"
+          ],
+          "trust": 1
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 30,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 18335,
+          "cash": 1059758,
+          "infra": [
+            "S3",
+            "EKS",
+            "Redis"
+          ],
+          "trust": -1
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 31,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 7376,
+          "cash": 1696272,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": -5
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 32,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 8928,
+          "cash": 4064090,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 15
+        },
+        "next_turn": 4
+      },
+      {
+        "id": 33,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 7902,
+          "cash": 2211378,
+          "infra": [
+            "Bedrock",
+            "EC2",
+            "CloudFront"
+          ],
+          "trust": 6
+        },
+        "next_turn": 4
+      }
+    ]
+  },
+  {
+    "turn": 4,
+    "event": "4턴 이벤트: 스타트업 진행 상황 (성장 단계 4)",
+    "choices": [
+      {
+        "id": 34,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 7121,
+          "cash": 4889989,
+          "infra": [
+            "CloudFront",
+            "EC2"
+          ],
+          "trust": 17
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 35,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": -175,
+          "cash": 3050164,
+          "infra": [
+            "CloudFront",
+            "Lambda"
+          ],
+          "trust": 6
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 36,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 14217,
+          "cash": 2526565,
+          "infra": [
+            "Redis",
+            "CloudFront"
+          ],
+          "trust": 20
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 37,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 10621,
+          "cash": 2025832,
+          "infra": [
+            "Lambda",
+            "EC2",
+            "Bedrock"
+          ],
+          "trust": 1
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 38,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 19997,
+          "cash": 2375091,
+          "infra": [
+            "EKS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 39,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 17969,
+          "cash": -787415,
+          "infra": [
+            "Aurora",
+            "EKS"
+          ],
+          "trust": -7
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 40,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 12803,
+          "cash": 3863132,
+          "infra": [
+            "Bedrock"
+          ],
+          "trust": -1
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 41,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 160,
+          "cash": 1942354,
+          "infra": [
+            "SageMaker",
+            "Aurora"
+          ],
+          "trust": -8
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 42,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 3275,
+          "cash": 1944245,
+          "infra": [
+            "Redis",
+            "Aurora",
+            "CloudFront"
+          ],
+          "trust": -3
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 43,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": -347,
+          "cash": 4751700,
+          "infra": [
+            "RDS",
+            "CloudFront",
+            "Aurora"
+          ],
+          "trust": -10
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 44,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 18474,
+          "cash": 3357660,
+          "infra": [
+            "SageMaker",
+            "CloudFront",
+            "Lambda"
+          ],
+          "trust": 12
+        },
+        "next_turn": 5
+      },
+      {
+        "id": 45,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 919,
+          "cash": 746914,
+          "infra": [
+            "RDS"
+          ],
+          "trust": 11
+        },
+        "next_turn": 5
+      }
+    ]
+  },
+  {
+    "turn": 5,
+    "event": "5턴 이벤트: 스타트업 진행 상황 (성장 단계 5)",
+    "choices": [
+      {
+        "id": 46,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 1175,
+          "cash": 1014256,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 2
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 47,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 12408,
+          "cash": 277689,
+          "infra": [
+            "Redis"
+          ],
+          "trust": -6
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 48,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 17692,
+          "cash": -662280,
+          "infra": [
+            "CloudFront",
+            "Bedrock"
+          ],
+          "trust": 5
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 49,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 4055,
+          "cash": 2364221,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": 10
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 50,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 2114,
+          "cash": 4122480,
+          "infra": [
+            "Lambda",
+            "EC2",
+            "Aurora"
+          ],
+          "trust": -7
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 51,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 18581,
+          "cash": 1125210,
+          "infra": [
+            "EKS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 52,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 14876,
+          "cash": 2419671,
+          "infra": [
+            "Lambda",
+            "EKS",
+            "S3"
+          ],
+          "trust": 17
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 53,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 6565,
+          "cash": 1393882,
+          "infra": [
+            "Aurora",
+            "Bedrock",
+            "Lambda"
+          ],
+          "trust": 10
+        },
+        "next_turn": 6
+      },
+      {
+        "id": 54,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 13999,
+          "cash": -755104,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 14
+        },
+        "next_turn": 6
+      }
+    ]
+  },
+  {
+    "turn": 6,
+    "event": "6턴 이벤트: 스타트업 진행 상황 (성장 단계 6)",
+    "choices": [
+      {
+        "id": 55,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 4072,
+          "cash": 2434180,
+          "infra": [
+            "S3",
+            "Redis"
+          ],
+          "trust": 9
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 56,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 17978,
+          "cash": 1095822,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 17
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 57,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 10173,
+          "cash": 651115,
+          "infra": [
+            "Redis"
+          ],
+          "trust": -1
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 58,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 1420,
+          "cash": 1753423,
+          "infra": [
+            "S3",
+            "EKS",
+            "Lambda"
+          ],
+          "trust": 14
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 59,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 2634,
+          "cash": 4555344,
+          "infra": [
+            "SageMaker",
+            "S3",
+            "Redis"
+          ],
+          "trust": 14
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 60,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 19369,
+          "cash": 4902079,
+          "infra": [
+            "S3"
+          ],
+          "trust": 8
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 61,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 2173,
+          "cash": 3516556,
+          "infra": [
+            "Bedrock",
+            "EKS"
+          ],
+          "trust": -6
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 62,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 18315,
+          "cash": 3485162,
+          "infra": [
+            "S3",
+            "Lambda",
+            "Aurora"
+          ],
+          "trust": -2
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 63,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 19347,
+          "cash": 3319836,
+          "infra": [
+            "Lambda",
+            "Redis",
+            "EC2"
+          ],
+          "trust": -7
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 64,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 12444,
+          "cash": 1933838,
+          "infra": [
+            "EKS",
+            "CloudFront",
+            "Bedrock"
+          ],
+          "trust": -3
+        },
+        "next_turn": 7
+      },
+      {
+        "id": 65,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 14906,
+          "cash": 2420301,
+          "infra": [
+            "EKS",
+            "CloudFront"
+          ],
+          "trust": 8
+        },
+        "next_turn": 7
+      }
+    ]
+  },
+  {
+    "turn": 7,
+    "event": "7턴 이벤트: 스타트업 진행 상황 (성장 단계 7)",
+    "choices": [
+      {
+        "id": 66,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 2123,
+          "cash": 4035069,
+          "infra": [
+            "EKS",
+            "Bedrock",
+            "SageMaker"
+          ],
+          "trust": 15
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 67,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 5267,
+          "cash": 3485764,
+          "infra": [
+            "S3",
+            "CloudFront"
+          ],
+          "trust": 16
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 68,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 16341,
+          "cash": -858621,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": 14
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 69,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 9392,
+          "cash": -434047,
+          "infra": [
+            "Aurora",
+            "SageMaker",
+            "Bedrock"
+          ],
+          "trust": 3
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 70,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 19442,
+          "cash": -944891,
+          "infra": [
+            "Bedrock",
+            "Aurora"
+          ],
+          "trust": -10
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 71,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 3926,
+          "cash": -809957,
+          "infra": [
+            "S3",
+            "Lambda"
+          ],
+          "trust": -2
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 72,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 8570,
+          "cash": -591236,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -2
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 73,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 14879,
+          "cash": 3823551,
+          "infra": [
+            "Lambda",
+            "EKS"
+          ],
+          "trust": -1
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 74,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 15117,
+          "cash": 107645,
+          "infra": [
+            "EKS"
+          ],
+          "trust": -8
+        },
+        "next_turn": 8
+      },
+      {
+        "id": 75,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 12760,
+          "cash": 4941713,
+          "infra": [
+            "Aurora",
+            "S3",
+            "Bedrock"
+          ],
+          "trust": 8
+        },
+        "next_turn": 8
+      }
+    ]
+  },
+  {
+    "turn": 8,
+    "event": "8턴 이벤트: 스타트업 진행 상황 (성장 단계 8)",
+    "choices": [
+      {
+        "id": 76,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 4127,
+          "cash": -372567,
+          "infra": [
+            "EKS",
+            "S3"
+          ],
+          "trust": 17
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 77,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 7161,
+          "cash": 4608042,
+          "infra": [
+            "S3",
+            "RDS",
+            "Bedrock"
+          ],
+          "trust": -6
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 78,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 16542,
+          "cash": 1109634,
+          "infra": [
+            "EC2",
+            "RDS"
+          ],
+          "trust": 19
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 79,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 16020,
+          "cash": 1796471,
+          "infra": [
+            "Redis"
+          ],
+          "trust": -7
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 80,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 4537,
+          "cash": 1672557,
+          "infra": [
+            "EC2",
+            "S3"
+          ],
+          "trust": 5
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 81,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 14972,
+          "cash": 4488647,
+          "infra": [
+            "SageMaker",
+            "Aurora",
+            "EKS"
+          ],
+          "trust": 16
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 82,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 8845,
+          "cash": 4716808,
+          "infra": [
+            "Bedrock",
+            "Redis"
+          ],
+          "trust": 0
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 83,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 3693,
+          "cash": 3124253,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 18
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 84,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 13868,
+          "cash": 4510709,
+          "infra": [
+            "Aurora",
+            "Lambda",
+            "Bedrock"
+          ],
+          "trust": 13
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 85,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 3625,
+          "cash": 1928179,
+          "infra": [
+            "CloudFront",
+            "RDS",
+            "S3"
+          ],
+          "trust": 11
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 86,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 2516,
+          "cash": 1544213,
+          "infra": [
+            "Redis"
+          ],
+          "trust": 12
+        },
+        "next_turn": 9
+      },
+      {
+        "id": 87,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 19892,
+          "cash": 1455516,
+          "infra": [
+            "CloudFront",
+            "Lambda",
+            "Aurora"
+          ],
+          "trust": -2
+        },
+        "next_turn": 9
+      }
+    ]
+  },
+  {
+    "turn": 9,
+    "event": "9턴 이벤트: 스타트업 진행 상황 (성장 단계 9)",
+    "choices": [
+      {
+        "id": 88,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 16021,
+          "cash": -515711,
+          "infra": [
+            "RDS",
+            "Aurora",
+            "Lambda"
+          ],
+          "trust": 1
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 89,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 689,
+          "cash": -437514,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 0
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 90,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 9081,
+          "cash": 651695,
+          "infra": [
+            "S3",
+            "Bedrock"
+          ],
+          "trust": 10
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 91,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 5704,
+          "cash": 2314843,
+          "infra": [
+            "CloudFront",
+            "SageMaker",
+            "Lambda"
+          ],
+          "trust": -8
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 92,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 7716,
+          "cash": 4397399,
+          "infra": [
+            "Bedrock"
+          ],
+          "trust": 3
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 93,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 3449,
+          "cash": 1686270,
+          "infra": [
+            "RDS"
+          ],
+          "trust": 16
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 94,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 2890,
+          "cash": 2562434,
+          "infra": [
+            "Redis",
+            "EKS"
+          ],
+          "trust": 16
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 95,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 9429,
+          "cash": 2972460,
+          "infra": [
+            "EKS",
+            "CloudFront"
+          ],
+          "trust": 5
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 96,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 19275,
+          "cash": 1086174,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": -4
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 97,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 483,
+          "cash": 2627985,
+          "infra": [
+            "Redis"
+          ],
+          "trust": 0
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 98,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 8402,
+          "cash": 105520,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": 16
+        },
+        "next_turn": 10
+      },
+      {
+        "id": 99,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 12044,
+          "cash": 3720197,
+          "infra": [
+            "Lambda",
+            "EC2",
+            "EKS"
+          ],
+          "trust": 8
+        },
+        "next_turn": 10
+      }
+    ]
+  },
+  {
+    "turn": 10,
+    "event": "10턴 이벤트: 스타트업 진행 상황 (성장 단계 10)",
+    "choices": [
+      {
+        "id": 100,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 15715,
+          "cash": 4195321,
+          "infra": [
+            "EC2",
+            "CloudFront",
+            "Aurora"
+          ],
+          "trust": 20
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 101,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 7464,
+          "cash": 877227,
+          "infra": [
+            "SageMaker",
+            "RDS"
+          ],
+          "trust": 18
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 102,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 10001,
+          "cash": -160389,
+          "infra": [
+            "S3",
+            "EKS"
+          ],
+          "trust": 18
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 103,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 6701,
+          "cash": 327576,
+          "infra": [
+            "Bedrock",
+            "CloudFront"
+          ],
+          "trust": 18
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 104,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 11746,
+          "cash": 3620722,
+          "infra": [
+            "Lambda",
+            "Redis"
+          ],
+          "trust": 3
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 105,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 9225,
+          "cash": 3435228,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 20
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 106,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 7092,
+          "cash": 872776,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -8
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 107,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 7134,
+          "cash": 1237434,
+          "infra": [
+            "S3",
+            "EC2"
+          ],
+          "trust": -2
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 108,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 4274,
+          "cash": 2306573,
+          "infra": [
+            "EKS",
+            "S3"
+          ],
+          "trust": 2
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 109,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 4336,
+          "cash": -557298,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": 10
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 110,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 11527,
+          "cash": -459611,
+          "infra": [
+            "EC2"
+          ],
+          "trust": 6
+        },
+        "next_turn": 11
+      },
+      {
+        "id": 111,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 17007,
+          "cash": 1733414,
+          "infra": [
+            "Bedrock",
+            "S3"
+          ],
+          "trust": -3
+        },
+        "next_turn": 11
+      }
+    ]
+  },
+  {
+    "turn": 11,
+    "event": "11턴 이벤트: 스타트업 진행 상황 (성장 단계 11)",
+    "choices": [
+      {
+        "id": 112,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 11158,
+          "cash": 2649778,
+          "infra": [
+            "Redis",
+            "EKS",
+            "CloudFront"
+          ],
+          "trust": -6
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 113,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 5092,
+          "cash": 4456844,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 19
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 114,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 13713,
+          "cash": 550892,
+          "infra": [
+            "Redis",
+            "CloudFront",
+            "Aurora"
+          ],
+          "trust": -10
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 115,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 4803,
+          "cash": 2979297,
+          "infra": [
+            "S3",
+            "Aurora"
+          ],
+          "trust": 10
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 116,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 6024,
+          "cash": -591492,
+          "infra": [
+            "Aurora",
+            "Lambda",
+            "EC2"
+          ],
+          "trust": -10
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 117,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 4859,
+          "cash": -426044,
+          "infra": [
+            "RDS",
+            "SageMaker"
+          ],
+          "trust": 2
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 118,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 19464,
+          "cash": -33965,
+          "infra": [
+            "SageMaker",
+            "Bedrock",
+            "RDS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 12
+      },
+      {
+        "id": 119,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 5268,
+          "cash": 4721276,
+          "infra": [
+            "CloudFront",
+            "S3"
+          ],
+          "trust": -9
+        },
+        "next_turn": 12
+      }
+    ]
+  },
+  {
+    "turn": 12,
+    "event": "12턴 이벤트: 스타트업 진행 상황 (성장 단계 12)",
+    "choices": [
+      {
+        "id": 120,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 11040,
+          "cash": -813968,
+          "infra": [
+            "SageMaker",
+            "Redis",
+            "S3"
+          ],
+          "trust": -1
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 121,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 11060,
+          "cash": 2605173,
+          "infra": [
+            "EKS",
+            "Redis",
+            "S3"
+          ],
+          "trust": -7
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 122,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 16715,
+          "cash": -491164,
+          "infra": [
+            "Aurora",
+            "Redis"
+          ],
+          "trust": 4
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 123,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 13139,
+          "cash": 2768225,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": -10
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 124,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 11578,
+          "cash": -18396,
+          "infra": [
+            "S3"
+          ],
+          "trust": -6
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 125,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 3637,
+          "cash": 1668373,
+          "infra": [
+            "Bedrock",
+            "SageMaker",
+            "RDS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 126,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 8962,
+          "cash": 516679,
+          "infra": [
+            "Bedrock",
+            "EC2",
+            "S3"
+          ],
+          "trust": -8
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 127,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 13792,
+          "cash": 1988436,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": 3
+        },
+        "next_turn": 13
+      },
+      {
+        "id": 128,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 18372,
+          "cash": 758426,
+          "infra": [
+            "S3"
+          ],
+          "trust": -6
+        },
+        "next_turn": 13
+      }
+    ]
+  },
+  {
+    "turn": 13,
+    "event": "13턴 이벤트: 스타트업 진행 상황 (성장 단계 13)",
+    "choices": [
+      {
+        "id": 129,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 19034,
+          "cash": 1115041,
+          "infra": [
+            "Lambda",
+            "RDS"
+          ],
+          "trust": -4
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 130,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 6270,
+          "cash": 2054666,
+          "infra": [
+            "EC2",
+            "RDS"
+          ],
+          "trust": 3
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 131,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 1699,
+          "cash": 4229128,
+          "infra": [
+            "CloudFront",
+            "SageMaker",
+            "Aurora"
+          ],
+          "trust": -10
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 132,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 7886,
+          "cash": 1660973,
+          "infra": [
+            "Redis",
+            "RDS"
+          ],
+          "trust": 7
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 133,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 6589,
+          "cash": 2046864,
+          "infra": [
+            "Aurora",
+            "EC2"
+          ],
+          "trust": -8
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 134,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 10168,
+          "cash": -560953,
+          "infra": [
+            "EKS",
+            "EC2"
+          ],
+          "trust": 18
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 135,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 13865,
+          "cash": 1533115,
+          "infra": [
+            "EC2"
+          ],
+          "trust": 6
+        },
+        "next_turn": 14
+      },
+      {
+        "id": 136,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 10202,
+          "cash": 2721882,
+          "infra": [
+            "Aurora",
+            "S3"
+          ],
+          "trust": -6
+        },
+        "next_turn": 14
+      }
+    ]
+  },
+  {
+    "turn": 14,
+    "event": "14턴 이벤트: 스타트업 진행 상황 (성장 단계 14)",
+    "choices": [
+      {
+        "id": 137,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 5885,
+          "cash": -545474,
+          "infra": [
+            "EC2",
+            "SageMaker"
+          ],
+          "trust": 1
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 138,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 18151,
+          "cash": 2901161,
+          "infra": [
+            "CloudFront"
+          ],
+          "trust": 16
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 139,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 13854,
+          "cash": 4346913,
+          "infra": [
+            "CloudFront",
+            "Redis"
+          ],
+          "trust": 13
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 140,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 6166,
+          "cash": 352419,
+          "infra": [
+            "Aurora",
+            "SageMaker",
+            "Bedrock"
+          ],
+          "trust": 16
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 141,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 9139,
+          "cash": 1530709,
+          "infra": [
+            "Aurora",
+            "S3",
+            "EC2"
+          ],
+          "trust": 10
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 142,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 19119,
+          "cash": 3030830,
+          "infra": [
+            "CloudFront",
+            "Lambda",
+            "EC2"
+          ],
+          "trust": 18
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 143,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 12669,
+          "cash": 1879962,
+          "infra": [
+            "Bedrock",
+            "Aurora",
+            "RDS"
+          ],
+          "trust": 19
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 144,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 19020,
+          "cash": 3788789,
+          "infra": [
+            "SageMaker",
+            "Bedrock",
+            "S3"
+          ],
+          "trust": 16
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 145,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 6566,
+          "cash": 2074467,
+          "infra": [
+            "S3",
+            "CloudFront"
+          ],
+          "trust": -10
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 146,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 10292,
+          "cash": 4251158,
+          "infra": [
+            "Redis",
+            "EC2"
+          ],
+          "trust": -10
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 147,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 13193,
+          "cash": 3042889,
+          "infra": [
+            "Aurora",
+            "EKS",
+            "Redis"
+          ],
+          "trust": 17
+        },
+        "next_turn": 15
+      },
+      {
+        "id": 148,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 8241,
+          "cash": 1051206,
+          "infra": [
+            "EKS",
+            "SageMaker"
+          ],
+          "trust": -1
+        },
+        "next_turn": 15
+      }
+    ]
+  },
+  {
+    "turn": 15,
+    "event": "15턴 이벤트: 스타트업 진행 상황 (성장 단계 15)",
+    "choices": [
+      {
+        "id": 149,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 3440,
+          "cash": 1242625,
+          "infra": [
+            "RDS",
+            "Bedrock"
+          ],
+          "trust": 9
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 150,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 9353,
+          "cash": 92509,
+          "infra": [
+            "RDS",
+            "CloudFront",
+            "Redis"
+          ],
+          "trust": 3
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 151,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 9595,
+          "cash": 4536889,
+          "infra": [
+            "RDS",
+            "Bedrock",
+            "Lambda"
+          ],
+          "trust": 4
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 152,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 5530,
+          "cash": 989124,
+          "infra": [
+            "Bedrock",
+            "Aurora"
+          ],
+          "trust": 10
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 153,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 5436,
+          "cash": 438281,
+          "infra": [
+            "EKS",
+            "S3",
+            "Redis"
+          ],
+          "trust": -2
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 154,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 4519,
+          "cash": 3973453,
+          "infra": [
+            "RDS",
+            "SageMaker",
+            "Lambda"
+          ],
+          "trust": 12
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 155,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 3595,
+          "cash": -9839,
+          "infra": [
+            "EKS",
+            "Aurora"
+          ],
+          "trust": -10
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 156,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 1728,
+          "cash": 3006368,
+          "infra": [
+            "CloudFront"
+          ],
+          "trust": 18
+        },
+        "next_turn": 16
+      },
+      {
+        "id": 157,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 10576,
+          "cash": 3871972,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 1
+        },
+        "next_turn": 16
+      }
+    ]
+  },
+  {
+    "turn": 16,
+    "event": "16턴 이벤트: 스타트업 진행 상황 (성장 단계 16)",
+    "choices": [
+      {
+        "id": 158,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 9283,
+          "cash": 3950806,
+          "infra": [
+            "S3",
+            "CloudFront",
+            "RDS"
+          ],
+          "trust": 13
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 159,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 1394,
+          "cash": -571192,
+          "infra": [
+            "Aurora",
+            "CloudFront",
+            "Redis"
+          ],
+          "trust": 6
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 160,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 7201,
+          "cash": 2352994,
+          "infra": [
+            "Bedrock",
+            "CloudFront"
+          ],
+          "trust": 11
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 161,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 17308,
+          "cash": 1895800,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": 15
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 162,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 16152,
+          "cash": 2069577,
+          "infra": [
+            "Aurora",
+            "EC2"
+          ],
+          "trust": -5
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 163,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 3748,
+          "cash": 1625021,
+          "infra": [
+            "RDS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 164,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 12272,
+          "cash": 2134860,
+          "infra": [
+            "Redis",
+            "EC2"
+          ],
+          "trust": 16
+        },
+        "next_turn": 17
+      },
+      {
+        "id": 165,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 19669,
+          "cash": -300991,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 12
+        },
+        "next_turn": 17
+      }
+    ]
+  },
+  {
+    "turn": 17,
+    "event": "17턴 이벤트: 스타트업 진행 상황 (성장 단계 17)",
+    "choices": [
+      {
+        "id": 166,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 10976,
+          "cash": 511523,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 13
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 167,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 15996,
+          "cash": 1587235,
+          "infra": [
+            "EKS",
+            "S3"
+          ],
+          "trust": 14
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 168,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 15162,
+          "cash": 3501849,
+          "infra": [
+            "Lambda",
+            "S3",
+            "Bedrock"
+          ],
+          "trust": -5
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 169,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 8288,
+          "cash": 2388000,
+          "infra": [
+            "S3"
+          ],
+          "trust": 4
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 170,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 5734,
+          "cash": 4771748,
+          "infra": [
+            "Bedrock",
+            "Lambda"
+          ],
+          "trust": 18
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 171,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 6628,
+          "cash": 3210199,
+          "infra": [
+            "S3",
+            "Redis"
+          ],
+          "trust": 5
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 172,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 4607,
+          "cash": 3378183,
+          "infra": [
+            "SageMaker",
+            "Aurora"
+          ],
+          "trust": 6
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 173,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 16729,
+          "cash": -358929,
+          "infra": [
+            "EC2",
+            "RDS",
+            "Redis"
+          ],
+          "trust": -6
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 174,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 4827,
+          "cash": 54011,
+          "infra": [
+            "EKS",
+            "Bedrock",
+            "EC2"
+          ],
+          "trust": -3
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 175,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 17908,
+          "cash": 820314,
+          "infra": [
+            "RDS",
+            "EC2",
+            "SageMaker"
+          ],
+          "trust": 14
+        },
+        "next_turn": 18
+      },
+      {
+        "id": 176,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 5014,
+          "cash": 4314282,
+          "infra": [
+            "Aurora",
+            "EKS",
+            "Lambda"
+          ],
+          "trust": 9
+        },
+        "next_turn": 18
+      }
+    ]
+  },
+  {
+    "turn": 18,
+    "event": "18턴 이벤트: 스타트업 진행 상황 (성장 단계 18)",
+    "choices": [
+      {
+        "id": 177,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 937,
+          "cash": 2456798,
+          "infra": [
+            "Bedrock",
+            "EC2"
+          ],
+          "trust": -4
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 178,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 6452,
+          "cash": 1425201,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -9
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 179,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 4101,
+          "cash": 2512431,
+          "infra": [
+            "EC2",
+            "Redis",
+            "Aurora"
+          ],
+          "trust": 3
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 180,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 4804,
+          "cash": -857726,
+          "infra": [
+            "CloudFront",
+            "Lambda",
+            "Aurora"
+          ],
+          "trust": 19
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 181,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 6314,
+          "cash": 1384504,
+          "infra": [
+            "Redis"
+          ],
+          "trust": -10
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 182,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 11317,
+          "cash": 3065848,
+          "infra": [
+            "SageMaker",
+            "Bedrock"
+          ],
+          "trust": 20
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 183,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 5998,
+          "cash": 3551572,
+          "infra": [
+            "Lambda",
+            "Redis",
+            "RDS"
+          ],
+          "trust": 9
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 184,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 8799,
+          "cash": 514801,
+          "infra": [
+            "EC2",
+            "RDS"
+          ],
+          "trust": -6
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 185,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 14584,
+          "cash": 550736,
+          "infra": [
+            "EC2",
+            "S3"
+          ],
+          "trust": -5
+        },
+        "next_turn": 19
+      },
+      {
+        "id": 186,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 468,
+          "cash": 1441946,
+          "infra": [
+            "RDS"
+          ],
+          "trust": -2
+        },
+        "next_turn": 19
+      }
+    ]
+  },
+  {
+    "turn": 19,
+    "event": "19턴 이벤트: 스타트업 진행 상황 (성장 단계 19)",
+    "choices": [
+      {
+        "id": 187,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 14726,
+          "cash": 2210030,
+          "infra": [
+            "Lambda",
+            "Redis",
+            "EKS"
+          ],
+          "trust": 6
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 188,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 19069,
+          "cash": 2844117,
+          "infra": [
+            "SageMaker",
+            "CloudFront"
+          ],
+          "trust": 18
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 189,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 9581,
+          "cash": 1536799,
+          "infra": [
+            "Lambda",
+            "CloudFront",
+            "S3"
+          ],
+          "trust": -5
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 190,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 11483,
+          "cash": 3183862,
+          "infra": [
+            "RDS"
+          ],
+          "trust": -4
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 191,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 17523,
+          "cash": 1914753,
+          "infra": [
+            "Bedrock",
+            "S3",
+            "Lambda"
+          ],
+          "trust": 19
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 192,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 6638,
+          "cash": 3690890,
+          "infra": [
+            "CloudFront",
+            "EC2"
+          ],
+          "trust": -2
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 193,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 11745,
+          "cash": -722382,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -2
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 194,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 10195,
+          "cash": -921462,
+          "infra": [
+            "EC2",
+            "Bedrock",
+            "SageMaker"
+          ],
+          "trust": 3
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 195,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 7654,
+          "cash": 280221,
+          "infra": [
+            "EKS",
+            "CloudFront",
+            "EC2"
+          ],
+          "trust": 1
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 196,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 3558,
+          "cash": 3005116,
+          "infra": [
+            "RDS"
+          ],
+          "trust": 12
+        },
+        "next_turn": 20
+      },
+      {
+        "id": 197,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 1724,
+          "cash": 4103168,
+          "infra": [
+            "Bedrock",
+            "CloudFront"
+          ],
+          "trust": 19
+        },
+        "next_turn": 20
+      }
+    ]
+  },
+  {
+    "turn": 20,
+    "event": "20턴 이벤트: 스타트업 진행 상황 (성장 단계 20)",
+    "choices": [
+      {
+        "id": 198,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 11756,
+          "cash": -634490,
+          "infra": [
+            "SageMaker",
+            "EC2",
+            "RDS"
+          ],
+          "trust": 20
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 199,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 2112,
+          "cash": 1733506,
+          "infra": [
+            "Redis",
+            "SageMaker",
+            "EC2"
+          ],
+          "trust": 10
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 200,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 10264,
+          "cash": -627831,
+          "infra": [
+            "Redis",
+            "SageMaker"
+          ],
+          "trust": -1
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 201,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 18037,
+          "cash": 2458974,
+          "infra": [
+            "SageMaker",
+            "Lambda"
+          ],
+          "trust": 13
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 202,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 7757,
+          "cash": 4425875,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 19
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 203,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 3432,
+          "cash": 2403956,
+          "infra": [
+            "Redis",
+            "SageMaker"
+          ],
+          "trust": -10
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 204,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 3833,
+          "cash": -615981,
+          "infra": [
+            "CloudFront",
+            "S3"
+          ],
+          "trust": 5
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 205,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 9433,
+          "cash": 2186452,
+          "infra": [
+            "Bedrock",
+            "Redis"
+          ],
+          "trust": 3
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 206,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 19714,
+          "cash": 82186,
+          "infra": [
+            "Lambda"
+          ],
+          "trust": 20
+        },
+        "next_turn": 21
+      },
+      {
+        "id": 207,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 2418,
+          "cash": 3837851,
+          "infra": [
+            "SageMaker",
+            "Redis"
+          ],
+          "trust": 1
+        },
+        "next_turn": 21
+      }
+    ]
+  },
+  {
+    "turn": 21,
+    "event": "21턴 이벤트: 스타트업 진행 상황 (성장 단계 21)",
+    "choices": [
+      {
+        "id": 208,
+        "text": "소규모 마케팅 실행",
+        "effects": {
+          "users": 9668,
+          "cash": 2214862,
+          "infra": [
+            "S3"
+          ],
+          "trust": 4
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 209,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 5928,
+          "cash": 3695749,
+          "infra": [
+            "Redis",
+            "Aurora"
+          ],
+          "trust": 19
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 210,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 14714,
+          "cash": 4916472,
+          "infra": [
+            "RDS",
+            "EKS"
+          ],
+          "trust": 18
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 211,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 7677,
+          "cash": -607159,
+          "infra": [
+            "S3",
+            "Lambda",
+            "Redis"
+          ],
+          "trust": 11
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 212,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 13444,
+          "cash": 1705493,
+          "infra": [
+            "Redis",
+            "CloudFront"
+          ],
+          "trust": -2
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 213,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 2828,
+          "cash": 4395644,
+          "infra": [
+            "RDS",
+            "Bedrock",
+            "EC2"
+          ],
+          "trust": 13
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 214,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 19279,
+          "cash": 1723529,
+          "infra": [
+            "S3",
+            "Redis",
+            "EKS"
+          ],
+          "trust": 20
+        },
+        "next_turn": 22
+      },
+      {
+        "id": 215,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 12789,
+          "cash": 2751839,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -5
+        },
+        "next_turn": 22
+      }
+    ]
+  },
+  {
+    "turn": 22,
+    "event": "22턴 이벤트: 스타트업 진행 상황 (성장 단계 22)",
+    "choices": [
+      {
+        "id": 216,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 8970,
+          "cash": 967531,
+          "infra": [
+            "EC2"
+          ],
+          "trust": -10
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 217,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 7881,
+          "cash": 2052835,
+          "infra": [
+            "Bedrock",
+            "RDS"
+          ],
+          "trust": -3
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 218,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 12126,
+          "cash": 3598546,
+          "infra": [
+            "CloudFront",
+            "RDS",
+            "S3"
+          ],
+          "trust": 8
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 219,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 18908,
+          "cash": 2807600,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 9
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 220,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 10773,
+          "cash": 2073380,
+          "infra": [
+            "EC2",
+            "SageMaker"
+          ],
+          "trust": 12
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 221,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 5040,
+          "cash": 2116652,
+          "infra": [
+            "SageMaker"
+          ],
+          "trust": -3
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 222,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 6572,
+          "cash": -104344,
+          "infra": [
+            "S3",
+            "CloudFront"
+          ],
+          "trust": 2
+        },
+        "next_turn": 23
+      },
+      {
+        "id": 223,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 9909,
+          "cash": 2424809,
+          "infra": [
+            "Redis"
+          ],
+          "trust": 13
+        },
+        "next_turn": 23
+      }
+    ]
+  },
+  {
+    "turn": 23,
+    "event": "23턴 이벤트: 스타트업 진행 상황 (성장 단계 23)",
+    "choices": [
+      {
+        "id": 224,
+        "text": "B2B SaaS 출시 실행",
+        "effects": {
+          "users": 17896,
+          "cash": 4099739,
+          "infra": [
+            "Lambda",
+            "SageMaker"
+          ],
+          "trust": -10
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 225,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 14126,
+          "cash": 1111470,
+          "infra": [
+            "Lambda",
+            "Redis"
+          ],
+          "trust": 18
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 226,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 6619,
+          "cash": 4900136,
+          "infra": [
+            "EKS",
+            "CloudFront"
+          ],
+          "trust": 8
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 227,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 16297,
+          "cash": 1530412,
+          "infra": [
+            "SageMaker",
+            "S3",
+            "EKS"
+          ],
+          "trust": -4
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 228,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 1254,
+          "cash": 3825280,
+          "infra": [
+            "Lambda",
+            "EKS",
+            "SageMaker"
+          ],
+          "trust": 3
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 229,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 10715,
+          "cash": -397723,
+          "infra": [
+            "RDS",
+            "Lambda"
+          ],
+          "trust": -8
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 230,
+        "text": "글로벌 확장 준비 실행",
+        "effects": {
+          "users": 19628,
+          "cash": 3398794,
+          "infra": [
+            "EKS",
+            "Bedrock"
+          ],
+          "trust": -8
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 231,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 15594,
+          "cash": 4832496,
+          "infra": [
+            "CloudFront",
+            "EC2",
+            "Bedrock"
+          ],
+          "trust": 7
+        },
+        "next_turn": 24
+      },
+      {
+        "id": 232,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 11405,
+          "cash": 4525587,
+          "infra": [
+            "Bedrock",
+            "SageMaker"
+          ],
+          "trust": 0
+        },
+        "next_turn": 24
+      }
+    ]
+  },
+  {
+    "turn": 24,
+    "event": "24턴 이벤트: 스타트업 진행 상황 (성장 단계 24)",
+    "choices": [
+      {
+        "id": 233,
+        "text": "개발자 채용 실행",
+        "effects": {
+          "users": 14757,
+          "cash": 3478282,
+          "infra": [
+            "RDS",
+            "Aurora",
+            "CloudFront"
+          ],
+          "trust": -8
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 234,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": -22,
+          "cash": 242017,
+          "infra": [
+            "Aurora",
+            "S3",
+            "Lambda"
+          ],
+          "trust": 15
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 235,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 11248,
+          "cash": 2018527,
+          "infra": [
+            "Lambda",
+            "Aurora"
+          ],
+          "trust": 4
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 236,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 3173,
+          "cash": 3479655,
+          "infra": [
+            "Redis",
+            "RDS"
+          ],
+          "trust": 5
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 237,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 514,
+          "cash": 2666146,
+          "infra": [
+            "EC2",
+            "SageMaker",
+            "Bedrock"
+          ],
+          "trust": -9
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 238,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 7229,
+          "cash": 1700960,
+          "infra": [
+            "Bedrock",
+            "Lambda"
+          ],
+          "trust": -8
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 239,
+        "text": "대규모 마케팅 실행",
+        "effects": {
+          "users": 14468,
+          "cash": 3714355,
+          "infra": [
+            "Bedrock"
+          ],
+          "trust": 7
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 240,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 18168,
+          "cash": 4744954,
+          "infra": [
+            "EC2"
+          ],
+          "trust": 4
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 241,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 14599,
+          "cash": -110041,
+          "infra": [
+            "RDS",
+            "Aurora",
+            "Redis"
+          ],
+          "trust": 0
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 242,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 9767,
+          "cash": 263197,
+          "infra": [
+            "EC2",
+            "EKS",
+            "RDS"
+          ],
+          "trust": 2
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 243,
+        "text": "세일즈팀 채용 실행",
+        "effects": {
+          "users": 7217,
+          "cash": 4837524,
+          "infra": [
+            "Aurora"
+          ],
+          "trust": -1
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 244,
+        "text": "유료 플랜 강화 실행",
+        "effects": {
+          "users": 3723,
+          "cash": 2882723,
+          "infra": [
+            "EC2"
+          ],
+          "trust": 14
+        },
+        "next_turn": 25
+      }
+    ]
+  },
+  {
+    "turn": 25,
+    "event": "25턴 이벤트: 스타트업 진행 상황 (성장 단계 25)",
+    "choices": [
+      {
+        "id": 245,
+        "text": "Observability 구축 실행",
+        "effects": {
+          "users": 4269,
+          "cash": 3545653,
+          "infra": [
+            "Lambda",
+            "Redis"
+          ],
+          "trust": 5
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 246,
+        "text": "DR 시뮬레이션 실행",
+        "effects": {
+          "users": 19779,
+          "cash": 2107663,
+          "infra": [
+            "Bedrock"
+          ],
+          "trust": -7
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 247,
+        "text": "보안 인증 강화 실행",
+        "effects": {
+          "users": 9788,
+          "cash": -216312,
+          "infra": [
+            "EC2",
+            "Lambda",
+            "Bedrock"
+          ],
+          "trust": 11
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 248,
+        "text": "투자자 피칭 실행",
+        "effects": {
+          "users": 2472,
+          "cash": 4081987,
+          "infra": [
+            "Lambda",
+            "EC2"
+          ],
+          "trust": 8
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 249,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 6476,
+          "cash": 2112523,
+          "infra": [
+            "Redis",
+            "RDS"
+          ],
+          "trust": 2
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 250,
+        "text": "DevOps 플랫폼 구축 실행",
+        "effects": {
+          "users": 2371,
+          "cash": 3370242,
+          "infra": [
+            "EKS"
+          ],
+          "trust": 12
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 251,
+        "text": "데이터 파이프라인 고도화 실행",
+        "effects": {
+          "users": 13616,
+          "cash": 125995,
+          "infra": [
+            "EC2"
+          ],
+          "trust": -2
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 252,
+        "text": "AI 추천 기능 개발 실행",
+        "effects": {
+          "users": 18171,
+          "cash": 4004748,
+          "infra": [
+            "RDS",
+            "CloudFront"
+          ],
+          "trust": -5
+        },
+        "next_turn": 25
+      },
+      {
+        "id": 253,
+        "text": "광고 런칭 실행",
+        "effects": {
+          "users": 3235,
+          "cash": 1664940,
+          "infra": [
+            "S3",
+            "SageMaker"
+          ],
+          "trust": 6
+        },
+        "next_turn": 25
+      }
+    ]
+  }
+]

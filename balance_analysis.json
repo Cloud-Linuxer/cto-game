@@ -1,0 +1,615 @@
+{
+  "basic_info": {
+    "total_turns": 25,
+    "total_choices": 126,
+    "avg_choices_per_turn": 5.04
+  },
+  "statistics": {
+    "overall": {
+      "users": {
+        "min": -50000,
+        "max": 800000,
+        "avg": 46302.72222222222,
+        "median": 18721.0,
+        "stdev": 98378.59724941305
+      },
+      "cash": {
+        "min": -1000000000,
+        "max": 50000000,
+        "avg": -71019920.63492064,
+        "median": -9500000.0,
+        "stdev": 143498227.03014016
+      },
+      "trust": {
+        "min": -40,
+        "max": 80,
+        "avg": 25.904761904761905,
+        "median": 23.5,
+        "stdev": 26.442217326518914
+      }
+    },
+    "by_turn": {
+      "1": {
+        "users": {
+          "min": 0,
+          "max": 100,
+          "avg": 20,
+          "median": 0
+        },
+        "cash": {
+          "min": -100000,
+          "max": 0,
+          "avg": -22000,
+          "median": 0
+        },
+        "trust": {
+          "min": 0,
+          "max": 15,
+          "avg": 7,
+          "median": 5
+        },
+        "choice_count": 5
+      },
+      "2": {
+        "users": {
+          "min": 0,
+          "max": 100,
+          "avg": 20,
+          "median": 0
+        },
+        "cash": {
+          "min": -100000,
+          "max": 20000000,
+          "avg": 3970000,
+          "median": 0
+        },
+        "trust": {
+          "min": 5,
+          "max": 20,
+          "avg": 11,
+          "median": 10
+        },
+        "choice_count": 5
+      },
+      "3": {
+        "users": {
+          "min": 0,
+          "max": 300,
+          "avg": 60,
+          "median": 0
+        },
+        "cash": {
+          "min": -3000000,
+          "max": 50000000,
+          "avg": 9280000,
+          "median": -200000
+        },
+        "trust": {
+          "min": 5,
+          "max": 25,
+          "avg": 14,
+          "median": 15
+        },
+        "choice_count": 5
+      },
+      "4": {
+        "users": {
+          "min": 0,
+          "max": 1500,
+          "avg": 300,
+          "median": 0
+        },
+        "cash": {
+          "min": -1000000,
+          "max": 0,
+          "avg": -370000,
+          "median": -200000
+        },
+        "trust": {
+          "min": -30,
+          "max": 25,
+          "avg": 4,
+          "median": 15
+        },
+        "choice_count": 5
+      },
+      "5": {
+        "users": {
+          "min": 0,
+          "max": 5000,
+          "avg": 1000,
+          "median": 0
+        },
+        "cash": {
+          "min": -9000000,
+          "max": 500000,
+          "avg": -2460000,
+          "median": -800000
+        },
+        "trust": {
+          "min": 10,
+          "max": 35,
+          "avg": 22,
+          "median": 20
+        },
+        "choice_count": 5
+      },
+      "6": {
+        "users": {
+          "min": 4072,
+          "max": 17978,
+          "avg": 10606,
+          "median": 10614
+        },
+        "cash": {
+          "min": -2000000,
+          "max": 0,
+          "avg": -1000000,
+          "median": -1000000
+        },
+        "trust": {
+          "min": -8,
+          "max": 31,
+          "avg": 14.2,
+          "median": 17
+        },
+        "choice_count": 5
+      },
+      "7": {
+        "users": {
+          "min": 0,
+          "max": 50000,
+          "avg": 18000,
+          "median": 10000
+        },
+        "cash": {
+          "min": -100000000,
+          "max": -2000000,
+          "avg": -56400000,
+          "median": -50000000
+        },
+        "trust": {
+          "min": 15,
+          "max": 40,
+          "avg": 27,
+          "median": 25
+        },
+        "choice_count": 5
+      },
+      "8": {
+        "users": {
+          "min": -20000,
+          "max": -3000,
+          "avg": -10600,
+          "median": -10000
+        },
+        "cash": {
+          "min": -10000000,
+          "max": 0,
+          "avg": -3500000,
+          "median": -2000000
+        },
+        "trust": {
+          "min": -35,
+          "max": -10,
+          "avg": -22,
+          "median": -20
+        },
+        "choice_count": 5
+      },
+      "9": {
+        "users": {
+          "min": 2000,
+          "max": 40000,
+          "avg": 14400,
+          "median": 10000
+        },
+        "cash": {
+          "min": -30000000,
+          "max": 0,
+          "avg": -12000000,
+          "median": -10000000
+        },
+        "trust": {
+          "min": 10,
+          "max": 45,
+          "avg": 29,
+          "median": 35
+        },
+        "choice_count": 5
+      },
+      "10": {
+        "users": {
+          "min": 0,
+          "max": 80000,
+          "avg": 32000,
+          "median": 20000
+        },
+        "cash": {
+          "min": -100000000,
+          "max": 50000000,
+          "avg": -20000000,
+          "median": 0
+        },
+        "trust": {
+          "min": 10,
+          "max": 50,
+          "avg": 33,
+          "median": 35
+        },
+        "choice_count": 5
+      },
+      "11": {
+        "users": {
+          "min": 4803,
+          "max": 19464,
+          "avg": 9301.857142857143,
+          "median": 6024
+        },
+        "cash": {
+          "min": -30000000,
+          "max": -2000000,
+          "avg": -10857142.857142856,
+          "median": -5000000
+        },
+        "trust": {
+          "min": -10,
+          "max": 19,
+          "avg": 0.42857142857142855,
+          "median": -2
+        },
+        "choice_count": 7
+      },
+      "12": {
+        "users": {
+          "min": 10000,
+          "max": 200000,
+          "avg": 98000,
+          "median": 100000
+        },
+        "cash": {
+          "min": -1000000000,
+          "max": -50000000,
+          "avg": -370000000,
+          "median": -200000000
+        },
+        "trust": {
+          "min": 15,
+          "max": 50,
+          "avg": 32,
+          "median": 35
+        },
+        "choice_count": 5
+      },
+      "13": {
+        "users": {
+          "min": 20000,
+          "max": 80000,
+          "avg": 44000,
+          "median": 40000
+        },
+        "cash": {
+          "min": -100000000,
+          "max": 0,
+          "avg": -42000000,
+          "median": -30000000
+        },
+        "trust": {
+          "min": 20,
+          "max": 55,
+          "avg": 37,
+          "median": 35
+        },
+        "choice_count": 5
+      },
+      "14": {
+        "users": {
+          "min": 30000,
+          "max": 300000,
+          "avg": 132000,
+          "median": 100000
+        },
+        "cash": {
+          "min": -300000000,
+          "max": 0,
+          "avg": -126000000,
+          "median": -100000000
+        },
+        "trust": {
+          "min": 10,
+          "max": 50,
+          "avg": 36,
+          "median": 40
+        },
+        "choice_count": 5
+      },
+      "15": {
+        "users": {
+          "min": 10000,
+          "max": 200000,
+          "avg": 68000,
+          "median": 50000
+        },
+        "cash": {
+          "min": -200000000,
+          "max": -50000000,
+          "avg": -110000000,
+          "median": -100000000
+        },
+        "trust": {
+          "min": 25,
+          "max": 60,
+          "avg": 45,
+          "median": 45
+        },
+        "choice_count": 5
+      },
+      "16": {
+        "users": {
+          "min": -30000,
+          "max": 80000,
+          "avg": 26000,
+          "median": 20000
+        },
+        "cash": {
+          "min": -100000000,
+          "max": 0,
+          "avg": -52000000,
+          "median": -50000000
+        },
+        "trust": {
+          "min": -20,
+          "max": 50,
+          "avg": 18,
+          "median": 35
+        },
+        "choice_count": 5
+      },
+      "17": {
+        "users": {
+          "min": -50000,
+          "max": -10000,
+          "avg": -30000,
+          "median": -30000
+        },
+        "cash": {
+          "min": -50000000,
+          "max": 0,
+          "avg": -20000000,
+          "median": -10000000
+        },
+        "trust": {
+          "min": -40,
+          "max": 20,
+          "avg": -15,
+          "median": -15
+        },
+        "choice_count": 5
+      },
+      "18": {
+        "users": {
+          "min": 20000,
+          "max": 100000,
+          "avg": 48000,
+          "median": 40000
+        },
+        "cash": {
+          "min": -300000000,
+          "max": 0,
+          "avg": -146000000,
+          "median": -150000000
+        },
+        "trust": {
+          "min": 15,
+          "max": 55,
+          "avg": 36,
+          "median": 40
+        },
+        "choice_count": 5
+      },
+      "19": {
+        "users": {
+          "min": 20000,
+          "max": 500000,
+          "avg": 140000,
+          "median": 50000
+        },
+        "cash": {
+          "min": -500000000,
+          "max": -100000000,
+          "avg": -280000000,
+          "median": -300000000
+        },
+        "trust": {
+          "min": 40,
+          "max": 70,
+          "avg": 55,
+          "median": 55
+        },
+        "choice_count": 5
+      },
+      "20": {
+        "users": {
+          "min": 50000,
+          "max": 800000,
+          "avg": 240000,
+          "median": 100000
+        },
+        "cash": {
+          "min": -600000000,
+          "max": 0,
+          "avg": -260000000,
+          "median": -200000000
+        },
+        "trust": {
+          "min": 45,
+          "max": 75,
+          "avg": 59,
+          "median": 60
+        },
+        "choice_count": 5
+      },
+      "21": {
+        "users": {
+          "min": 10000,
+          "max": 100000,
+          "avg": 42000,
+          "median": 30000
+        },
+        "cash": {
+          "min": -200000000,
+          "max": -20000000,
+          "avg": -80000000,
+          "median": -50000000
+        },
+        "trust": {
+          "min": 50,
+          "max": 80,
+          "avg": 65,
+          "median": 65
+        },
+        "choice_count": 5
+      },
+      "22": {
+        "users": {
+          "min": 30000,
+          "max": 100000,
+          "avg": 54000,
+          "median": 50000
+        },
+        "cash": {
+          "min": -50000000,
+          "max": 0,
+          "avg": -10000000,
+          "median": 0
+        },
+        "trust": {
+          "min": 55,
+          "max": 75,
+          "avg": 65,
+          "median": 65
+        },
+        "choice_count": 5
+      },
+      "23": {
+        "users": {
+          "min": 50000,
+          "max": 100000,
+          "avg": 75000,
+          "median": 75000.0
+        },
+        "cash": {
+          "min": 0,
+          "max": 0,
+          "avg": 0,
+          "median": 0.0
+        },
+        "trust": {
+          "min": 55,
+          "max": 70,
+          "avg": 62.5,
+          "median": 62.5
+        },
+        "choice_count": 4
+      },
+      "24": {
+        "users": {
+          "min": 0,
+          "max": 100000,
+          "avg": 30000,
+          "median": 0
+        },
+        "cash": {
+          "min": -50000000,
+          "max": 0,
+          "avg": -16000000,
+          "median": 0
+        },
+        "trust": {
+          "min": 5,
+          "max": 20,
+          "avg": 12.4,
+          "median": 12
+        },
+        "choice_count": 5
+      },
+      "25": {
+        "users": {
+          "min": 30000,
+          "max": 300000,
+          "avg": 136000,
+          "median": 100000
+        },
+        "cash": {
+          "min": -500000000,
+          "max": 0,
+          "avg": -180000000,
+          "median": -100000000
+        },
+        "trust": {
+          "min": 10,
+          "max": 25,
+          "avg": 17.6,
+          "median": 18
+        },
+        "choice_count": 5
+      }
+    }
+  },
+  "simulations": {
+    "best_users": {
+      "strategy": "best_users",
+      "final": {
+        "users": 3161442,
+        "cash": -4117400000,
+        "trust": 100
+      }
+    },
+    "worst_users": {
+      "strategy": "worst_users",
+      "final": {
+        "users": 190875,
+        "cash": -1041800000,
+        "trust": 100
+      }
+    },
+    "best_cash": {
+      "strategy": "best_cash",
+      "final": {
+        "users": 432789,
+        "cash": -93500000,
+        "trust": 100
+      }
+    },
+    "worst_cash": {
+      "strategy": "worst_cash",
+      "final": {
+        "users": 2996485,
+        "cash": -4225200000,
+        "trust": 100
+      }
+    },
+    "best_trust": {
+      "strategy": "best_trust",
+      "final": {
+        "users": 827706,
+        "cash": -2551810000,
+        "trust": 100
+      }
+    },
+    "balanced": {
+      "strategy": "balanced",
+      "final": {
+        "users": 575505,
+        "cash": -95510000,
+        "trust": 100
+      }
+    }
+  },
+  "balance_issues": [
+    "⚠️ 유저 증가량 편차가 큽니다 (표준편차: 98379, 평균: 46303)",
+    "⚠️ 현금 효과 편차가 큽니다 (표준편차: 143,498,227원)",
+    "⚠️ 최적/최악 경로의 유저 수 차이가 큽니다 (2,970,567명)",
+    "❌ 최악의 선택 시 파산 가능 (최종 현금: -1,041,800,000원)"
+  ]
+}
