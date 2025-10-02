@@ -10,9 +10,10 @@
           "users": 100,
           "cash": -80000,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 2
+        "next_turn": 2,
+        "category": "마케팅"
       },
       {
         "id": 2,
@@ -21,9 +22,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 2
+        "next_turn": 2,
+        "category": "기술"
       },
       {
         "id": 3,
@@ -32,9 +34,10 @@
           "users": 0,
           "cash": -8000,
           "infra": [],
-          "trust": 15
+          "trust": 6
         },
-        "next_turn": 2
+        "next_turn": 2,
+        "category": "보안"
       },
       {
         "id": 4,
@@ -43,9 +46,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 2
+        "next_turn": 2,
+        "category": "투자"
       },
       {
         "id": 5,
@@ -56,7 +60,8 @@
           "infra": [],
           "trust": 0
         },
-        "next_turn": 2
+        "next_turn": 2,
+        "category": "기타"
       }
     ]
   },
@@ -71,9 +76,10 @@
           "users": 100,
           "cash": -80000,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 3
+        "next_turn": 3,
+        "category": "마케팅"
       },
       {
         "id": 7,
@@ -82,9 +88,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 3
+        "next_turn": 3,
+        "category": "기술"
       },
       {
         "id": 8,
@@ -95,7 +102,8 @@
           "infra": [],
           "trust": 20
         },
-        "next_turn": 3
+        "next_turn": 3,
+        "category": "투자"
       },
       {
         "id": 9,
@@ -104,9 +112,10 @@
           "users": 0,
           "cash": -40000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 3
+        "next_turn": 3,
+        "category": "인프라"
       },
       {
         "id": 10,
@@ -115,9 +124,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 3
+        "next_turn": 3,
+        "category": "인프라"
       },
       {
         "id": 9001,
@@ -126,7 +136,7 @@
           "users": 50,
           "cash": 50000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
         "category": "재무",
         "next_turn": 3
@@ -138,7 +148,7 @@
           "users": 0,
           "cash": 3000000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
         "category": "재무",
         "next_turn": 3
@@ -156,9 +166,10 @@
           "users": 300,
           "cash": -160000,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 4
+        "next_turn": 4,
+        "category": "마케팅"
       },
       {
         "id": 12,
@@ -169,9 +180,10 @@
           "infra": [
             "Aurora"
           ],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 4
+        "next_turn": 4,
+        "category": "인프라"
       },
       {
         "id": 13,
@@ -180,9 +192,10 @@
           "users": 0,
           "cash": -80000,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 4
+        "next_turn": 4,
+        "category": "인프라"
       },
       {
         "id": 14,
@@ -191,9 +204,10 @@
           "users": 0,
           "cash": -2400000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 4
+        "next_turn": 4,
+        "category": "채용"
       },
       {
         "id": 15,
@@ -202,9 +216,10 @@
           "users": 0,
           "cash": 50000000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 4
+        "next_turn": 4,
+        "category": "투자"
       },
       {
         "id": 9003,
@@ -213,7 +228,7 @@
           "users": 100,
           "cash": 100000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
         "category": "재무",
         "next_turn": 4
@@ -225,7 +240,7 @@
           "users": 0,
           "cash": 8000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
         "category": "재무",
         "next_turn": 4
@@ -237,7 +252,7 @@
           "users": 100,
           "cash": 100000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
         "category": "재무",
         "next_turn": 4
@@ -249,7 +264,7 @@
           "users": 0,
           "cash": 8000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
         "category": "재무",
         "next_turn": 4
@@ -269,9 +284,10 @@
           "infra": [
             "ALB"
           ],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 5
+        "next_turn": 5,
+        "category": "인프라"
       },
       {
         "id": 17,
@@ -282,9 +298,10 @@
           "infra": [
             "Redis"
           ],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 5
+        "next_turn": 5,
+        "category": "인프라"
       },
       {
         "id": 18,
@@ -293,9 +310,10 @@
           "users": 1500,
           "cash": -800000,
           "infra": [],
-          "trust": -30
+          "trust": 2
         },
-        "next_turn": 5
+        "next_turn": 5,
+        "category": "마케팅"
       },
       {
         "id": 19,
@@ -307,9 +325,10 @@
             "S3",
             "CloudFront"
           ],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 5
+        "next_turn": 5,
+        "category": "인프라"
       },
       {
         "id": 20,
@@ -318,9 +337,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": -10
+          "trust": 2
         },
-        "next_turn": 5
+        "next_turn": 5,
+        "category": "기타"
       },
       {
         "id": 9005,
@@ -329,7 +349,7 @@
           "users": 200,
           "cash": 300000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
         "category": "재무",
         "next_turn": 5
@@ -341,7 +361,7 @@
           "users": 200,
           "cash": 300000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
         "category": "재무",
         "next_turn": 5
@@ -359,9 +379,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 30
+          "trust": 4
         },
-        "next_turn": 6
+        "next_turn": 6,
+        "category": "투자"
       },
       {
         "id": 22,
@@ -372,9 +393,10 @@
           "infra": [
             "EKS"
           ],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 6
+        "next_turn": 6,
+        "category": "인프라"
       },
       {
         "id": 23,
@@ -383,9 +405,10 @@
           "users": 0,
           "cash": -2800000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 6
+        "next_turn": 6,
+        "category": "채용"
       },
       {
         "id": 24,
@@ -394,9 +417,10 @@
           "users": 5000,
           "cash": -2400000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 6
+        "next_turn": 6,
+        "category": "마케팅"
       },
       {
         "id": 25,
@@ -405,9 +429,10 @@
           "users": 0,
           "cash": 500000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 6
+        "next_turn": 6,
+        "category": "재무"
       }
     ]
   },
@@ -425,9 +450,10 @@
             "S3",
             "Redis"
           ],
-          "trust": 9
+          "trust": 2
         },
-        "next_turn": 7
+        "next_turn": 7,
+        "category": "보안"
       },
       {
         "id": 56,
@@ -438,9 +464,10 @@
           "infra": [
             "EKS"
           ],
-          "trust": 17
+          "trust": 3
         },
-        "next_turn": 7
+        "next_turn": 7,
+        "category": "인프라"
       },
       {
         "id": 57,
@@ -451,9 +478,10 @@
           "infra": [
             "Aurora Global DB"
           ],
-          "trust": 31
+          "trust": 4
         },
-        "next_turn": 7
+        "next_turn": 7,
+        "category": "인프라"
       },
       {
         "id": 58,
@@ -465,9 +493,10 @@
             "Bedrock",
             "Lambda"
           ],
-          "trust": 22
+          "trust": 4
         },
-        "next_turn": 7
+        "next_turn": 7,
+        "category": "기술"
       },
       {
         "id": 59,
@@ -476,9 +505,10 @@
           "users": 6325,
           "cash": 0,
           "infra": [],
-          "trust": -8
+          "trust": 2
         },
-        "next_turn": 7
+        "next_turn": 7,
+        "category": "기타"
       }
     ]
   },
@@ -493,9 +523,10 @@
           "users": 50000,
           "cash": -80000000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 8
+        "next_turn": 8,
+        "category": "마케팅"
       },
       {
         "id": 61,
@@ -504,9 +535,10 @@
           "users": 0,
           "cash": -24000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 8
+        "next_turn": 8,
+        "category": "채용"
       },
       {
         "id": 62,
@@ -518,9 +550,10 @@
             "EKS",
             "Karpenter"
           ],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 8
+        "next_turn": 8,
+        "category": "인프라"
       },
       {
         "id": 63,
@@ -529,9 +562,10 @@
           "users": 30000,
           "cash": -40000000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 8
+        "next_turn": 8,
+        "category": "전략"
       },
       {
         "id": 64,
@@ -540,9 +574,10 @@
           "users": 10000,
           "cash": -80000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 8
+        "next_turn": 8,
+        "category": "전략"
       }
     ]
   },
@@ -557,9 +592,10 @@
           "users": -5000,
           "cash": -1600000,
           "infra": [],
-          "trust": -15
+          "trust": 2
         },
-        "next_turn": 9
+        "next_turn": 9,
+        "category": "인프라"
       },
       {
         "id": 66,
@@ -568,9 +604,10 @@
           "users": -20000,
           "cash": -4000000,
           "infra": [],
-          "trust": -30
+          "trust": 2
         },
-        "next_turn": 9
+        "next_turn": 9,
+        "category": "기술"
       },
       {
         "id": 67,
@@ -579,9 +616,10 @@
           "users": -10000,
           "cash": -400000,
           "infra": [],
-          "trust": -20
+          "trust": 2
         },
-        "next_turn": 9
+        "next_turn": 9,
+        "category": "인프라"
       },
       {
         "id": 68,
@@ -590,9 +628,10 @@
           "users": -3000,
           "cash": -8000000,
           "infra": [],
-          "trust": -10
+          "trust": 2
         },
-        "next_turn": 9
+        "next_turn": 9,
+        "category": "컨설팅"
       },
       {
         "id": 69,
@@ -601,9 +640,10 @@
           "users": -15000,
           "cash": 0,
           "infra": [],
-          "trust": -35
+          "trust": 2
         },
-        "next_turn": 9
+        "next_turn": 9,
+        "category": "인프라"
       }
     ]
   },
@@ -623,9 +663,10 @@
             "Redis",
             "CloudFront"
           ],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 10
+        "next_turn": 10,
+        "category": "인프라"
       },
       {
         "id": 71,
@@ -634,9 +675,10 @@
           "users": 5000,
           "cash": -9000000,
           "infra": [],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 10
+        "next_turn": 10,
+        "category": "채용"
       },
       {
         "id": 72,
@@ -645,9 +687,10 @@
           "users": 40000,
           "cash": -18000000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 10
+        "next_turn": 10,
+        "category": "전략"
       },
       {
         "id": 73,
@@ -656,9 +699,10 @@
           "users": 2000,
           "cash": 0,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 10
+        "next_turn": 10,
+        "category": "전략"
       },
       {
         "id": 74,
@@ -667,9 +711,10 @@
           "users": 15000,
           "cash": -6000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 10
+        "next_turn": 10,
+        "category": "위기관리"
       }
     ]
   },
@@ -684,9 +729,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 11
+        "next_turn": 11,
+        "category": "투자"
       },
       {
         "id": 76,
@@ -695,9 +741,10 @@
           "users": 20000,
           "cash": 50000000,
           "infra": [],
-          "trust": 30
+          "trust": 4
         },
-        "next_turn": 11
+        "next_turn": 11,
+        "category": "재무"
       },
       {
         "id": 77,
@@ -709,9 +756,10 @@
             "Bedrock",
             "Lambda"
           ],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 11
+        "next_turn": 11,
+        "category": "전략"
       },
       {
         "id": 78,
@@ -722,9 +770,10 @@
           "infra": [
             "Aurora Global DB"
           ],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 11
+        "next_turn": 11,
+        "category": "전략"
       },
       {
         "id": 79,
@@ -733,9 +782,10 @@
           "users": 10000,
           "cash": 0,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 11
+        "next_turn": 11,
+        "category": "기타"
       }
     ]
   },
@@ -754,9 +804,10 @@
             "EKS",
             "CloudFront"
           ],
-          "trust": -6
+          "trust": 2
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "인프라"
       },
       {
         "id": 113,
@@ -767,9 +818,10 @@
           "infra": [
             "EKS"
           ],
-          "trust": 19
+          "trust": 3
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "채용"
       },
       {
         "id": 114,
@@ -782,9 +834,10 @@
             "CloudFront",
             "Aurora"
           ],
-          "trust": -10
+          "trust": 2
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "보안"
       },
       {
         "id": 115,
@@ -796,9 +849,10 @@
             "S3",
             "Aurora"
           ],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "인프라"
       },
       {
         "id": 116,
@@ -811,9 +865,10 @@
             "Lambda",
             "EC2"
           ],
-          "trust": -10
+          "trust": 2
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "재무"
       },
       {
         "id": 117,
@@ -827,7 +882,8 @@
           ],
           "trust": 2
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "기술"
       },
       {
         "id": 118,
@@ -840,9 +896,10 @@
             "Bedrock",
             "RDS"
           ],
-          "trust": -2
+          "trust": 2
         },
-        "next_turn": 12
+        "next_turn": 12,
+        "category": "인프라"
       }
     ]
   },
@@ -857,9 +914,10 @@
           "users": 100000,
           "cash": -120000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 13
+        "next_turn": 13,
+        "category": "전략"
       },
       {
         "id": 120,
@@ -868,9 +926,10 @@
           "users": 30000,
           "cash": -30000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 13
+        "next_turn": 13,
+        "category": "전략"
       },
       {
         "id": 121,
@@ -879,9 +938,10 @@
           "users": 10000,
           "cash": -60000000,
           "infra": [],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 13
+        "next_turn": 13,
+        "category": "기술"
       },
       {
         "id": 122,
@@ -890,9 +950,10 @@
           "users": 150000,
           "cash": -300000000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 13
+        "next_turn": 13,
+        "category": "전략"
       },
       {
         "id": 123,
@@ -901,9 +962,10 @@
           "users": 200000,
           "cash": -600000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 13
+        "next_turn": 13,
+        "category": "전략"
       },
       {
         "id": "1123",
@@ -911,7 +973,7 @@
         "effects": {
           "users": 5000,
           "cash": 500000000,
-          "trust": 8,
+          "trust": 1,
           "infra": []
         },
         "next_turn": 13
@@ -922,7 +984,7 @@
         "effects": {
           "users": 8000,
           "cash": 1000000000,
-          "trust": 12,
+          "trust": 1,
           "infra": []
         },
         "next_turn": 13
@@ -933,7 +995,7 @@
         "effects": {
           "users": 12000,
           "cash": 1800000000,
-          "trust": 16,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 13
@@ -954,9 +1016,10 @@
             "Bedrock",
             "SageMaker"
           ],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 14
+        "next_turn": 14,
+        "category": "전략"
       },
       {
         "id": 125,
@@ -965,9 +1028,10 @@
           "users": 20000,
           "cash": -18000000,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 14
+        "next_turn": 14,
+        "category": "전략"
       },
       {
         "id": 126,
@@ -976,9 +1040,10 @@
           "users": 50000,
           "cash": -18000000,
           "infra": [],
-          "trust": 30
+          "trust": 4
         },
-        "next_turn": 14
+        "next_turn": 14,
+        "category": "전략"
       },
       {
         "id": 127,
@@ -987,9 +1052,10 @@
           "users": 30000,
           "cash": 0,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 14
+        "next_turn": 14,
+        "category": "전략"
       },
       {
         "id": 128,
@@ -998,9 +1064,10 @@
           "users": 40000,
           "cash": -30000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 14
+        "next_turn": 14,
+        "category": "전략"
       }
     ]
   },
@@ -1018,9 +1085,10 @@
             "Aurora Global DB",
             "CloudFront"
           ],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 15
+        "next_turn": 15,
+        "category": "전략"
       },
       {
         "id": 130,
@@ -1029,9 +1097,10 @@
           "users": 80000,
           "cash": -60000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 15
+        "next_turn": 15,
+        "category": "전략"
       },
       {
         "id": 131,
@@ -1040,9 +1109,10 @@
           "users": 150000,
           "cash": -90000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 15
+        "next_turn": 15,
+        "category": "전략"
       },
       {
         "id": 132,
@@ -1051,9 +1121,10 @@
           "users": 100000,
           "cash": -48000000,
           "infra": [],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 15
+        "next_turn": 15,
+        "category": "전략"
       },
       {
         "id": 133,
@@ -1062,9 +1133,10 @@
           "users": 30000,
           "cash": 0,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 15
+        "next_turn": 15,
+        "category": "전략"
       }
     ]
   },
@@ -1079,9 +1151,10 @@
           "users": 50000,
           "cash": -30000000,
           "infra": [],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 16
+        "next_turn": 16,
+        "category": "전략"
       },
       {
         "id": 135,
@@ -1090,9 +1163,10 @@
           "users": 20000,
           "cash": -60000000,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 16
+        "next_turn": 16,
+        "category": "기술"
       },
       {
         "id": 136,
@@ -1101,9 +1175,10 @@
           "users": 10000,
           "cash": -30000000,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 16
+        "next_turn": 16,
+        "category": "전략"
       },
       {
         "id": 137,
@@ -1112,9 +1187,10 @@
           "users": 60000,
           "cash": -90000000,
           "infra": [],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 16
+        "next_turn": 16,
+        "category": "전략"
       },
       {
         "id": 138,
@@ -1123,9 +1199,10 @@
           "users": 200000,
           "cash": -120000000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 16
+        "next_turn": 16,
+        "category": "전략"
       }
     ]
   },
@@ -1140,9 +1217,10 @@
           "users": -30000,
           "cash": 0,
           "infra": [],
-          "trust": -20
+          "trust": 2
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "재무"
       },
       {
         "id": 140,
@@ -1151,9 +1229,10 @@
           "users": 20000,
           "cash": -12000000,
           "infra": [],
-          "trust": 35
+          "trust": 4
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "재무"
       },
       {
         "id": 141,
@@ -1162,9 +1241,10 @@
           "users": 50000,
           "cash": -40000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "재무"
       },
       {
         "id": 142,
@@ -1173,9 +1253,10 @@
           "users": 10000,
           "cash": -20000000,
           "infra": [],
-          "trust": -15
+          "trust": 2
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "재무"
       },
       {
         "id": 143,
@@ -1184,9 +1265,10 @@
           "users": 80000,
           "cash": -32000000,
           "infra": [],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "재무"
       },
       {
         "id": 9991,
@@ -1194,12 +1276,13 @@
         "effects": {
           "users": 0,
           "cash": -40000000,
-          "trust": 15,
+          "trust": 3,
           "infra": [
             "dr-configured"
           ]
         },
-        "next_turn": 17
+        "next_turn": 17,
+        "category": "인프라"
       },
       {
         "id": 9992,
@@ -1225,9 +1308,10 @@
           "users": -50000,
           "cash": 0,
           "infra": [],
-          "trust": -30
+          "trust": 2
         },
-        "next_turn": 18
+        "next_turn": 18,
+        "category": "위기관리"
       },
       {
         "id": 145,
@@ -1236,9 +1320,10 @@
           "users": -20000,
           "cash": -4000000,
           "infra": [],
-          "trust": -15
+          "trust": 2
         },
-        "next_turn": 18
+        "next_turn": 18,
+        "category": "위기관리"
       },
       {
         "id": 146,
@@ -1247,9 +1332,10 @@
           "users": -10000,
           "cash": -20000000,
           "infra": [],
-          "trust": -10
+          "trust": 2
         },
-        "next_turn": 18
+        "next_turn": 18,
+        "category": "위기관리"
       },
       {
         "id": 147,
@@ -1258,9 +1344,10 @@
           "users": -30000,
           "cash": -12000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 18
+        "next_turn": 18,
+        "category": "위기관리"
       },
       {
         "id": 148,
@@ -1269,9 +1356,10 @@
           "users": -40000,
           "cash": -4000000,
           "infra": [],
-          "trust": -40
+          "trust": 2
         },
-        "next_turn": 18
+        "next_turn": 18,
+        "category": "위기관리"
       }
     ]
   },
@@ -1286,9 +1374,10 @@
           "users": 100000,
           "cash": -120000000,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "인사"
       },
       {
         "id": 150,
@@ -1297,9 +1386,10 @@
           "users": 30000,
           "cash": -60000000,
           "infra": [],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "인사"
       },
       {
         "id": 151,
@@ -1308,9 +1398,10 @@
           "users": 50000,
           "cash": -80000000,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "채용"
       },
       {
         "id": 152,
@@ -1319,9 +1410,10 @@
           "users": 40000,
           "cash": 0,
           "infra": [],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "인사"
       },
       {
         "id": 153,
@@ -1330,9 +1422,10 @@
           "users": 20000,
           "cash": -32000000,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "인사"
       },
       {
         "id": "1153",
@@ -1340,7 +1433,7 @@
         "effects": {
           "users": 15000,
           "cash": 2000000000,
-          "trust": 12,
+          "trust": 1,
           "infra": []
         },
         "next_turn": 19
@@ -1351,7 +1444,7 @@
         "effects": {
           "users": 25000,
           "cash": 4000000000,
-          "trust": 16,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 19
@@ -1362,7 +1455,7 @@
         "effects": {
           "users": 40000,
           "cash": 7000000000,
-          "trust": 20,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 19
@@ -1380,9 +1473,10 @@
           "users": 20000,
           "cash": -120000000,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 20
+        "next_turn": 20,
+        "category": "IPO"
       },
       {
         "id": 155,
@@ -1395,9 +1489,10 @@
             "EKS",
             "CloudFront"
           ],
-          "trust": 70
+          "trust": 4
         },
-        "next_turn": 20
+        "next_turn": 20,
+        "category": "IPO"
       },
       {
         "id": 156,
@@ -1406,9 +1501,10 @@
           "users": 50000,
           "cash": -40000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 20
+        "next_turn": 20,
+        "category": "IPO"
       },
       {
         "id": 157,
@@ -1417,9 +1513,10 @@
           "users": 500000,
           "cash": -200000000,
           "infra": [],
-          "trust": 40
+          "trust": 4
         },
-        "next_turn": 20
+        "next_turn": 20,
+        "category": "IPO"
       },
       {
         "id": 158,
@@ -1428,9 +1525,10 @@
           "users": 100000,
           "cash": -120000000,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 20
+        "next_turn": 20,
+        "category": "IPO"
       }
     ]
   },
@@ -1450,9 +1548,10 @@
             "CloudFront",
             "Bedrock"
           ],
-          "trust": 75
+          "trust": 4
         },
-        "next_turn": 21
+        "next_turn": 21,
+        "category": "IPO"
       },
       {
         "id": 160,
@@ -1461,9 +1560,10 @@
           "users": 800000,
           "cash": -240000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 21
+        "next_turn": 21,
+        "category": "IPO"
       },
       {
         "id": 161,
@@ -1472,9 +1572,10 @@
           "users": 100000,
           "cash": -80000000,
           "infra": [],
-          "trust": 65
+          "trust": 4
         },
-        "next_turn": 21
+        "next_turn": 21,
+        "category": "IPO"
       },
       {
         "id": 162,
@@ -1483,9 +1584,10 @@
           "users": 200000,
           "cash": -40000000,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 21
+        "next_turn": 21,
+        "category": "IPO"
       },
       {
         "id": 163,
@@ -1494,9 +1596,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 45
+          "trust": 4
         },
-        "next_turn": 21
+        "next_turn": 21,
+        "category": "IPO"
       }
     ]
   },
@@ -1511,9 +1614,10 @@
           "users": 20000,
           "cash": -40000000,
           "infra": [],
-          "trust": 70
+          "trust": 4
         },
-        "next_turn": 22
+        "next_turn": 22,
+        "category": "IPO"
       },
       {
         "id": 165,
@@ -1522,9 +1626,10 @@
           "users": 50000,
           "cash": -8000000,
           "infra": [],
-          "trust": 65
+          "trust": 4
         },
-        "next_turn": 22
+        "next_turn": 22,
+        "category": "IPO"
       },
       {
         "id": 166,
@@ -1533,9 +1638,10 @@
           "users": 10000,
           "cash": -20000000,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 22
+        "next_turn": 22,
+        "category": "IPO"
       },
       {
         "id": 167,
@@ -1544,9 +1650,10 @@
           "users": 100000,
           "cash": -80000000,
           "infra": [],
-          "trust": 80
+          "trust": 4
         },
-        "next_turn": 22
+        "next_turn": 22,
+        "category": "IPO"
       },
       {
         "id": 168,
@@ -1555,9 +1662,10 @@
           "users": 30000,
           "cash": -12000000,
           "infra": [],
-          "trust": 50
+          "trust": 4
         },
-        "next_turn": 22
+        "next_turn": 22,
+        "category": "IPO"
       }
     ]
   },
@@ -1572,9 +1680,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 65
+          "trust": 4
         },
-        "next_turn": 23
+        "next_turn": 23,
+        "category": "IPO"
       },
       {
         "id": 170,
@@ -1583,9 +1692,10 @@
           "users": 30000,
           "cash": 0,
           "infra": [],
-          "trust": 70
+          "trust": 4
         },
-        "next_turn": 23
+        "next_turn": 23,
+        "category": "IPO"
       },
       {
         "id": 171,
@@ -1594,9 +1704,10 @@
           "users": 100000,
           "cash": 0,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 23
+        "next_turn": 23,
+        "category": "IPO"
       },
       {
         "id": 172,
@@ -1605,9 +1716,10 @@
           "users": 40000,
           "cash": -20000000,
           "infra": [],
-          "trust": 75
+          "trust": 4
         },
-        "next_turn": 23
+        "next_turn": 23,
+        "category": "IPO"
       },
       {
         "id": 173,
@@ -1616,9 +1728,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 23
+        "next_turn": 23,
+        "category": "IPO"
       }
     ]
   },
@@ -1633,9 +1746,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 70
+          "trust": 4
         },
-        "next_turn": 24
+        "next_turn": 24,
+        "category": "IPO"
       },
       {
         "id": 175,
@@ -1644,9 +1758,10 @@
           "users": 80000,
           "cash": 0,
           "infra": [],
-          "trust": 65
+          "trust": 4
         },
-        "next_turn": 24
+        "next_turn": 24,
+        "category": "IPO"
       },
       {
         "id": 176,
@@ -1655,9 +1770,10 @@
           "users": 100000,
           "cash": 0,
           "infra": [],
-          "trust": 55
+          "trust": 4
         },
-        "next_turn": 24
+        "next_turn": 24,
+        "category": "IPO"
       },
       {
         "id": 177,
@@ -1666,9 +1782,10 @@
           "users": 70000,
           "cash": 0,
           "infra": [],
-          "trust": 60
+          "trust": 4
         },
-        "next_turn": 24
+        "next_turn": 24,
+        "category": "IPO"
       },
       {
         "id": "1177",
@@ -1676,7 +1793,7 @@
         "effects": {
           "users": 30000,
           "cash": 5000000000,
-          "trust": 16,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 24
@@ -1687,7 +1804,7 @@
         "effects": {
           "users": 50000,
           "cash": 10000000000,
-          "trust": 20,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 24
@@ -1698,7 +1815,7 @@
         "effects": {
           "users": 80000,
           "cash": 20000000000,
-          "trust": 24,
+          "trust": 2,
           "infra": []
         },
         "next_turn": 24
@@ -1716,9 +1833,10 @@
           "users": 100000,
           "cash": -20000000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 179,
@@ -1727,9 +1845,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 180,
@@ -1738,9 +1857,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 12
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 181,
@@ -1749,9 +1869,10 @@
           "users": 0,
           "cash": -12000000,
           "infra": [],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 182,
@@ -1760,9 +1881,10 @@
           "users": 0,
           "cash": 0,
           "infra": [],
-          "trust": 5
+          "trust": 2
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       }
     ]
   },
@@ -1777,9 +1899,10 @@
           "users": 100000,
           "cash": -40000000,
           "infra": [],
-          "trust": 10
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 184,
@@ -1788,9 +1911,10 @@
           "users": 50000,
           "cash": 0,
           "infra": [],
-          "trust": 15
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 185,
@@ -1802,9 +1926,10 @@
             "Aurora Global DB",
             "CloudFront"
           ],
-          "trust": 20
+          "trust": 4
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 186,
@@ -1813,9 +1938,10 @@
           "users": 30000,
           "cash": 0,
           "infra": [],
-          "trust": 25
+          "trust": 4
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       },
       {
         "id": 187,
@@ -1827,9 +1953,10 @@
             "Bedrock",
             "SageMaker"
           ],
-          "trust": 18
+          "trust": 3
         },
-        "next_turn": 25
+        "next_turn": 25,
+        "category": "IPO"
       }
     ]
   },
@@ -1843,12 +1970,13 @@
         "effects": {
           "users": -15000,
           "cash": -70000000,
-          "trust": 5,
+          "trust": 2,
           "infra": [
             "multi-region"
           ]
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "긴급"
       },
       {
         "id": 8882,
@@ -1856,10 +1984,11 @@
         "effects": {
           "users": -50000,
           "cash": 0,
-          "trust": -50,
+          "trust": 1,
           "infra": []
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "긴급"
       },
       {
         "id": 8883,
@@ -1872,7 +2001,8 @@
             "multi-cloud"
           ]
         },
-        "next_turn": 19
+        "next_turn": 19,
+        "category": "긴급"
       }
     ]
   },
