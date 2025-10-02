@@ -78,6 +78,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -115,6 +117,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -157,6 +161,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -218,6 +224,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         updatedAt: new Date(),
       };
 
@@ -245,6 +253,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -284,6 +294,8 @@ describe('GameService', () => {
         trustMultiplier: 1.0,
         maxUserCapacity: 5000,
         hiredStaff: [],
+        ipoConditionMet: false,
+        ipoAchievedTurn: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

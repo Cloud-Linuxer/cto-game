@@ -166,9 +166,17 @@ export class GameService {
     }
     game.maxUserCapacity = maxCapacity;
 
-    // 5. 효과 적용
-    // 초기 피칭 실패 시 효과 무효화
+    // 5. 매 턴 용량 초과 지속 페널티 체크 (효과 적용 전에 먼저 체크)
+    // 이미 용량을 초과한 상태에서는 매 턴마다 신뢰도 페널티 발생
     let capacityExceeded = false;
+    if (game.users > game.maxUserCapacity) {
+      game.trust = Math.max(0, game.trust - 10);
+      capacityExceeded = true;
+      console.log(`[CAPACITY CHECK] 턴 시작 시 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    }
+
+    // 6. 효과 적용
+    // 초기 피칭 실패 시 효과 무효화
     if (earlyPitchingFailed) {
       // 피칭 실패: 자금과 신뢰도 효과 무효화
       game.trust = 0; // 신뢰도 0으로 초기화
@@ -236,9 +244,19 @@ export class GameService {
     // 특수 선택지 처리
     if (choiceId === 9502) {
       // 계속하기 선택: IPO 달성 턴으로 돌아가기
-      nextTurn = game.ipoAchievedTurn || game.currentTurn + 1;
-      game.ipoConditionMet = false; // IPO 조건 플래그 해제
-      console.log(`[IPO] 계속하기 선택 - 턴 ${nextTurn}으로 복귀`);
+      const returnTurn = game.ipoAchievedTurn || game.currentTurn + 1;
+
+      // 25턴 이후로는 갈 수 없으므로 체크
+      if (returnTurn > 25) {
+        console.log(`[IPO] 계속하기 불가 - 복귀 턴(${returnTurn})이 최대 턴(25)을 초과`);
+        // 게임 종료 처리 (IPO 성공과 동일하게 처리)
+        game.status = GameStatus.WON_IPO;
+        nextTurn = game.currentTurn; // 현재 턴 유지하고 상태만 변경
+      } else {
+        nextTurn = returnTurn;
+        game.ipoConditionMet = false; // IPO 조건 플래그 해제
+        console.log(`[IPO] 계속하기 선택 - 턴 ${nextTurn}으로 복귀`);
+      }
     }
 
     // 긴급 이벤트 체크 (현재 턴이 긴급 이벤트가 아닐 때만)
@@ -253,9 +271,9 @@ export class GameService {
       const ipoConditionsMet = this.checkFullIPOConditions(game);
       if (ipoConditionsMet) {
         game.ipoConditionMet = true;
-        game.ipoAchievedTurn = game.currentTurn;
+        game.ipoAchievedTurn = nextTurn; // 다음 턴 번호를 저장 (950으로 이동하기 전 원래 가야 할 턴)
         nextTurn = 950; // IPO 선택 턴으로 이동
-        console.log(`[IPO] 조건 달성! 턴 950으로 이동`);
+        console.log(`[IPO] 조건 달성! 턴 950으로 이동 (복귀 턴: ${game.ipoAchievedTurn})`);
       }
     }
 
@@ -263,15 +281,13 @@ export class GameService {
     game.currentTurn = nextTurn;
     console.log(`[DEBUG] After: game.currentTurn=${game.currentTurn}`);
 
-    // 5-1. 매 턴 용량 초과 지속 체크 (새 턴 시작 시)
-    // 이미 용량을 초과한 상태에서는 매 턴마다 신뢰도 페널티 발생
-    if (game.users > game.maxUserCapacity && !capacityExceeded) {
-      game.trust = Math.max(0, game.trust - 10);
-      capacityExceeded = true;
-      console.log(`[CAPACITY CHECK] 매 턴 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    // 25턴 도달 시 단일 선택만 가능하도록 제한
+    if (game.currentTurn === 25 && game.multiChoiceEnabled) {
+      game.multiChoiceEnabled = false;
+      console.log(`[TURN 25] 최종 턴 도달 - 단일 선택만 가능`);
     }
 
-    // 6. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
+    // 7. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
     if (game.currentTurn !== 950) {
       game.status = this.checkGameStatus(game);
       console.log(`[DEBUG] Game status after check: ${game.status}`);
@@ -538,23 +554,23 @@ export class GameService {
     console.log(`  - Cash: ${game.cash} (필요: 300000000)`);
     console.log(`  - Trust: ${game.trust} (필요: 80)`);
     console.log(`  - Infrastructure: ${JSON.stringify(game.infrastructure)}`);
-    console.log(`  - Has Aurora Global DB: ${game.infrastructure.includes('Aurora Global DB')}`);
+    console.log(`  - Has RDS: ${game.infrastructure.includes('RDS')}`);
     console.log(`  - Has EKS: ${game.infrastructure.includes('EKS')}`);
 
     const usersCheck = game.users >= 100000;
     const cashCheck = game.cash >= 300000000;
     const trustCheck = game.trust >= 80;
-    const auroraCheck = game.infrastructure.includes('Aurora Global DB');
+    const dbCheck = game.infrastructure.includes('RDS'); // RDS로 변경 (Aurora Global DB는 게임에 존재하지 않음)
     const eksCheck = game.infrastructure.includes('EKS');
 
     console.log(`[IPO DEBUG] 조건 체크 결과:`);
     console.log(`  - Users ✓: ${usersCheck}`);
     console.log(`  - Cash ✓: ${cashCheck}`);
     console.log(`  - Trust ✓: ${trustCheck}`);
-    console.log(`  - Aurora ✓: ${auroraCheck}`);
+    console.log(`  - RDS ✓: ${dbCheck}`);
     console.log(`  - EKS ✓: ${eksCheck}`);
 
-    const result = usersCheck && cashCheck && trustCheck && auroraCheck && eksCheck;
+    const result = usersCheck && cashCheck && trustCheck && dbCheck && eksCheck;
     console.log(`[IPO DEBUG] 최종 결과: ${result}`);
 
     return result;
