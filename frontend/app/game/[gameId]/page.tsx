@@ -9,6 +9,7 @@ import MetricsPanel from '@/components/MetricsPanel';
 import CompactMetricsBar from '@/components/CompactMetricsBar';
 import StoryPanel from '@/components/StoryPanel';
 import InfraList from '@/components/InfraList';
+import TeamPanel from '@/components/TeamPanel';
 import GameSkeleton from '@/components/GameSkeleton';
 import EmergencyEventModal from '@/components/EmergencyEventModal';
 
@@ -23,6 +24,10 @@ export default function GameBoard() {
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [showInvestmentFailedModal, setShowInvestmentFailedModal] = useState(false);
+  const [investmentFailureMessage, setInvestmentFailureMessage] = useState('');
+  const [showCapacityExceededModal, setShowCapacityExceededModal] = useState(false);
+  const [capacityExceededMessage, setCapacityExceededMessage] = useState('');
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -56,7 +61,7 @@ export default function GameBoard() {
   }, [gameId]);
 
   // 선택 실행
-  const handleChoiceSelect = async (choiceId: number) => {
+  const handleChoiceSelect = async (choiceId: number | number[]) => {
     if (!gameState || executing) return;
 
     try {
@@ -66,6 +71,21 @@ export default function GameBoard() {
       // 선택 실행
       const updatedGame = await gameApi.executeChoice(gameId, choiceId);
       setGameState(updatedGame);
+
+      // 성공 시 에러 메시지 제거
+      setError(null);
+
+      // 투자 실패 체크
+      if ((updatedGame as any).investmentFailed) {
+        setInvestmentFailureMessage((updatedGame as any).investmentFailureMessage || '투자에 실패하였습니다.');
+        setShowInvestmentFailedModal(true);
+      }
+
+      // 용량 초과 체크
+      if ((updatedGame as any).capacityExceeded) {
+        setCapacityExceededMessage((updatedGame as any).capacityExceededMessage || '인프라 용량을 초과하였습니다.');
+        setShowCapacityExceededModal(true);
+      }
 
       // 게임이 계속 진행 중이면 다음 턴 로드
       if (updatedGame.status === GameStatus.PLAYING) {
@@ -221,6 +241,47 @@ export default function GameBoard() {
         />
       )}
 
+      {/* 투자 실패 모달 */}
+      {showInvestmentFailedModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
+          <div className="bg-white border-4 border-red-500 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center">
+            <div className="text-6xl mb-4">💸</div>
+            <h2 className="text-3xl font-bold text-red-600 mb-4">투자 실패</h2>
+            <p className="text-xl text-gray-700 mb-6">
+              {investmentFailureMessage}
+            </p>
+            <button
+              onClick={() => setShowInvestmentFailedModal(false)}
+              className="px-8 py-3 bg-red-600 text-white text-lg font-semibold rounded-lg hover:bg-red-700 transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 용량 초과 모달 */}
+      {showCapacityExceededModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
+          <div className="bg-white border-4 border-orange-500 rounded-2xl shadow-2xl p-8 max-w-lg w-full text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-3xl font-bold text-orange-600 mb-4">용량 초과</h2>
+            <p className="text-xl text-gray-700 mb-4">
+              {capacityExceededMessage}
+            </p>
+            <p className="text-lg text-orange-600 font-semibold mb-6">
+              신뢰도 -10%
+            </p>
+            <button
+              onClick={() => setShowCapacityExceededModal(false)}
+              className="px-8 py-3 bg-orange-600 text-white text-lg font-semibold rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="h-screen flex flex-col bg-gray-100">
         {/* 헤더 */}
         <header className="bg-indigo-600 text-white p-4 shadow-md">
@@ -254,15 +315,32 @@ export default function GameBoard() {
           <MetricsPanel gameState={gameState} />
         </div>
 
-        {/* 중앙: 스토리 패널 */}
-        <StoryPanel
-          turn={currentTurn}
-          onSelectChoice={handleChoiceSelect}
-          disabled={executing}
-        />
+        {/* 메인 컨텐츠: 스토리 패널 + 인프라 + 팀 (모바일에서 스크롤) */}
+        <div className="flex-1 overflow-y-auto">
+          {/* 중앙: 스토리 패널 */}
+          <StoryPanel
+            turn={currentTurn}
+            onSelectChoice={handleChoiceSelect}
+            disabled={executing}
+            multiChoiceEnabled={gameState.multiChoiceEnabled}
+          />
 
-        {/* 우측: 인프라 패널 */}
-        <InfraList infrastructure={gameState.infrastructure} />
+          {/* 모바일: 인프라 패널 (스크롤 아래) */}
+          <div className="lg:hidden">
+            <InfraList infrastructure={gameState.infrastructure} />
+          </div>
+
+          {/* 모바일: 팀 패널 (스크롤 아래) */}
+          <div className="lg:hidden">
+            <TeamPanel gameState={gameState} />
+          </div>
+        </div>
+
+        {/* 데스크탑: 우측 사이드바 (인프라 + 팀 구성) */}
+        <div className="hidden lg:block overflow-y-auto">
+          <InfraList infrastructure={gameState.infrastructure} />
+          <TeamPanel gameState={gameState} />
+        </div>
       </div>
     </div>
     </>

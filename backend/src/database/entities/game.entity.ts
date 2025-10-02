@@ -36,7 +36,7 @@ export class Game {
   })
   cash: number;
 
-  @Column({ type: 'int', default: 50 })
+  @Column({ type: 'int', default: 0 })
   trust: number;
 
   @Column({ type: 'simple-json', default: '["EC2"]' })
@@ -61,10 +61,16 @@ export class Game {
   multiChoiceEnabled: boolean; // 개발자 고용 시 다음 턴에 2개 선택 가능
 
   @Column({ type: 'float', default: 1.0 })
-  userAcquisitionMultiplier: number; // 디자이너 고용 시 유저 획득 배율 (1.5배)
+  userAcquisitionMultiplier: number; // 디자이너 고용 시 유저 획득 배율 (2배)
 
-  @Column({ type: 'int', default: 10000 })
+  @Column({ type: 'float', default: 1.0 })
+  trustMultiplier: number; // 기획자 고용 시 신뢰도 획득 배율 (2배)
+
+  @Column({ type: 'int', default: 5000 })
   maxUserCapacity: number; // 인프라가 수용 가능한 최대 유저 수
+
+  @Column({ type: 'simple-json', default: '[]' })
+  hiredStaff: string[]; // 채용된 인원 목록 (개발자, 디자이너, 기획자 등)
 
   @CreateDateColumn()
   createdAt: Date;

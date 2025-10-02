@@ -10,18 +10,11 @@ import * as path from 'path';
 async function seedDatabase(app: any) {
   const dataSource = app.get(DataSource);
 
-  // Ensure schema is synchronized
-  await dataSource.synchronize(false);
-
-  // Check if database is already seeded
-  try {
-    const turnCount = await dataSource.query('SELECT COUNT(*) as count FROM turns');
-    if (turnCount[0].count > 0) {
-      console.log('✅ Database already seeded');
-      return;
-    }
-  } catch (error) {
-    console.log('📊 Database tables ready, starting seed...');
+  // Check if already seeded
+  const turnCount = await dataSource.query('SELECT COUNT(*) as count FROM turns');
+  if (turnCount[0].count > 0) {
+    console.log('✅ Database already seeded');
+    return;
   }
 
   console.log('📊 Seeding database...');
@@ -72,6 +65,7 @@ async function bootstrap() {
       'https://fleece-newport-angeles-appliance.trycloudflare.com',
       'https://information-strongly-restored-characters.trycloudflare.com',
       'https://engine-opponent-realistic-collaboration.trycloudflare.com',
+      'https://baths-adoption-pie-edinburgh.trycloudflare.com',
     ],
     credentials: true,
   });

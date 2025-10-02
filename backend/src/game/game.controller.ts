@@ -72,6 +72,10 @@ export class GameController {
     @Param('gameId') gameId: string,
     @Body() dto: ExecuteChoiceDto,
   ): Promise<GameResponseDto> {
+    // choiceId가 배열이면 여러 선택 실행, 아니면 단일 선택 실행
+    if (Array.isArray(dto.choiceId)) {
+      return this.gameService.executeMultipleChoices(gameId, dto.choiceId);
+    }
     return this.gameService.executeChoice(gameId, dto.choiceId);
   }
 

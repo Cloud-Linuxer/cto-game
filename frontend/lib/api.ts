@@ -3,10 +3,11 @@ import type { GameState, Turn } from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false,
 });
 
 export const gameApi = {
@@ -23,7 +24,7 @@ export const gameApi = {
   },
 
   // 선택 실행
-  executeChoice: async (gameId: string, choiceId: number): Promise<GameState> => {
+  executeChoice: async (gameId: string, choiceId: number | number[]): Promise<GameState> => {
     const response = await api.post<GameState>(`/game/${gameId}/choice`, {
       choiceId,
     });

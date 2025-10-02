@@ -10,6 +10,11 @@ export interface GameState {
   status: GameStatus;
   createdAt: string;
   updatedAt: string;
+  maxUserCapacity?: number;
+  capacityExceeded?: boolean;
+  capacityExceededMessage?: string;
+  hiredStaff?: string[];
+  multiChoiceEnabled?: boolean;
 }
 
 export enum GameStatus {

@@ -7,13 +7,16 @@ import ChoiceCard from './ChoiceCard';
 interface StoryPanelProps {
   turn: Turn;
   onSelectChoice: (choiceId: number) => Promise<void>;
+  onSelectMultipleChoices?: (choiceIds: number[]) => Promise<void>;
   disabled: boolean;
+  multiChoiceEnabled?: boolean;
 }
 
 type Category = '전체' | '마케팅' | '인프라' | '재무';
 
-export default function StoryPanel({ turn, onSelectChoice, disabled }: StoryPanelProps) {
+export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoices, disabled, multiChoiceEnabled }: StoryPanelProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
+  const [selectedChoices, setSelectedChoices] = useState<number[]>([]);
 
   // 카테고리별 아이콘 매핑
   const categoryIcons: Record<Category, string> = {
@@ -28,43 +31,100 @@ export default function StoryPanel({ turn, onSelectChoice, disabled }: StoryPane
     ? turn.choices
     : turn.choices.filter(choice => choice.category === selectedCategory);
 
+  const handleChoice = async (choiceId: number) => {
+    if (multiChoiceEnabled) {
+      // 멀티 선택 모드: 바로 실행하지 않고 선택 목록에 추가/제거
+      return;
+    }
+    // 싱글 선택 모드: 바로 실행
+    await onSelectChoice(choiceId);
+  };
+
+  const handleToggleSelect = (choiceId: number) => {
+    setSelectedChoices(prev => {
+      if (prev.includes(choiceId)) {
+        // 이미 선택된 경우 제거
+        return prev.filter(id => id !== choiceId);
+      } else if (prev.length < 2) {
+        // 아직 2개 미만인 경우 추가
+        return [...prev, choiceId];
+      }
+      // 이미 2개 선택된 경우 무시
+      return prev;
+    });
+  };
+
+  const handleExecuteSelected = async () => {
+    if (selectedChoices.length === 0) return;
+
+    // 선택된 선택지들을 한 번에 실행 (1턴에 여러 선택)
+    try {
+      await onSelectChoice(selectedChoices);
+      setSelectedChoices([]);
+    } catch (error) {
+      console.error('Multiple choice execution failed:', error);
+    }
+  };
+
   return (
     <div className="h-full bg-gradient-to-b from-slate-50 to-white overflow-y-auto">
-      <div className="p-4 sm:p-6 lg:p-8 pb-32 sm:pb-40 lg:pb-48">
-        {/* Event Text - 개선된 디자인 */}
-        <div className="mb-4 sm:mb-6 lg:mb-8 relative">
-          {/* 배경 그라데이션 */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl lg:rounded-3xl blur-xl"></div>
-
-          {/* 메인 컨텐츠 */}
-          <div className="relative bg-white p-4 sm:p-6 lg:p-8 rounded-xl lg:rounded-2xl shadow-md lg:shadow-xl border border-slate-200">
-            {/* 턴 번호 뱃지 */}
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs sm:text-sm font-bold rounded-full mb-3 sm:mb-4 shadow-md lg:shadow-lg">
-              <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span>턴 {turn.turnNumber}</span>
+      <div className="p-3 sm:p-4 lg:p-5 pb-32 sm:pb-40 lg:pb-48">
+        {/* 멀티 선택 활성화 알림 */}
+        {multiChoiceEnabled && (
+          <div className="mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">👨‍💻</span>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-green-700">개발자 효과 활성화!</div>
+                <div className="text-xs text-green-600">이제 두 개를 선택할 수 있습니다</div>
+              </div>
+              {selectedChoices.length > 0 && (
+                <div className="text-sm font-bold text-green-700">
+                  {selectedChoices.length}/2 선택됨
+                </div>
+              )}
             </div>
+          </div>
+        )}
 
-            {/* 이벤트 텍스트 */}
-            <div className="text-base sm:text-lg lg:text-xl font-bold leading-relaxed text-slate-800 whitespace-pre-line break-words overflow-wrap-anywhere">
-              {turn.eventText}
+        {/* Event Text - 컴팩트한 디자인 */}
+        <div className="mb-3 sm:mb-4 relative">
+          {/* 메인 컨텐츠 - 축소된 패딩 */}
+          <div className="relative bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-slate-200">
+            {/* 턴 번호와 이벤트 텍스트를 한 줄로 */}
+            <div className="flex items-start gap-2 sm:gap-3">
+              {/* 턴 번호 뱃지 - 더 작게 */}
+              <div className="flex-shrink-0 inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold rounded-full">
+                <span>턴 {turn.turnNumber}</span>
+              </div>
+
+              {/* 이벤트 텍스트 - 더 작은 폰트 */}
+              <div className="text-sm sm:text-base font-semibold leading-snug text-slate-800 whitespace-pre-line break-words overflow-wrap-anywhere flex-1">
+                {turn.eventText}
+              </div>
             </div>
-
-            {/* 장식 요소 */}
-            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-full blur-3xl -z-10"></div>
           </div>
         </div>
 
         {/* Choices Section */}
-        <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 lg:mb-6">
-            <div className="h-0.5 sm:h-1 w-8 sm:w-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
-            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-800">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-base sm:text-lg font-bold text-slate-800">
               선택지
             </h3>
-            <div className="h-0.5 sm:h-1 flex-1 bg-gradient-to-r from-purple-500/20 to-transparent rounded-full"></div>
+            <div className="h-0.5 flex-1 bg-gradient-to-r from-purple-500/20 to-transparent rounded-full"></div>
           </div>
+
+          {/* 선택 실행 버튼 (선택지가 있을 때만) */}
+          {multiChoiceEnabled && selectedChoices.length > 0 && (
+            <button
+              onClick={handleExecuteSelected}
+              disabled={disabled}
+              className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg font-bold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mb-2"
+            >
+              ✓ 선택한 {selectedChoices.length}개 실행하기
+            </button>
+          )}
 
           {/* 카테고리 필터 */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
@@ -93,24 +153,27 @@ export default function StoryPanel({ turn, onSelectChoice, disabled }: StoryPane
             ))}
           </div>
 
-          {/* 필터링된 선택지 목록 */}
-          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+          {/* 필터링된 선택지 목록 - 4-5열 그리드 */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {filteredChoices.length > 0 ? (
               filteredChoices.map((choice) => (
                 <ChoiceCard
                   key={choice.choiceId}
                   choice={choice}
-                  onSelect={onSelectChoice}
+                  onSelect={handleChoice}
                   disabled={disabled}
+                  multiSelectMode={multiChoiceEnabled}
+                  isSelected={selectedChoices.includes(choice.choiceId)}
+                  onToggleSelect={handleToggleSelect}
                 />
               ))
             ) : (
-              <div className="text-center py-8 sm:py-10 lg:py-12 bg-white rounded-xl border-2 border-dashed border-slate-200">
-                <div className="text-4xl sm:text-5xl mb-3 sm:mb-4 opacity-20">🔍</div>
-                <div className="text-sm sm:text-base text-slate-500 font-medium">
+              <div className="col-span-full text-center py-6 sm:py-8 bg-white rounded-lg border-2 border-dashed border-slate-200">
+                <div className="text-3xl sm:text-4xl mb-2 opacity-20">🔍</div>
+                <div className="text-sm text-slate-500 font-medium">
                   해당 카테고리의 선택지가 없습니다
                 </div>
-                <div className="text-xs sm:text-sm text-slate-400 mt-2">
+                <div className="text-xs text-slate-400 mt-1">
                   다른 카테고리를 선택해보세요
                 </div>
               </div>

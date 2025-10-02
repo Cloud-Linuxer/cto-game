@@ -18,7 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "import-data": "ts-node scripts/import-game-data.ts"
+    "import-data": "ts-node scripts/import-game-data.ts",
+    "data:validate": "node scripts/validate-data.js",
+    "data:fix": "node scripts/fix-duplicates.js",
+    "data:seed": "node scripts/seed.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

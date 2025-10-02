@@ -71,6 +71,11 @@ export default function MetricsPanel({ gameState }: MetricsPanelProps) {
               <div className="text-lg lg:text-xl font-bold text-emerald-600">
                 {formatNumber(gameState.users)}
               </div>
+              {gameState.maxUserCapacity && (
+                <div className="text-xs text-slate-500 mt-1">
+                  수용 가능: {formatNumber(gameState.maxUserCapacity)}명
+                </div>
+              )}
             </div>
           </div>
           <div className="text-xs text-slate-500 mb-2">목표: 100,000명</div>

@@ -19,10 +19,13 @@ export default function CompactMetricsBar({ gameState }: CompactMetricsBarProps)
       </Tooltip>
 
       {/* 유저 */}
-      <Tooltip content="현재 서비스 유저 수 (목표: 100,000명)" position="bottom">
+      <Tooltip content={`현재 유저: ${gameState.users.toLocaleString()}명 (수용 가능: ${gameState.maxUserCapacity?.toLocaleString() || 'N/A'}명, 목표: 100,000명)`} position="bottom">
         <div className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-emerald-50 rounded-full whitespace-nowrap shrink-0 snap-start">
           <span className="text-sm">👥</span>
           <span className="text-sm font-semibold text-emerald-700">{gameState.users.toLocaleString()}</span>
+          {gameState.maxUserCapacity && (
+            <span className="text-xs text-emerald-600">/{gameState.maxUserCapacity.toLocaleString()}</span>
+          )}
         </div>
       </Tooltip>
 

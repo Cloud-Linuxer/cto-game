@@ -31,4 +31,25 @@ export class GameResponseDto {
 
   @ApiProperty({ description: '수정 시각' })
   updatedAt: Date;
+
+  @ApiProperty({ description: '투자 실패 여부', required: false })
+  investmentFailed?: boolean;
+
+  @ApiProperty({ description: '투자 실패 메시지', required: false })
+  investmentFailureMessage?: string;
+
+  @ApiProperty({ description: '최대 수용 유저수', required: false })
+  maxUserCapacity?: number;
+
+  @ApiProperty({ description: '용량 초과 여부', required: false })
+  capacityExceeded?: boolean;
+
+  @ApiProperty({ description: '용량 초과 메시지', required: false })
+  capacityExceededMessage?: string;
+
+  @ApiProperty({ description: '채용된 인원 목록', type: [String], required: false })
+  hiredStaff?: string[];
+
+  @ApiProperty({ description: '다중 선택 가능 여부 (개발자 채용 효과)', required: false })
+  multiChoiceEnabled?: boolean;
 }

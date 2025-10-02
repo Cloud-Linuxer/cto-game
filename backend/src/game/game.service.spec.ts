@@ -67,7 +67,7 @@ describe('GameService', () => {
         currentTurn: 1,
         users: 0,
         cash: 10000000,
-        trust: 50,
+        trust: 0,
         infrastructure: ['EC2'],
         status: GameStatus.PLAYING,
         hasDR: false,
@@ -75,7 +75,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -88,7 +90,7 @@ describe('GameService', () => {
       expect(result.currentTurn).toBe(1);
       expect(result.users).toBe(0);
       expect(result.cash).toBe(10000000);
-      expect(result.trust).toBe(50);
+      expect(result.trust).toBe(0);
       expect(result.infrastructure).toEqual(['EC2']);
       expect(result.status).toBe(GameStatus.PLAYING);
       expect(mockGameRepository.save).toHaveBeenCalledTimes(1);
@@ -110,7 +112,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -150,7 +154,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -209,7 +215,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         updatedAt: new Date(),
       };
 
@@ -234,7 +242,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -271,7 +281,9 @@ describe('GameService', () => {
         equityPercentage: 100,
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
-        maxUserCapacity: 10000,
+        trustMultiplier: 1.0,
+        maxUserCapacity: 5000,
+        hiredStaff: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
