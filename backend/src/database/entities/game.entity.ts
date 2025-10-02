@@ -72,6 +72,12 @@ export class Game {
   @Column({ type: 'simple-json', default: '[]' })
   hiredStaff: string[]; // 채용된 인원 목록 (개발자, 디자이너, 기획자 등)
 
+  @Column({ type: 'boolean', default: false })
+  ipoConditionMet: boolean; // IPO 조건 달성 여부
+
+  @Column({ type: 'int', nullable: true })
+  ipoAchievedTurn: number; // IPO 조건을 달성한 턴
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -56,17 +56,16 @@ async function bootstrap() {
 
   // CORS 설정
   app.enableCors({
-    origin: [
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'https://verified-queen-seating-das.trycloudflare.com',
-      'https://receipt-photographers-sorry-flip.trycloudflare.com',
-      'https://bird-photographic-faqs-group.trycloudflare.com',
-      'https://fleece-newport-angeles-appliance.trycloudflare.com',
-      'https://information-strongly-restored-characters.trycloudflare.com',
-      'https://engine-opponent-realistic-collaboration.trycloudflare.com',
-      'https://baths-adoption-pie-edinburgh.trycloudflare.com',
-    ],
+    origin: (origin, callback) => {
+      // localhost 또는 trycloudflare.com 도메인 허용
+      if (!origin ||
+          origin.startsWith('http://localhost') ||
+          origin.endsWith('.trycloudflare.com')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
 

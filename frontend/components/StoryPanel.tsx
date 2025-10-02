@@ -10,13 +10,19 @@ interface StoryPanelProps {
   onSelectMultipleChoices?: (choiceIds: number[]) => Promise<void>;
   disabled: boolean;
   multiChoiceEnabled?: boolean;
+  hiredStaff?: string[];
 }
 
 type Category = '전체' | '마케팅' | '인프라' | '재무';
 
-export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoices, disabled, multiChoiceEnabled }: StoryPanelProps) {
+export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoices, disabled, multiChoiceEnabled, hiredStaff = [] }: StoryPanelProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
   const [selectedChoices, setSelectedChoices] = useState<number[]>([]);
+
+  // 채용된 직원 확인
+  const hasDeveloper = hiredStaff.includes('개발자');
+  const hasDesigner = hiredStaff.includes('디자이너');
+  const hasPlanner = hiredStaff.includes('기획자');
 
   // 카테고리별 아이콘 매핑
   const categoryIcons: Record<Category, string> = {
@@ -71,15 +77,55 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
       <div className="p-3 sm:p-4 lg:p-5 pb-32 sm:pb-40 lg:pb-48">
         {/* 멀티 선택 활성화 알림 */}
         {multiChoiceEnabled && (
-          <div className="mb-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+          <div className={`mb-3 p-3 border rounded-lg ${
+            hasPlanner && hasDesigner && hasDeveloper
+              ? 'bg-gradient-to-r from-red-50 via-yellow-50 via-green-50 via-blue-50 to-purple-50 border-purple-300'
+              : hasDesigner && hasDeveloper
+              ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-purple-200'
+              : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">👨‍💻</span>
+              <div className="flex items-center">
+                {hasDeveloper && <span className="text-2xl">👨‍💻</span>}
+                {hasDesigner && <span className="text-2xl">👨‍🎨</span>}
+                {hasPlanner && <span className="text-2xl">📋</span>}
+              </div>
               <div className="flex-1">
-                <div className="text-sm font-bold text-green-700">개발자 효과 활성화!</div>
-                <div className="text-xs text-green-600">이제 두 개를 선택할 수 있습니다</div>
+                <div className={`text-sm font-bold ${
+                  hasPlanner && hasDesigner && hasDeveloper
+                    ? 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent'
+                    : hasDesigner && hasDeveloper
+                    ? 'text-purple-700'
+                    : 'text-green-700'
+                }`}>
+                  {hasPlanner && hasDesigner && hasDeveloper
+                    ? '완벽한 팀 구성! 🌈'
+                    : hasDesigner && hasDeveloper
+                    ? '개발자 + 디자이너 시너지 효과!'
+                    : '개발자 효과 활성화!'}
+                </div>
+                <div className={`text-xs ${
+                  hasPlanner && hasDesigner && hasDeveloper
+                    ? 'text-purple-600'
+                    : hasDesigner && hasDeveloper
+                    ? 'text-purple-600'
+                    : 'text-green-600'
+                }`}>
+                  {hasPlanner && hasDesigner && hasDeveloper
+                    ? '기획자의 전략적 로드맵 + 디자이너의 세련된 UX + 개발자의 빠른 실행력으로 두 개를 동시에 진행할 수 있습니다'
+                    : hasDesigner && hasDeveloper
+                    ? '디자이너의 창의성과 개발자의 기술력이 합쳐져 더 나은 결과물을 만들 수 있습니다'
+                    : '이제 두 개를 선택할 수 있습니다'}
+                </div>
               </div>
               {selectedChoices.length > 0 && (
-                <div className="text-sm font-bold text-green-700">
+                <div className={`text-sm font-bold ${
+                  hasPlanner && hasDesigner && hasDeveloper
+                    ? 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent'
+                    : hasDesigner && hasDeveloper
+                    ? 'text-purple-700'
+                    : 'text-green-700'
+                }`}>
                   {selectedChoices.length}/2 선택됨
                 </div>
               )}

@@ -323,6 +323,7 @@ export default function GameBoard() {
             onSelectChoice={handleChoiceSelect}
             disabled={executing}
             multiChoiceEnabled={gameState.multiChoiceEnabled}
+            hiredStaff={gameState.hiredStaff}
           />
 
           {/* 모바일: 인프라 패널 (스크롤 아래) */}

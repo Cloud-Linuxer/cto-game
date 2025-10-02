@@ -139,6 +139,8 @@ export class GameService {
     // 인프라 개선 감지 - 최대 용량 증가
     const infraCapacityMap = {
       'EC2': 5000,
+      'Route53': 2500,
+      'CloudWatch': 2000,
       'RDS': 10000,
       'S3': 15000,
       'Auto Scaling': 25000,
@@ -231,6 +233,14 @@ export class GameService {
     // 5. 턴 진행
     let nextTurn = choice.nextTurn;
 
+    // 특수 선택지 처리
+    if (choiceId === 9502) {
+      // 계속하기 선택: IPO 달성 턴으로 돌아가기
+      nextTurn = game.ipoAchievedTurn || game.currentTurn + 1;
+      game.ipoConditionMet = false; // IPO 조건 플래그 해제
+      console.log(`[IPO] 계속하기 선택 - 턴 ${nextTurn}으로 복귀`);
+    }
+
     // 긴급 이벤트 체크 (현재 턴이 긴급 이벤트가 아닐 때만)
     const currentIsEmergency = game.currentTurn >= 888 && game.currentTurn <= 890;
     if (nextTurn === 19 && !game.hasDR && !currentIsEmergency) {
@@ -238,13 +248,28 @@ export class GameService {
       nextTurn = 888; // 리전 장애 긴급 이벤트 턴
     }
 
+    // IPO 조건 달성 체크 (턴 950이 아닐 때만)
+    if (game.currentTurn !== 950 && !game.ipoConditionMet) {
+      const ipoConditionsMet = this.checkFullIPOConditions(game);
+      if (ipoConditionsMet) {
+        game.ipoConditionMet = true;
+        game.ipoAchievedTurn = game.currentTurn;
+        nextTurn = 950; // IPO 선택 턴으로 이동
+        console.log(`[IPO] 조건 달성! 턴 950으로 이동`);
+      }
+    }
+
     console.log(`[DEBUG] Before: currentTurn=${game.currentTurn}, nextTurn=${nextTurn}, choiceId=${choiceId}`);
     game.currentTurn = nextTurn;
     console.log(`[DEBUG] After: game.currentTurn=${game.currentTurn}`);
 
-    // 6. 승패 조건 체크
-    game.status = this.checkGameStatus(game);
-    console.log(`[DEBUG] Game status after check: ${game.status}`);
+    // 6. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
+    if (game.currentTurn !== 950) {
+      game.status = this.checkGameStatus(game);
+      console.log(`[DEBUG] Game status after check: ${game.status}`);
+    } else {
+      console.log(`[DEBUG] Turn 950 - IPO 선택 턴, 상태 체크 건너뜀`);
+    }
 
     // 7. 게임 상태 저장
     const updatedGame = await this.gameRepository.save(game);
@@ -357,6 +382,8 @@ export class GameService {
     // 3. 인프라 용량 재계산
     const infraCapacityMap = {
       'EC2': 5000,
+      'Route53': 2500,
+      'CloudWatch': 2000,
       'RDS': 10000,
       'S3': 15000,
       'Auto Scaling': 25000,
@@ -459,15 +486,20 @@ export class GameService {
       }
     }
 
-    // 성공 조건 체크 (IPO 성공)
-    if (
-      game.users >= 100000 &&
-      game.cash >= 300000000 &&
-      game.trust >= 80 &&
-      game.infrastructure.includes('Aurora Global DB') &&
-      game.infrastructure.includes('EKS')
-    ) {
-      return GameStatus.WON_IPO;
+    // 성공 조건 체크 (IPO 성공) - 턴 950(IPO 선택 턴)이 아닐 때만
+    if (game.currentTurn !== 950) {
+      if (
+        game.users >= 100000 &&
+        game.cash >= 300000000 &&
+        game.trust >= 80 &&
+        game.infrastructure.includes('Aurora Global DB') &&
+        game.infrastructure.includes('EKS')
+      ) {
+        // 턴 999 (최종 성공 엔딩)에서만 WON_IPO 반환
+        if (game.currentTurn === 999) {
+          return GameStatus.WON_IPO;
+        }
+      }
     }
 
     // 게임 진행 중
@@ -475,10 +507,42 @@ export class GameService {
   }
 
   /**
-   * IPO 조건 확인
+   * IPO 조건 확인 (기본)
    */
   private checkIPOConditions(game: Game): boolean {
     return game.users >= 100000 && game.cash >= 300000000 && game.trust >= 80;
+  }
+
+  /**
+   * 완전한 IPO 조건 확인 (인프라 포함)
+   */
+  private checkFullIPOConditions(game: Game): boolean {
+    // 디버깅: 현재 게임 상태 로깅
+    console.log(`[IPO DEBUG] Turn ${game.currentTurn} 상태:`);
+    console.log(`  - Users: ${game.users} (필요: 100000)`);
+    console.log(`  - Cash: ${game.cash} (필요: 300000000)`);
+    console.log(`  - Trust: ${game.trust} (필요: 80)`);
+    console.log(`  - Infrastructure: ${JSON.stringify(game.infrastructure)}`);
+    console.log(`  - Has Aurora Global DB: ${game.infrastructure.includes('Aurora Global DB')}`);
+    console.log(`  - Has EKS: ${game.infrastructure.includes('EKS')}`);
+
+    const usersCheck = game.users >= 100000;
+    const cashCheck = game.cash >= 300000000;
+    const trustCheck = game.trust >= 80;
+    const auroraCheck = game.infrastructure.includes('Aurora Global DB');
+    const eksCheck = game.infrastructure.includes('EKS');
+
+    console.log(`[IPO DEBUG] 조건 체크 결과:`);
+    console.log(`  - Users ✓: ${usersCheck}`);
+    console.log(`  - Cash ✓: ${cashCheck}`);
+    console.log(`  - Trust ✓: ${trustCheck}`);
+    console.log(`  - Aurora ✓: ${auroraCheck}`);
+    console.log(`  - EKS ✓: ${eksCheck}`);
+
+    const result = usersCheck && cashCheck && trustCheck && auroraCheck && eksCheck;
+    console.log(`[IPO DEBUG] 최종 결과: ${result}`);
+
+    return result;
   }
 
   /**
