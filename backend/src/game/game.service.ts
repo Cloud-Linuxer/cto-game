@@ -263,6 +263,14 @@ export class GameService {
     game.currentTurn = nextTurn;
     console.log(`[DEBUG] After: game.currentTurn=${game.currentTurn}`);
 
+    // 5-1. 매 턴 용량 초과 지속 체크 (새 턴 시작 시)
+    // 이미 용량을 초과한 상태에서는 매 턴마다 신뢰도 페널티 발생
+    if (game.users > game.maxUserCapacity && !capacityExceeded) {
+      game.trust = Math.max(0, game.trust - 10);
+      capacityExceeded = true;
+      console.log(`[CAPACITY CHECK] 매 턴 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    }
+
     // 6. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
     if (game.currentTurn !== 950) {
       game.status = this.checkGameStatus(game);
@@ -420,6 +428,13 @@ export class GameService {
       nextTurn = 888;
     }
     game.currentTurn = nextTurn;
+
+    // 5-1. 매 턴 용량 초과 지속 체크 (executeMultipleChoices)
+    if (game.users > game.maxUserCapacity && !capacityExceeded) {
+      game.trust = Math.max(0, game.trust - 10);
+      capacityExceeded = true;
+      console.log(`[MULTI-CAPACITY CHECK] 매 턴 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    }
 
     // 6. 승패 조건 체크
     game.status = this.checkGameStatus(game);
