@@ -13,6 +13,7 @@ export enum GameStatus {
   LOST_OUTAGE = 'LOST_OUTAGE',
   LOST_FAILED_IPO = 'LOST_FAILED_IPO',
   LOST_EQUITY = 'LOST_EQUITY', // 투자자에게 지분 빼앗김
+  LOST_FIRED_CTO = 'LOST_FIRED_CTO', // CTO 해고 (25턴 IPO 실패)
 }
 
 @Entity('games')

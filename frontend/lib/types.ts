@@ -15,6 +15,7 @@ export interface GameState {
   capacityExceededMessage?: string;
   hiredStaff?: string[];
   multiChoiceEnabled?: boolean;
+  consultingMessage?: string;
 }
 
 export enum GameStatus {
@@ -23,6 +24,7 @@ export enum GameStatus {
   LOST_BANKRUPT = 'LOST_BANKRUPT',
   LOST_OUTAGE = 'LOST_OUTAGE',
   LOST_FAILED_IPO = 'LOST_FAILED_IPO',
+  LOST_FIRED_CTO = 'LOST_FIRED_CTO',
 }
 
 export interface ChoiceEffects {

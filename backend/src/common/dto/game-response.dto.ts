@@ -52,4 +52,7 @@ export class GameResponseDto {
 
   @ApiProperty({ description: '다중 선택 가능 여부 (개발자 채용 효과)', required: false })
   multiChoiceEnabled?: boolean;
+
+  @ApiProperty({ description: '컨설팅 효과 메시지', required: false })
+  consultingMessage?: string;
 }

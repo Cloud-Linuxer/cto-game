@@ -37,7 +37,7 @@ export class GameService {
     game.multiChoiceEnabled = false; // 멀티 선택 비활성화
     game.userAcquisitionMultiplier = 1.0; // 유저 획득 기본 배율
     game.trustMultiplier = 1.0; // 신뢰도 획득 기본 배율
-    game.maxUserCapacity = 5000; // 초기 EC2 용량
+    game.maxUserCapacity = 10000; // 초기 EC2 용량 (2배 상향)
     game.hiredStaff = []; // 채용된 인원 목록
 
     const savedGame = await this.gameRepository.save(game);
@@ -125,7 +125,15 @@ export class GameService {
       );
     }
 
-    // 4. 인프라 개선 먼저 적용 (유저 수 체크 전에 용량 증가)
+    // 4. 먼저 현재 용량으로 초과 체크 (인프라 개선 전)
+    let capacityExceeded = false;
+    if (game.users > game.maxUserCapacity) {
+      game.trust = Math.max(0, game.trust - 10);
+      capacityExceeded = true;
+      console.log(`[CAPACITY CHECK] 턴 시작 시 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    }
+
+    // 5. 인프라 개선 적용 (페널티 적용 후)
     game.infrastructure = this.mergeInfrastructure(
       game.infrastructure,
       choice.effects.infra,
@@ -137,43 +145,35 @@ export class GameService {
     }
 
     // 인프라 개선 감지 - 최대 용량 증가
+    // Route53(DNS), CloudWatch(모니터링)은 용량과 무관, S3는 스토리지
     const infraCapacityMap = {
-      'EC2': 5000,
-      'Route53': 2500,
-      'CloudWatch': 2000,
-      'RDS': 10000,
-      'S3': 15000,
-      'Auto Scaling': 25000,
-      'ECS': 40000,
-      'Aurora': 50000,
-      'Redis': 50000,
-      'EKS': 75000,
-      'Karpenter': 75000,
-      'Lambda': 100000,
-      'Bedrock': 100000,
-      'Aurora Global DB': 150000,
-      'CloudFront': 250000,
-      'dr-configured': 300000,
-      'multi-region': 500000,
+      'EC2': 10000,  // 기본 서버 용량 (2배 상향)
+      'Route53': 10000,  // DNS는 용량과 무관, EC2 유지
+      'CloudWatch': 10000,  // 모니터링은 용량과 무관, EC2 유지
+      'RDS': 25000,  // 데이터베이스 분리 효과
+      'S3': 25000,  // 정적 파일 분리 효과
+      'Auto Scaling': 50000,  // 자동 확장
+      'ECS': 80000,  // 컨테이너 오케스트레이션
+      'Aurora': 100000,  // 고성능 DB
+      'Redis': 100000,  // 캐시 레이어 추가
+      'EKS': 150000,  // 쿠버네티스 클러스터
+      'Karpenter': 150000,  // 동적 노드 스케일링
+      'Lambda': 200000,  // 서버리스 (2배 상향)
+      'Bedrock': 200000,  // AI 서비스
+      'Aurora Global DB': 300000,  // 글로벌 DB (2배 상향)
+      'CloudFront': 500000,  // CDN (2배 상향)
+      'dr-configured': 600000,  // 재해 복구 (2배 상향)
+      'multi-region': 1000000,  // 멀티 리전 (2배 상향)
     };
 
     // 현재 인프라에서 최대 용량 계산
-    let maxCapacity = 5000; // 기본값 (EC2 초기 용량)
+    let maxCapacity = 10000; // 기본값 (EC2 초기 용량 - 2배 상향)
     for (const infra of game.infrastructure) {
       if (infraCapacityMap[infra] && infraCapacityMap[infra] > maxCapacity) {
         maxCapacity = infraCapacityMap[infra];
       }
     }
     game.maxUserCapacity = maxCapacity;
-
-    // 5. 매 턴 용량 초과 지속 페널티 체크 (효과 적용 전에 먼저 체크)
-    // 이미 용량을 초과한 상태에서는 매 턴마다 신뢰도 페널티 발생
-    let capacityExceeded = false;
-    if (game.users > game.maxUserCapacity) {
-      game.trust = Math.max(0, game.trust - 10);
-      capacityExceeded = true;
-      console.log(`[CAPACITY CHECK] 턴 시작 시 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
-    }
 
     // 6. 효과 적용
     // 초기 피칭 실패 시 효과 무효화
@@ -238,8 +238,25 @@ export class GameService {
     history.choiceId = choiceId;
     await this.historyRepository.save(history);
 
+    // 4-1. 외부 전문가 투입 선택시 특별 처리 (Choice 68)
+    // executeChoice는 인프라 재계산이 없으므로 직접 처리
+    let consultingMessage: string | undefined;
+    if (choiceId === 68) {
+      const oldCapacity = game.maxUserCapacity;
+      game.maxUserCapacity = game.maxUserCapacity * 3;
+      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
+      console.log(`[CONSULTING] 외부 전문가 투입 효과: 수용량 ${oldCapacity} -> ${game.maxUserCapacity} (3배 증가)`);
+      console.log(`[CONSULTING] consultingMessage 설정됨:`, consultingMessage);
+    }
+
     // 5. 턴 진행
     let nextTurn = choice.nextTurn;
+
+    // 25턴이 최대 턴이므로, 25턴을 넘어가지 못하도록 제한
+    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
+      console.log(`[TURN LIMIT] nextTurn(${nextTurn})이 최대 턴(25)을 초과 - 25로 제한`);
+      nextTurn = 25; // 25턴에서 게임 종료 처리를 위해 25로 고정
+    }
 
     // 특수 선택지 처리
     if (choiceId === 9502) {
@@ -251,7 +268,7 @@ export class GameService {
         console.log(`[IPO] 계속하기 불가 - 복귀 턴(${returnTurn})이 최대 턴(25)을 초과`);
         // 게임 종료 처리 (IPO 성공과 동일하게 처리)
         game.status = GameStatus.WON_IPO;
-        nextTurn = game.currentTurn; // 현재 턴 유지하고 상태만 변경
+        nextTurn = 25; // 25턴에서 종료
       } else {
         nextTurn = returnTurn;
         game.ipoConditionMet = false; // IPO 조건 플래그 해제
@@ -278,13 +295,20 @@ export class GameService {
     }
 
     console.log(`[DEBUG] Before: currentTurn=${game.currentTurn}, nextTurn=${nextTurn}, choiceId=${choiceId}`);
+
+    // 절대적 보장: 게임은 25턴을 넘을 수 없음
+    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
+      console.log(`[TURN LIMIT ENFORCED] Preventing advancement beyond turn 25. Attempted: ${nextTurn}`);
+      nextTurn = 25;
+    }
+
     game.currentTurn = nextTurn;
     console.log(`[DEBUG] After: game.currentTurn=${game.currentTurn}`);
 
-    // 25턴 도달 시 단일 선택만 가능하도록 제한
-    if (game.currentTurn === 25 && game.multiChoiceEnabled) {
+    // 25턴 도달 시 단일 선택만 가능하도록 제한 (24턴에서 25턴으로 진입하는 경우)
+    if (game.currentTurn === 25) {
       game.multiChoiceEnabled = false;
-      console.log(`[TURN 25] 최종 턴 도달 - 단일 선택만 가능`);
+      console.log(`[TURN 25] 최종 턴 도달 - 단일 선택만 가능하도록 강제 설정`);
     }
 
     // 7. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
@@ -293,6 +317,24 @@ export class GameService {
       console.log(`[DEBUG] Game status after check: ${game.status}`);
     } else {
       console.log(`[DEBUG] Turn 950 - IPO 선택 턴, 상태 체크 건너뜀`);
+    }
+
+    // 25턴 완료 시 게임 종료 처리
+    // 25턴에서 선택을 완료한 경우 (어떤 선택이든 게임 종료)
+    const previousTurn = history.turnNumber; // 방금 선택한 턴
+    if (previousTurn === 25 && game.status === GameStatus.PLAYING) {
+      // 25턴에서 선택을 완료한 경우 - nextTurn과 관계없이 게임 종료
+      const hasIPO = this.checkIPOConditions(game);
+      if (!hasIPO) {
+        game.status = GameStatus.LOST_FIRED_CTO;
+        console.log(`[TURN 25 COMPLETED] IPO 조건 미충족 - CTO 해고`);
+        console.log(`[TURN 25 COMPLETED] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+      } else {
+        // IPO 조건을 충족한 경우
+        game.status = GameStatus.WON_IPO;
+        console.log(`[TURN 25 COMPLETED] IPO 조건 충족 - IPO 성공!`);
+        console.log(`[TURN 25 COMPLETED] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+      }
     }
 
     // 7. 게임 상태 저장
@@ -305,10 +347,15 @@ export class GameService {
       dto.investmentFailureMessage = '투자에 실패하였습니다. 신뢰도가 부족합니다.';
     }
 
-    // 용량 초과 정보 추가
+    // 용량 초과 정보 추가 (게임이 종료된 경우에도 마지막 메시지 표시)
     if (capacityExceeded) {
       dto.capacityExceeded = true;
       dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다.`;
+    }
+
+    // 컨설팅 효과 메시지 추가
+    if (consultingMessage) {
+      dto.consultingMessage = consultingMessage;
     }
 
     return dto;
@@ -336,6 +383,8 @@ export class GameService {
 
     const currentTurn = game.currentTurn;
     let capacityExceeded = false;
+    let consultingMessage: string | undefined;
+    let hasConsultingEffect = false;
     let nextTurn = currentTurn;
 
     // 2. 모든 선택지 효과를 누적 적용
@@ -392,6 +441,12 @@ export class GameService {
         }
       }
 
+      // 외부 전문가 투입 선택시 특별 처리 (Choice 68)
+      if (choiceId === 68) {
+        hasConsultingEffect = true;
+        console.log(`[MULTI-CONSULTING] Choice 68 감지 - 컨설팅 효과 예정`);
+      }
+
       // 다음 턴 결정 (마지막 선택의 nextTurn 사용)
       nextTurn = choice.nextTurn;
 
@@ -403,28 +458,35 @@ export class GameService {
       await this.historyRepository.save(history);
     }
 
-    // 3. 인프라 용량 재계산
+    // 3. 먼저 현재 용량으로 초과 체크 (인프라 개선 전)
+    if (game.users > game.maxUserCapacity) {
+      game.trust = Math.max(0, game.trust - 10);
+      capacityExceeded = true;
+      console.log(`[MULTI-CAPACITY CHECK] 용량 초과 페널티 적용: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+    }
+
+    // 4. 인프라 용량 재계산 (페널티 적용 후)
     const infraCapacityMap = {
-      'EC2': 5000,
-      'Route53': 2500,
-      'CloudWatch': 2000,
-      'RDS': 10000,
-      'S3': 15000,
-      'Auto Scaling': 25000,
-      'ECS': 40000,
-      'Aurora': 50000,
-      'Redis': 50000,
-      'EKS': 75000,
-      'Karpenter': 75000,
-      'Lambda': 100000,
-      'Bedrock': 100000,
-      'Aurora Global DB': 150000,
-      'CloudFront': 250000,
-      'dr-configured': 300000,
-      'multi-region': 500000,
+      'EC2': 10000,  // 기본 서버 용량 (2배 상향)
+      'Route53': 10000,  // DNS는 용량과 무관, EC2 유지
+      'CloudWatch': 10000,  // 모니터링은 용량과 무관, EC2 유지
+      'RDS': 25000,  // 데이터베이스 분리 효과
+      'S3': 25000,  // 정적 파일 분리 효과
+      'Auto Scaling': 50000,  // 자동 확장
+      'ECS': 80000,  // 컨테이너 오케스트레이션
+      'Aurora': 100000,  // 고성능 DB
+      'Redis': 100000,  // 캐시 레이어 추가
+      'EKS': 150000,  // 쿠버네티스 클러스터
+      'Karpenter': 150000,  // 동적 노드 스케일링
+      'Lambda': 200000,  // 서버리스 (2배 상향)
+      'Bedrock': 200000,  // AI 서비스
+      'Aurora Global DB': 300000,  // 글로벌 DB (2배 상향)
+      'CloudFront': 500000,  // CDN (2배 상향)
+      'dr-configured': 600000,  // 재해 복구 (2배 상향)
+      'multi-region': 1000000,  // 멀티 리전 (2배 상향)
     };
 
-    let maxCapacity = 5000;
+    let maxCapacity = 10000;  // 기본값 (EC2 초기 용량 - 2배 상향)
     for (const infra of game.infrastructure) {
       if (infraCapacityMap[infra] && infraCapacityMap[infra] > maxCapacity) {
         maxCapacity = infraCapacityMap[infra];
@@ -432,10 +494,13 @@ export class GameService {
     }
     game.maxUserCapacity = maxCapacity;
 
-    // 4. 용량 초과 체크
-    if (game.users > game.maxUserCapacity) {
-      game.trust = Math.max(0, game.trust - 10);
-      capacityExceeded = true;
+    // 4-1. 컨설팅 효과 적용 (Choice 68 - 인프라 용량 계산 후)
+    if (hasConsultingEffect) {
+      const oldCapacity = game.maxUserCapacity;
+      game.maxUserCapacity = game.maxUserCapacity * 3;
+      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
+      console.log(`[MULTI-CONSULTING] 외부 전문가 투입 효과 적용: 수용량 ${oldCapacity} -> ${game.maxUserCapacity} (3배 증가)`);
+      console.log(`[MULTI-CONSULTING] consultingMessage 설정됨:`, consultingMessage);
     }
 
     // 5. 턴 진행
@@ -443,6 +508,16 @@ export class GameService {
     if (nextTurn === 19 && !game.hasDR && !currentIsEmergency) {
       nextTurn = 888;
     }
+
+    // 절대적 보장: 게임은 25턴을 넘을 수 없음
+    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
+      console.log(`[TURN LIMIT ENFORCED - MULTI] Preventing advancement beyond turn 25. Attempted: ${nextTurn}`);
+      nextTurn = 25;
+    }
+
+    // 25턴에서 선택을 했다면 이제 게임이 종료되어야 함
+    const shouldEndGame = currentTurn === 25 && game.status === GameStatus.PLAYING;
+
     game.currentTurn = nextTurn;
 
     // 5-1. 매 턴 용량 초과 지속 체크 (executeMultipleChoices)
@@ -455,6 +530,20 @@ export class GameService {
     // 6. 승패 조건 체크
     game.status = this.checkGameStatus(game);
 
+    // 25턴에서 선택을 완료했다면 게임 종료
+    if (shouldEndGame) {
+      const hasIPO = this.checkIPOConditions(game);
+      if (!hasIPO) {
+        game.status = GameStatus.LOST_FIRED_CTO;
+        console.log(`[TURN 25 COMPLETED - MULTI] IPO 조건 미충족 - CTO 해고`);
+        console.log(`[TURN 25 COMPLETED - MULTI] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+      } else {
+        game.status = GameStatus.WON_IPO;
+        console.log(`[TURN 25 COMPLETED - MULTI] IPO 조건 충족 - IPO 성공!`);
+        console.log(`[TURN 25 COMPLETED - MULTI] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+      }
+    }
+
     // 7. 게임 상태 저장
     const updatedGame = await this.gameRepository.save(game);
     const dto = this.toDto(updatedGame);
@@ -462,6 +551,11 @@ export class GameService {
     if (capacityExceeded) {
       dto.capacityExceeded = true;
       dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다.`;
+    }
+
+    // 컨설팅 효과 메시지 추가
+    if (consultingMessage) {
+      dto.consultingMessage = consultingMessage;
     }
 
     return dto;
@@ -509,11 +603,11 @@ export class GameService {
     // 긴급 이벤트 턴은 게임 종료 조건에서 제외 (888, 889, 890)
     const isEmergencyEvent = game.currentTurn >= 888 && game.currentTurn <= 890;
 
-    // 22턴 초과 시 IPO 조건 체크 (긴급 이벤트 제외)
-    if (game.currentTurn > 22 && !isEmergencyEvent) {
+    // 25턴 도달 시 IPO 조건 체크 (긴급 이벤트 제외)
+    if (game.currentTurn >= 25 && !isEmergencyEvent) {
       const hasIPO = this.checkIPOConditions(game);
       if (!hasIPO) {
-        return GameStatus.LOST_FAILED_IPO; // IPO 실패
+        return GameStatus.LOST_FIRED_CTO; // CTO 해고 - 25턴까지 IPO 목표 달성 실패
       }
     }
 
@@ -523,7 +617,7 @@ export class GameService {
         game.users >= 100000 &&
         game.cash >= 300000000 &&
         game.trust >= 80 &&
-        game.infrastructure.includes('Aurora Global DB') &&
+        game.infrastructure.includes('RDS') &&
         game.infrastructure.includes('EKS')
       ) {
         // 턴 999 (최종 성공 엔딩)에서만 WON_IPO 반환

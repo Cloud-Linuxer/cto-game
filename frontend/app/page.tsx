@@ -38,7 +38,7 @@ export default function Home() {
         <p className="text-gray-500 max-w-md">
           스타트업 CTO가 되어 비즈니스 의사결정과 AWS 인프라 설계를 동시에 수행하세요.
           <br />
-          목표: IPO 성공 (기업가치 1조원, 유저 10만명, 월 매출 3억원)
+          목표: IPO 성공 (유저 10만명, 자금 3억원, 신뢰도 80%, RDS + EKS 인프라)
         </p>
 
         <div className="mt-12">

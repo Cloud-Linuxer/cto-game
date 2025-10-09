@@ -28,6 +28,8 @@ export default function GameBoard() {
   const [investmentFailureMessage, setInvestmentFailureMessage] = useState('');
   const [showCapacityExceededModal, setShowCapacityExceededModal] = useState(false);
   const [capacityExceededMessage, setCapacityExceededMessage] = useState('');
+  const [showConsultingModal, setShowConsultingModal] = useState(false);
+  const [consultingMessage, setConsultingMessage] = useState('');
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -85,6 +87,13 @@ export default function GameBoard() {
       if ((updatedGame as any).capacityExceeded) {
         setCapacityExceededMessage((updatedGame as any).capacityExceededMessage || '인프라 용량을 초과하였습니다.');
         setShowCapacityExceededModal(true);
+      }
+
+      // 컨설팅 메시지 체크
+      console.log('[Frontend] Choice executed - consultingMessage:', updatedGame.consultingMessage);
+      if (updatedGame.consultingMessage) {
+        setConsultingMessage(updatedGame.consultingMessage);
+        setShowConsultingModal(true);
       }
 
       // 게임이 계속 진행 중이면 다음 턴 로드
@@ -172,6 +181,13 @@ export default function GameBoard() {
             message: '목표를 달성하지 못해 IPO에 실패했습니다.',
             color: 'text-red-600',
           };
+        case GameStatus.LOST_FIRED_CTO:
+          return {
+            emoji: '🚪',
+            title: 'CTO 해고',
+            message: '25턴까지 IPO 목표를 달성하지 못해 이사회로부터 해고되었습니다.',
+            color: 'text-red-600',
+          };
         default:
           return {
             emoji: '❓',
@@ -196,21 +212,21 @@ export default function GameBoard() {
             <div className="grid grid-cols-2 gap-4 text-left">
               <div>
                 <div className="text-sm text-gray-600">턴</div>
-                <div className="text-2xl font-bold">{gameState.currentTurn} / 25</div>
+                <div className="text-xl font-bold">{gameState.currentTurn} / 25</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600">유저</div>
-                <div className="text-2xl font-bold">{gameState.users.toLocaleString()}명</div>
+                <div className="text-xl font-bold">{gameState.users.toLocaleString()}명</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600">자금</div>
-                <div className="text-2xl font-bold">
+                <div className="text-xl font-bold">
                   {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-gray-600">신뢰도</div>
-                <div className="text-2xl font-bold">{gameState.trust}%</div>
+                <div className="text-xl font-bold">{gameState.trust}%</div>
               </div>
             </div>
           </div>
@@ -278,6 +294,29 @@ export default function GameBoard() {
             >
               확인
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 컨설팅 효과 모달 */}
+      {showConsultingModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
+          <div className="bg-white border-4 border-blue-500 rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🎯</div>
+              <h2 className="text-3xl font-bold text-blue-600">컨설팅 효과 발동!</h2>
+            </div>
+            <div className="text-lg text-gray-700 whitespace-pre-line mb-6">
+              {consultingMessage}
+            </div>
+            <div className="text-center">
+              <button
+                onClick={() => setShowConsultingModal(false)}
+                className="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}
