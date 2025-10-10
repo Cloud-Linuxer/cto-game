@@ -15,4 +15,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
   entities: [Game, Turn, Choice, ChoiceHistory, Leaderboard],
   synchronize: true, // 개발 환경에서만 사용, 프로덕션에서는 false
   logging: process.env.NODE_ENV === 'development',
+  timezone: 'Z', // UTC 타임존 명시
 };

@@ -78,12 +78,15 @@ export default function Home() {
       </div>
 
       {/* 헤더 */}
-      <header className="absolute top-0 left-0 right-0 z-20 p-6">
+      <header className="absolute top-0 left-0 right-0 z-20 p-4 md:p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="text-white/80 font-semibold text-lg">AWS 스타트업 타이쿤</div>
+          <div className="text-white/80 font-semibold text-sm md:text-lg">
+            <span className="hidden sm:inline">AWS 스타트업 타이쿤</span>
+            <span className="sm:hidden">AWS 타이쿤</span>
+          </div>
           <button
             onClick={() => router.push('/leaderboard')}
-            className="px-4 py-2 bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center gap-2"
+            className="px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center gap-1 md:gap-2 text-sm md:text-base"
           >
             <Trophy className="w-4 h-4" />
             <span>리더보드</span>
@@ -92,10 +95,10 @@ export default function Home() {
       </header>
 
       {/* 메인 콘텐츠 */}
-      <div className="relative z-10 h-full flex flex-col justify-between p-6 md:p-8 max-w-7xl mx-auto">
+      <div className="relative z-10 h-full flex flex-col justify-between p-6 md:p-8 pt-16 md:pt-20 max-w-7xl mx-auto">
 
         {/* 상단 헤더 */}
-        <div className="text-center pt-4">
+        <div className="text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-300 mb-4">
             <Sparkles className="w-3 h-3" />
             <span>실제 AWS 아키텍처를 배우는 경영 게임</span>

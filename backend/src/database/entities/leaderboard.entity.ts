@@ -32,6 +32,6 @@ export class Leaderboard {
   @Column({ type: 'varchar', length: 20 })
   difficulty: string; // 'EASY', 'NORMAL', 'HARD'
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   achievedAt: Date;
 }

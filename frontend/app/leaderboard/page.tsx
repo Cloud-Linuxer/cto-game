@@ -38,13 +38,17 @@ export default function LeaderboardPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
+    // UTC 시간을 한국 시간으로 변환
+    const koreaTime = new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Seoul',
     });
+    return koreaTime.format(date);
   };
 
   const handleNewGame = async () => {
@@ -82,26 +86,26 @@ export default function LeaderboardPage() {
       </div>
 
       {/* 헤더 */}
-      <header className="relative z-20 p-6">
+      <header className="relative z-20 p-4 md:p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Trophy className="w-8 h-8 text-yellow-400" />
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+          <div className="flex items-center gap-2 md:gap-4">
+            <Trophy className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
+            <h1 className="text-xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
               리더보드
             </h1>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-2 md:gap-4">
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-2 bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-2"
+              className="px-3 py-1.5 md:px-6 md:py-2 bg-white/10 backdrop-blur border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center gap-1 md:gap-2 text-sm md:text-base"
             >
               <Home className="w-4 h-4" />
-              <span>홈으로</span>
+              <span className="hidden md:inline">홈으로</span>
             </button>
             <button
               onClick={handleNewGame}
               disabled={startingNewGame}
-              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 md:px-6 md:py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-1 md:gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               <Rocket className="w-4 h-4" />
               <span>{startingNewGame ? '시작 중...' : '새 게임 시작'}</span>
@@ -141,31 +145,31 @@ export default function LeaderboardPage() {
             <table className="w-full">
               <thead className="bg-purple-900/30 border-b border-purple-500/20">
                 <tr>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-3 md:py-5 text-left text-xs font-medium text-purple-200 uppercase tracking-wider">
                     순위
                   </th>
-                  <th className="px-6 py-5 text-left text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-3 md:py-5 text-left text-xs font-medium text-purple-200 uppercase tracking-wider">
                     플레이어
                   </th>
-                  <th className="px-6 py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-3 md:py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
                     점수
                   </th>
-                  <th className="px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="px-2 md:px-6 py-3 md:py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
                     턴
                   </th>
-                  <th className="px-6 py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-6 py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
                     유저 수
                   </th>
-                  <th className="px-6 py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-6 py-5 text-right text-xs font-medium text-purple-200 uppercase tracking-wider">
                     자금
                   </th>
-                  <th className="px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
                     신뢰도
                   </th>
-                  <th className="px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="hidden xl:table-cell px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
                     팀 규모
                   </th>
-                  <th className="px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
+                  <th className="hidden xl:table-cell px-6 py-5 text-center text-xs font-medium text-purple-200 uppercase tracking-wider">
                     달성일
                   </th>
                 </tr>
@@ -178,13 +182,13 @@ export default function LeaderboardPage() {
                       index === 0 && activeTab === 'top' ? 'bg-gradient-to-r from-yellow-500/10 to-transparent' : ''
                     }`}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {activeTab === 'top' && (
-                          <span className="text-lg font-bold">
-                            {index === 0 && <span className="text-3xl">🥇</span>}
-                            {index === 1 && <span className="text-2xl">🥈</span>}
-                            {index === 2 && <span className="text-xl">🥉</span>}
+                          <span className="text-base md:text-lg font-bold">
+                            {index === 0 && <span className="text-2xl md:text-3xl">🥇</span>}
+                            {index === 1 && <span className="text-xl md:text-2xl">🥈</span>}
+                            {index === 2 && <span className="text-lg md:text-xl">🥉</span>}
                             {index > 2 && <span className="text-purple-300">{index + 1}</span>}
                           </span>
                         )}
@@ -193,23 +197,23 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{entry.playerName}</div>
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap">
+                      <div className="text-xs md:text-sm font-medium text-white">{entry.playerName}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-right">
+                      <div className="text-xs md:text-sm font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                         {entry.score.toLocaleString()}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-300">{entry.finalTurn}</div>
+                    <td className="px-2 md:px-6 py-2 md:py-4 whitespace-nowrap text-center">
+                      <div className="text-xs md:text-sm text-gray-300">{entry.finalTurn}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right">
                       <div className="text-sm text-gray-300">
                         {entry.finalUsers.toLocaleString()}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-right">
                       <div className="text-sm text-gray-300">
                         {new Intl.NumberFormat('ko-KR', {
                           style: 'currency',
@@ -218,13 +222,13 @@ export default function LeaderboardPage() {
                         }).format(entry.finalCash)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-sm text-gray-300">{entry.finalTrust}%</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <td className="hidden xl:table-cell px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-sm text-gray-300">{entry.teamSize}명</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <td className="hidden xl:table-cell px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-xs text-gray-400">{formatDate(entry.achievedAt)}</div>
                     </td>
                   </tr>
