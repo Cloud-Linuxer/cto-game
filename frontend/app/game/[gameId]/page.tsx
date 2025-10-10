@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { gameApi } from '@/lib/api';
+import { gameApi, leaderboardApi } from '@/lib/api';
 import type { GameState, Turn } from '@/lib/types';
 import { GameStatus } from '@/lib/types';
 import MetricsPanel from '@/components/MetricsPanel';
@@ -30,6 +30,10 @@ export default function GameBoard() {
   const [capacityExceededMessage, setCapacityExceededMessage] = useState('');
   const [showConsultingModal, setShowConsultingModal] = useState(false);
   const [consultingMessage, setConsultingMessage] = useState('');
+  const [showNameInputModal, setShowNameInputModal] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const [submittingScore, setSubmittingScore] = useState(false);
+  const [playerRank, setPlayerRank] = useState<number | null>(null);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -149,15 +153,38 @@ export default function GameBoard() {
     );
   }
 
+  // IPO 성공 시 이름 입력 처리
+  const handleScoreSubmit = async () => {
+    if (!playerName.trim()) return;
+
+    try {
+      setSubmittingScore(true);
+      const result = await leaderboardApi.submitScore(playerName, gameId);
+      setPlayerRank(result.rank);
+      setShowNameInputModal(false);
+    } catch (error) {
+      console.error('점수 제출 실패:', error);
+      alert('점수 제출에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmittingScore(false);
+    }
+  };
+
   // 게임 종료 상태
   if (gameState && gameState.status !== GameStatus.PLAYING) {
+    // IPO 성공 시 이름 입력 모달 표시
+    if (gameState.status === GameStatus.WON_IPO && !showNameInputModal && !playerRank) {
+      setShowNameInputModal(true);
+    }
     const getEndMessage = () => {
       switch (gameState.status) {
         case GameStatus.WON_IPO:
           return {
             emoji: '🎉',
             title: 'IPO 성공!',
-            message: '축하합니다! 성공적으로 기업공개를 달성했습니다!',
+            message: playerRank
+              ? `축하합니다! 성공적으로 기업공개를 달성했습니다! 리더보드 ${playerRank}위에 등록되었습니다!`
+              : '축하합니다! 성공적으로 기업공개를 달성했습니다!',
             color: 'text-green-600',
           };
         case GameStatus.LOST_BANKRUPT:
@@ -231,12 +258,20 @@ export default function GameBoard() {
             </div>
           </div>
 
-          <button
-            onClick={handleNewGame}
-            className="mt-6 px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            🚀 새 게임 시작
-          </button>
+          <div className="flex gap-4 justify-center mt-6">
+            <button
+              onClick={handleNewGame}
+              className="px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              🚀 새 게임 시작
+            </button>
+            <button
+              onClick={() => router.push('/leaderboard')}
+              className="px-8 py-4 bg-purple-600 text-white text-lg font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              🏆 리더보드 보기
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -315,6 +350,71 @@ export default function GameBoard() {
                 className="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
               >
                 확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IPO 성공 시 이름 입력 모달 */}
+      {showNameInputModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
+          <div className="bg-gradient-to-br from-yellow-50 to-green-50 border-4 border-green-500 rounded-2xl shadow-2xl p-8 max-w-lg w-full">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🏆</div>
+              <h2 className="text-3xl font-bold text-green-600 mb-2">IPO 성공!</h2>
+              <p className="text-lg text-gray-700">리더보드에 기록을 남겨주세요!</p>
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-2">
+                이름을 입력하세요
+              </label>
+              <input
+                id="playerName"
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleScoreSubmit()}
+                placeholder="플레이어 이름"
+                maxLength={50}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-lg"
+                autoFocus
+              />
+            </div>
+
+            {gameState && (
+              <div className="bg-white rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-800 mb-2">달성 기록</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-gray-600">유저 수:</div>
+                  <div className="font-semibold">{gameState.users.toLocaleString()}명</div>
+                  <div className="text-gray-600">자금:</div>
+                  <div className="font-semibold">
+                    {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
+                  </div>
+                  <div className="text-gray-600">신뢰도:</div>
+                  <div className="font-semibold">{gameState.trust}%</div>
+                  <div className="text-gray-600">달성 턴:</div>
+                  <div className="font-semibold">{gameState.currentTurn}턴</div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleScoreSubmit}
+                disabled={!playerName.trim() || submittingScore}
+                className="flex-1 px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {submittingScore ? '제출 중...' : '리더보드 등록'}
+              </button>
+              <button
+                onClick={() => setShowNameInputModal(false)}
+                disabled={submittingScore}
+                className="px-6 py-3 bg-gray-500 text-white text-lg font-semibold rounded-lg hover:bg-gray-600 transition-colors disabled:cursor-not-allowed"
+              >
+                건너뛰기
               </button>
             </div>
           </div>

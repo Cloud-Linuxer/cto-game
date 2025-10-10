@@ -1,5 +1,12 @@
 import axios from 'axios';
-import type { GameState, Turn } from './types';
+import type {
+  GameState,
+  Turn,
+  LeaderboardEntry,
+  LeaderboardSubmitResponse,
+  LeaderboardResponse,
+  LeaderboardStatistics,
+} from './types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
@@ -41,6 +48,49 @@ export const gameApi = {
   getAllTurns: async (): Promise<Turn[]> => {
     const response = await api.get<Turn[]>('/turn');
     return response.data;
+  },
+};
+
+export const leaderboardApi = {
+  // 리더보드에 점수 제출
+  submitScore: async (playerName: string, gameId: string): Promise<LeaderboardSubmitResponse> => {
+    const response = await api.post<LeaderboardSubmitResponse>('/leaderboard/submit', {
+      playerName,
+      gameId,
+    });
+    return response.data;
+  },
+
+  // 상위 점수 조회
+  getTopScores: async (limit: number = 10): Promise<LeaderboardEntry[]> => {
+    const response = await api.get<LeaderboardEntry[]>(`/leaderboard/top?limit=${limit}`);
+    return response.data;
+  },
+
+  // 전체 리더보드 조회
+  getLeaderboard: async (page: number = 1, limit: number = 20): Promise<LeaderboardResponse> => {
+    const response = await api.get<LeaderboardResponse>(
+      `/leaderboard?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
+
+  // 최근 기록 조회
+  getRecentScores: async (limit: number = 10): Promise<LeaderboardEntry[]> => {
+    const response = await api.get<LeaderboardEntry[]>(`/leaderboard/recent?limit=${limit}`);
+    return response.data;
+  },
+
+  // 통계 조회
+  getStatistics: async (): Promise<LeaderboardStatistics> => {
+    const response = await api.get<LeaderboardStatistics>('/leaderboard/statistics');
+    return response.data;
+  },
+
+  // 특정 점수의 순위 조회
+  getRank: async (score: number): Promise<number> => {
+    const response = await api.get<{ rank: number }>(`/leaderboard/rank/${score}`);
+    return response.data.rank;
   },
 };
 

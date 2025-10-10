@@ -39,10 +39,46 @@ const config: Config = {
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' }
+        },
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        'scroll': {
+          '0%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(5px)' },
+          '100%': { transform: 'translateY(0)' }
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' }
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '0.8' }
+        },
+        'slide-in-left': {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' }
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' }
         }
       },
       animation: {
-        shimmer: 'shimmer 2s infinite'
+        shimmer: 'shimmer 2s infinite',
+        'fade-in': 'fade-in 1s ease-out',
+        'fade-in-up': 'fade-in-up 1s ease-out',
+        'scroll': 'scroll 1.5s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'slide-in-left': 'slide-in-left 0.5s ease-out',
+        'slide-in-right': 'slide-in-right 0.5s ease-out'
       }
     },
   },

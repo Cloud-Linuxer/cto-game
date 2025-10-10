@@ -51,3 +51,37 @@ export interface Turn {
   description?: string;
   choices: Choice[];
 }
+
+// 리더보드 관련 타입
+export interface LeaderboardEntry {
+  id: string;
+  playerName: string;
+  score: number;
+  finalTurn: number;
+  finalUsers: number;
+  finalCash: number;
+  finalTrust: number;
+  finalInfrastructure: string[];
+  teamSize: number;
+  difficulty: string;
+  achievedAt: string;
+}
+
+export interface LeaderboardSubmitResponse {
+  entry: LeaderboardEntry;
+  rank: number;
+}
+
+export interface LeaderboardResponse {
+  data: LeaderboardEntry[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface LeaderboardStatistics {
+  totalGames: number;
+  averageScore: number;
+  highestScore: number;
+  averageTurn: number;
+}
