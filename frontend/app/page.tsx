@@ -132,8 +132,8 @@ export default function Home() {
               ))}
             </div>
 
-            {/* CTA 버튼 */}
-            <div className="pt-4">
+            {/* CTA 버튼들 */}
+            <div className="pt-4 space-y-3">
               <button
                 onClick={handleStartGame}
                 disabled={loading}
@@ -149,6 +149,17 @@ export default function Home() {
                       <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
+                </span>
+              </button>
+
+              <button
+                onClick={() => router.push('/leaderboard')}
+                className="group px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-xl shadow-xl hover:shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+              >
+                <span className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  🏆 리더보드 보기
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </button>
 
