@@ -274,65 +274,41 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* 인프라 범례 */}
-        <div className="mt-8 bg-white rounded-xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">🏗️ 인프라 아이콘 설명</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💻</span>
-              <span>EC2 인스턴스</span>
+        {/* 점수 계산 방식 설명 */}
+        <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 shadow-lg border border-purple-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 점수 계산 방식</h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <span className="text-lg">👥</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">유저 수</span>
+                <span className="ml-2 text-gray-600">: 1명당 1점</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🗄️</span>
-              <span>Aurora DB</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-lg">💰</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">자금</span>
+                <span className="ml-2 text-gray-600">: 1만원당 1점</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">⚖️</span>
-              <span>로드 밸런서</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <span className="text-lg">🛡️</span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">신뢰도</span>
+                <span className="ml-2 text-gray-600">: 1%당 1,000점</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📊</span>
-              <span>AutoScaling</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💾</span>
-              <span>Redis Cache</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🐳</span>
-              <span>EKS</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🚀</span>
-              <span>Karpenter</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🌐</span>
-              <span>CloudFront</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🌍</span>
-              <span>Global DB</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🤖</span>
-              <span>Bedrock AI</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🧪</span>
-              <span>SageMaker</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🔍</span>
-              <span>Kinesis</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📈</span>
-              <span>QuickSight</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🛡️</span>
-              <span>WAF</span>
+            <div className="mt-4 p-3 bg-white rounded-lg border border-purple-200">
+              <div className="text-sm text-gray-600">
+                <strong>총 점수 = 유저수 + (자금 ÷ 10,000) + (신뢰도 × 1,000)</strong>
+              </div>
             </div>
           </div>
         </div>

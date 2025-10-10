@@ -11,42 +11,19 @@ export class LeaderboardService {
     private leaderboardRepository: Repository<Leaderboard>,
   ) {}
 
-  // 점수 계산 로직
+  // 점수 계산 로직 (유저수, 금액, 신뢰도만 사용)
   calculateScore(gameState: GameState): number {
-    let score = 0;
+    // 유저수 점수 (1명당 1점)
+    const userScore = gameState.users;
 
-    // 기본 점수 (사용자 수, 자금, 신뢰도)
-    score += Math.min(gameState.users, 200000); // 최대 200,000점
-    score += Math.min(Math.floor(gameState.cash / 1000), 500000); // 최대 500,000점 (1000원당 1점)
-    score += gameState.trust * 1000; // 신뢰도 * 1000
+    // 금액 점수 (1만원당 1점)
+    const cashScore = Math.floor(gameState.cash / 10000);
 
-    // 턴 보너스 (빨리 클리어할수록 높은 점수)
-    const turnBonus = Math.max(0, (26 - gameState.currentTurn) * 10000);
-    score += turnBonus;
+    // 신뢰도 점수 (1%당 1000점)
+    const trustScore = gameState.trust * 1000;
 
-    // 인프라 보너스
-    const infraBonus = {
-      'EC2': 1000,
-      'RDS': 5000,
-      'Aurora': 10000,
-      'ELB': 8000,
-      'AutoScaling': 12000,
-      'ElastiCache': 15000,
-      'EKS': 25000,
-      'Karpenter': 20000,
-      'Aurora Global DB': 30000,
-      'CloudFront': 18000,
-      'WAF': 10000,
-      'Bedrock': 22000,
-      'SageMaker': 25000,
-    };
-
-    gameState.infrastructure.forEach(infra => {
-      score += infraBonus[infra] || 0;
-    });
-
-    // 팀 크기 보너스
-    score += gameState.teamSize * 5000;
+    // 총 점수 = 유저수 + 금액점수 + 신뢰도점수
+    const score = userScore + cashScore + trustScore;
 
     return score;
   }
