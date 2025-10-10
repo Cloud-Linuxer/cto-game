@@ -1,11 +1,19 @@
 import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { LeaderboardService } from './leaderboard.service';
 import { GameService } from '../game/game.service';
 import { Leaderboard } from '../database/entities/leaderboard.entity';
 
 class AddScoreDto {
+  @ApiProperty({ description: '플레이어 이름' })
+  @IsString()
+  @IsNotEmpty()
   playerName: string;
+
+  @ApiProperty({ description: '게임 ID' })
+  @IsString()
+  @IsNotEmpty()
   gameId: string;
 }
 
@@ -25,9 +33,9 @@ export class LeaderboardController {
     rank: number;
   }> {
     // 게임 상태 확인
-    const gameState = await this.gameService.getGameState(dto.gameId);
+    const gameState = await this.gameService.getGame(dto.gameId);
 
-    if (gameState.status !== 'ipo_achieved') {
+    if (gameState.status !== 'WON_IPO') {
       throw new Error('IPO를 달성하지 못한 게임입니다.');
     }
 
@@ -76,5 +84,16 @@ export class LeaderboardController {
   async getRank(@Param('score') score: number): Promise<{ rank: number }> {
     const rank = await this.leaderboardService.getPlayerRank(score);
     return { rank };
+  }
+
+  @Post('clear')
+  @ApiOperation({ summary: '리더보드 초기화 (개발용)' })
+  @ApiResponse({ status: 200, description: '리더보드가 초기화되었습니다.' })
+  async clearLeaderboard(): Promise<{ message: string; deletedCount: number }> {
+    const deletedCount = await this.leaderboardService.clearAll();
+    return {
+      message: '리더보드가 초기화되었습니다.',
+      deletedCount,
+    };
   }
 }

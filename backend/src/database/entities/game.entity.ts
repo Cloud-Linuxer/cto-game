@@ -70,6 +70,9 @@ export class Game {
   @Column({ type: 'int', default: 5000 })
   maxUserCapacity: number; // 인프라가 수용 가능한 최대 유저 수
 
+  @Column({ type: 'boolean', default: false })
+  hasConsultingEffect: boolean; // AWS SA 컨설팅 효과 적용 여부 (3배 용량 증가)
+
   @Column({ type: 'simple-json', default: '[]' })
   hiredStaff: string[]; // 채용된 인원 목록 (개발자, 디자이너, 기획자 등)
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Leaderboard } from '../database/entities/leaderboard.entity';
-import { GameState } from '../database/entities/game.entity';
+import { GameResponseDto } from '../common/dto/game-response.dto';
 
 @Injectable()
 export class LeaderboardService {
@@ -12,7 +12,7 @@ export class LeaderboardService {
   ) {}
 
   // 점수 계산 로직 (유저수, 금액, 신뢰도만 사용)
-  calculateScore(gameState: GameState): number {
+  calculateScore(gameState: GameResponseDto): number {
     // 유저수 점수 (1명당 1점)
     const userScore = gameState.users;
 
@@ -29,7 +29,7 @@ export class LeaderboardService {
   }
 
   // 리더보드에 기록 추가
-  async addScore(playerName: string, gameState: GameState): Promise<Leaderboard> {
+  async addScore(playerName: string, gameState: GameResponseDto): Promise<Leaderboard> {
     const score = this.calculateScore(gameState);
 
     const leaderboardEntry = this.leaderboardRepository.create({
@@ -40,7 +40,7 @@ export class LeaderboardService {
       finalCash: gameState.cash,
       finalTrust: gameState.trust,
       finalInfrastructure: gameState.infrastructure,
-      teamSize: gameState.teamSize,
+      teamSize: gameState.hiredStaff ? gameState.hiredStaff.length : 0,
       difficulty: 'NORMAL', // 추후 난이도 기능 추가 시 변경
     });
 
@@ -104,9 +104,9 @@ export class LeaderboardService {
     const stats = await this.leaderboardRepository
       .createQueryBuilder('leaderboard')
       .select('COUNT(*)', 'totalGames')
-      .addSelect('AVG(score)', 'averageScore')
-      .addSelect('MAX(score)', 'highestScore')
-      .addSelect('AVG(finalTurn)', 'averageTurn')
+      .addSelect('AVG(leaderboard.score)', 'averageScore')
+      .addSelect('MAX(leaderboard.score)', 'highestScore')
+      .addSelect('AVG(leaderboard."finalTurn")', 'averageTurn')
       .getRawOne();
 
     return {
@@ -115,5 +115,16 @@ export class LeaderboardService {
       highestScore: parseInt(stats.highestScore) || 0,
       averageTurn: Math.floor(parseFloat(stats.averageTurn) || 0),
     };
+  }
+
+  // 리더보드 초기화
+  async clearAll(): Promise<number> {
+    // 모든 레코드 조회 후 삭제
+    const allRecords = await this.leaderboardRepository.find();
+    if (allRecords.length === 0) {
+      return 0;
+    }
+    await this.leaderboardRepository.remove(allRecords);
+    return allRecords.length;
   }
 }

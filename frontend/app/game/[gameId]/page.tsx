@@ -66,6 +66,14 @@ export default function GameBoard() {
     }
   }, [gameId]);
 
+  // IPO 성공 시 이름 입력 모달 표시 (자동으로 한 번만)
+  useEffect(() => {
+    if (gameState && gameState.status === GameStatus.WON_IPO && !playerRank) {
+      console.log('[Auto-show modal] IPO success detected');
+      // 자동으로 모달 표시는 제거 - 사용자가 버튼을 클릭할 때만 표시
+    }
+  }, [gameState?.status, playerRank]);
+
   // 선택 실행
   const handleChoiceSelect = async (choiceId: number | number[]) => {
     if (!gameState || executing) return;
@@ -172,10 +180,6 @@ export default function GameBoard() {
 
   // 게임 종료 상태
   if (gameState && gameState.status !== GameStatus.PLAYING) {
-    // IPO 성공 시 이름 입력 모달 표시
-    if (gameState.status === GameStatus.WON_IPO && !showNameInputModal && !playerRank) {
-      setShowNameInputModal(true);
-    }
     const getEndMessage = () => {
       switch (gameState.status) {
         case GameStatus.WON_IPO:
@@ -228,37 +232,150 @@ export default function GameBoard() {
     const endInfo = getEndMessage();
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center space-y-6 p-8 bg-white rounded-2xl shadow-xl max-w-2xl">
-          <div className="text-6xl mb-4">{endInfo.emoji}</div>
-          <h1 className={`text-4xl font-bold ${endInfo.color}`}>{endInfo.title}</h1>
-          <p className="text-xl text-gray-700">{endInfo.message}</p>
+      <>
+        {/* IPO 성공 시 이름 입력 모달 - 게임 종료 화면 위에 표시 */}
+        {showNameInputModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
+            <div className="bg-gradient-to-br from-yellow-50 to-green-50 border-4 border-green-500 rounded-2xl shadow-2xl p-8 max-w-lg w-full">
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">🏆</div>
+                <h2 className="text-3xl font-bold text-green-600 mb-2">IPO 성공!</h2>
+                <p className="text-lg text-gray-700">리더보드에 기록을 남겨주세요!</p>
+              </div>
 
-          <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">최종 메트릭</h2>
-            <div className="grid grid-cols-2 gap-4 text-left">
-              <div>
-                <div className="text-sm text-gray-600">턴</div>
-                <div className="text-xl font-bold">{gameState.currentTurn} / 25</div>
+              <div className="mb-6">
+                <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-2">
+                  이름을 입력하세요
+                </label>
+                <input
+                  id="playerName"
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleScoreSubmit()}
+                  placeholder="플레이어 이름"
+                  maxLength={50}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-lg"
+                  autoFocus
+                />
               </div>
-              <div>
-                <div className="text-sm text-gray-600">유저</div>
-                <div className="text-xl font-bold">{gameState.users.toLocaleString()}명</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">자금</div>
-                <div className="text-xl font-bold">
-                  {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
+
+              {gameState && (
+                <div className="bg-white rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-gray-800 mb-2">달성 기록</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="text-gray-600">유저 수:</div>
+                    <div className="font-semibold">{gameState.users.toLocaleString()}명</div>
+                    <div className="text-gray-600">자금:</div>
+                    <div className="font-semibold">
+                      {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
+                    </div>
+                    <div className="text-gray-600">신뢰도:</div>
+                    <div className="font-semibold">{gameState.trust}%</div>
+                    <div className="text-gray-600">달성 턴:</div>
+                    <div className="font-semibold">{gameState.currentTurn}턴</div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">신뢰도</div>
-                <div className="text-xl font-bold">{gameState.trust}%</div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleScoreSubmit}
+                  disabled={!playerName.trim() || submittingScore}
+                  className="flex-1 px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {submittingScore ? '제출 중...' : '리더보드 등록'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowNameInputModal(false);
+                  }}
+                  disabled={submittingScore}
+                  className="px-6 py-3 bg-gray-500 text-white text-lg font-semibold rounded-lg hover:bg-gray-600 transition-colors disabled:cursor-not-allowed"
+                >
+                  건너뛰기
+                </button>
               </div>
             </div>
           </div>
+        )}
+
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700">
+        <div className="text-center space-y-6 p-10 bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl max-w-3xl border border-white/20">
+          {/* 상단 타이틀 섹션 */}
+          <div className="mb-6">
+            <div className="text-7xl mb-4 animate-bounce">{endInfo.emoji}</div>
+            <h1 className={`text-5xl font-black ${endInfo.color} mb-3`}>{endInfo.title}</h1>
+            <p className="text-xl text-gray-700 font-medium">{endInfo.message}</p>
+          </div>
+
+          {/* 최종 메트릭 - 깔끔하고 세련된 스타일 */}
+          <div className="mt-8 p-8 bg-gray-50 rounded-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              최종 성과
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              {/* 턴 카드 */}
+              <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-gray-500 mb-1">진행 턴</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {gameState.currentTurn} / 25
+                </div>
+              </div>
+
+              {/* 유저 카드 */}
+              <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-gray-500 mb-1">총 유저</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {gameState.users.toLocaleString()}명
+                </div>
+              </div>
+
+              {/* 자금 카드 */}
+              <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-gray-500 mb-1">보유 자금</div>
+                <div className="text-xl font-bold text-gray-900">
+                  {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
+                </div>
+              </div>
+
+              {/* 신뢰도 카드 */}
+              <div className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-medium text-gray-500 mb-1">신뢰도</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {gameState.trust}%
+                </div>
+              </div>
+            </div>
+
+            {/* 최종 점수 표시 (IPO 성공 시) */}
+            {gameState.status === GameStatus.WON_IPO && (
+              <div className="mt-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                <div className="text-sm font-medium text-gray-600 mb-2">최종 점수</div>
+                <div className="text-4xl font-black text-gray-900">
+                  {(gameState.users + Math.floor(gameState.cash / 10000) + (gameState.trust * 1000)).toLocaleString()}점
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="flex gap-4 justify-center mt-6">
+            {gameState.status === GameStatus.WON_IPO && !playerRank && (
+              <button
+                type="button"
+                onClick={() => {
+                  console.log('[Debug] Score button clicked');
+                  // Force state update
+                  setShowNameInputModal(prev => {
+                    console.log('[Debug] Previous state:', prev, '-> New state: true');
+                    return true;
+                  });
+                }}
+                className="px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors animate-pulse"
+              >
+                📝 점수 기록하기
+              </button>
+            )}
             <button
               onClick={handleNewGame}
               className="px-8 py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
@@ -274,6 +391,7 @@ export default function GameBoard() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -350,71 +468,6 @@ export default function GameBoard() {
                 className="px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors"
               >
                 확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* IPO 성공 시 이름 입력 모달 */}
-      {showNameInputModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-[200] bg-black/50 p-4">
-          <div className="bg-gradient-to-br from-yellow-50 to-green-50 border-4 border-green-500 rounded-2xl shadow-2xl p-8 max-w-lg w-full">
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🏆</div>
-              <h2 className="text-3xl font-bold text-green-600 mb-2">IPO 성공!</h2>
-              <p className="text-lg text-gray-700">리더보드에 기록을 남겨주세요!</p>
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-2">
-                이름을 입력하세요
-              </label>
-              <input
-                id="playerName"
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleScoreSubmit()}
-                placeholder="플레이어 이름"
-                maxLength={50}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-lg"
-                autoFocus
-              />
-            </div>
-
-            {gameState && (
-              <div className="bg-white rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-800 mb-2">달성 기록</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-gray-600">유저 수:</div>
-                  <div className="font-semibold">{gameState.users.toLocaleString()}명</div>
-                  <div className="text-gray-600">자금:</div>
-                  <div className="font-semibold">
-                    {new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 }).format(gameState.cash)}
-                  </div>
-                  <div className="text-gray-600">신뢰도:</div>
-                  <div className="font-semibold">{gameState.trust}%</div>
-                  <div className="text-gray-600">달성 턴:</div>
-                  <div className="font-semibold">{gameState.currentTurn}턴</div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleScoreSubmit}
-                disabled={!playerName.trim() || submittingScore}
-                className="flex-1 px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {submittingScore ? '제출 중...' : '리더보드 등록'}
-              </button>
-              <button
-                onClick={() => setShowNameInputModal(false)}
-                disabled={submittingScore}
-                className="px-6 py-3 bg-gray-500 text-white text-lg font-semibold rounded-lg hover:bg-gray-600 transition-colors disabled:cursor-not-allowed"
-              >
-                건너뛰기
               </button>
             </div>
           </div>

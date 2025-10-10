@@ -38,6 +38,7 @@ export class GameService {
     game.userAcquisitionMultiplier = 1.0; // 유저 획득 기본 배율
     game.trustMultiplier = 1.0; // 신뢰도 획득 기본 배율
     game.maxUserCapacity = 10000; // 초기 EC2 용량 (2배 상향)
+    game.hasConsultingEffect = false; // 컨설팅 효과 없음
     game.hiredStaff = []; // 채용된 인원 목록
 
     const savedGame = await this.gameRepository.save(game);
@@ -173,6 +174,13 @@ export class GameService {
         maxCapacity = infraCapacityMap[infra];
       }
     }
+
+    // 컨설팅 효과가 있으면 3배 적용
+    if (game.hasConsultingEffect) {
+      maxCapacity = maxCapacity * 3;
+      console.log(`[CAPACITY] 컨설팅 효과 적용: ${maxCapacity / 3} -> ${maxCapacity} (3배)`);
+    }
+
     game.maxUserCapacity = maxCapacity;
 
     // 6. 효과 적용
@@ -239,14 +247,14 @@ export class GameService {
     await this.historyRepository.save(history);
 
     // 4-1. 외부 전문가 투입 선택시 특별 처리 (Choice 68)
-    // executeChoice는 인프라 재계산이 없으므로 직접 처리
     let consultingMessage: string | undefined;
-    if (choiceId === 68) {
+    if (choiceId === 68 && !game.hasConsultingEffect) {
+      // 아직 컨설팅 효과가 없는 경우에만 적용
       const oldCapacity = game.maxUserCapacity;
-      game.maxUserCapacity = game.maxUserCapacity * 3;
+      game.hasConsultingEffect = true; // 컨설팅 효과 영구 적용 플래그 설정
+      game.maxUserCapacity = oldCapacity * 3; // 즉시 3배 효과 적용
       consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
-      console.log(`[CONSULTING] 외부 전문가 투입 효과: 수용량 ${oldCapacity} -> ${game.maxUserCapacity} (3배 증가)`);
-      console.log(`[CONSULTING] consultingMessage 설정됨:`, consultingMessage);
+      console.log(`[CONSULTING] 컨설팅 효과 적용: 용량 ${oldCapacity} -> ${game.maxUserCapacity}`);
     }
 
     // 5. 턴 진행
@@ -442,9 +450,10 @@ export class GameService {
       }
 
       // 외부 전문가 투입 선택시 특별 처리 (Choice 68)
-      if (choiceId === 68) {
+      if (choiceId === 68 && !game.hasConsultingEffect) {
         hasConsultingEffect = true;
-        console.log(`[MULTI-CONSULTING] Choice 68 감지 - 컨설팅 효과 예정`);
+        game.hasConsultingEffect = true; // 컨설팅 효과 영구 적용
+        console.log(`[MULTI-CONSULTING] Choice 68 감지 - 컨설팅 효과 영구 적용`);
       }
 
       // 다음 턴 결정 (마지막 선택의 nextTurn 사용)
@@ -492,15 +501,21 @@ export class GameService {
         maxCapacity = infraCapacityMap[infra];
       }
     }
+
+    // 컨설팅 효과가 있으면 3배 적용
+    if (game.hasConsultingEffect) {
+      maxCapacity = maxCapacity * 3;
+      console.log(`[MULTI-CAPACITY] 컨설팅 효과 적용: ${maxCapacity / 3} -> ${maxCapacity} (3배)`);
+    }
+
     game.maxUserCapacity = maxCapacity;
 
-    // 4-1. 컨설팅 효과 적용 (Choice 68 - 인프라 용량 계산 후)
+    // 4-1. 컨설팅 효과 적용 (Choice 68 처리)
     if (hasConsultingEffect) {
-      const oldCapacity = game.maxUserCapacity;
-      game.maxUserCapacity = game.maxUserCapacity * 3;
-      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
-      console.log(`[MULTI-CONSULTING] 외부 전문가 투입 효과 적용: 수용량 ${oldCapacity} -> ${game.maxUserCapacity} (3배 증가)`);
-      console.log(`[MULTI-CONSULTING] consultingMessage 설정됨:`, consultingMessage);
+      // hasConsultingEffect가 true면 이미 위에서 3배가 적용되었으므로 메시지만 설정
+      const baseCapacity = Math.floor(game.maxUserCapacity / 3); // 3배 적용 전 원래 용량
+      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${baseCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
+      console.log(`[MULTI-CONSULTING] 컨설팅 효과 적용 완료 (수용량: ${game.maxUserCapacity})`);
     }
 
     // 5. 턴 진행
