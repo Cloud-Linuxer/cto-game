@@ -37,6 +37,25 @@ export interface GameState {
   bankruptcyGraceTurns?: number;
   comebackActive?: boolean;
   recoveryMessages?: string[];
+  // Event system
+  randomEventTriggered?: boolean;
+  randomEventData?: {
+    eventId: string;
+    eventType: string;
+    eventText: string;
+    title?: string;
+    severity?: string;
+    choices: Array<{
+      choiceId: string;
+      text: string;
+      effects: {
+        usersDelta?: number;
+        cashDelta?: number;
+        trustDelta?: number;
+        addInfrastructure?: string[];
+      };
+    }>;
+  };
 }
 
 export enum GameStatus {

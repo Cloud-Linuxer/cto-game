@@ -12,6 +12,8 @@ import InfraList from '@/components/InfraList';
 import TeamPanel from '@/components/TeamPanel';
 import GameSkeleton from '@/components/GameSkeleton';
 import EmergencyEventModal from '@/components/EmergencyEventModal';
+import EventPopup from '@/components/EventPopup/EventPopupLazy';
+import { useEventPopup } from '@/hooks/useEventPopup';
 
 // -- State & Reducer definitions --
 
@@ -131,6 +133,16 @@ export default function GameBoard() {
 
   const [state, dispatch] = useReducer(gamePageReducer, initialState);
 
+  // EventPopup 훅
+  const {
+    currentEvent,
+    isOpen: isEventPopupOpen,
+    isProcessing: isEventProcessing,
+    error: eventError,
+    openPopup: openEventPopup,
+    handleSelectChoice: handleEventChoice,
+  } = useEventPopup(gameId);
+
   // 초기 데이터 로드
   useEffect(() => {
     const loadGameData = async () => {
@@ -158,6 +170,31 @@ export default function GameBoard() {
       loadGameData();
     }
   }, [gameId]);
+
+  // 랜덤 이벤트 자동 팝업
+  useEffect(() => {
+    if (state.gameState?.randomEventTriggered && state.gameState.randomEventData) {
+      // EventData 타입으로 변환
+      const eventData = {
+        eventId: state.gameState.randomEventData.eventId,
+        eventType: state.gameState.randomEventData.eventType as any,
+        eventText: state.gameState.randomEventData.eventText,
+        title: state.gameState.randomEventData.title,
+        severity: state.gameState.randomEventData.severity,
+        choices: state.gameState.randomEventData.choices.map((choice) => ({
+          choiceId: choice.choiceId,
+          text: choice.text,
+          effects: {
+            users: choice.effects.usersDelta,
+            cash: choice.effects.cashDelta,
+            trust: choice.effects.trustDelta,
+            infra: choice.effects.addInfrastructure || [],
+          },
+        })),
+      };
+      openEventPopup(eventData);
+    }
+  }, [state.gameState?.randomEventTriggered, state.gameState?.randomEventData, openEventPopup]);
 
   // 선택 실행
   const handleChoiceSelect = async (choiceId: number | number[]) => {
@@ -756,6 +793,31 @@ export default function GameBoard() {
         </div>
       </div>
     </div>
+
+      {/* 랜덤 이벤트 팝업 */}
+      {isEventPopupOpen && currentEvent && (
+        <EventPopup
+          eventData={currentEvent}
+          gameId={gameId}
+          onSelectChoice={handleEventChoice}
+          isProcessing={isEventProcessing}
+          error={eventError}
+          onComplete={() => {
+            // 이벤트 처리 완료 후 게임 상태 새로고침
+            if (state.gameState) {
+              gameApi.getGame(gameId).then((updatedGame) => {
+                dispatch({ type: 'SET_GAME_STATE', payload: updatedGame });
+                // 다음 턴 로드
+                if (updatedGame.status === GameStatus.PLAYING) {
+                  gameApi.getTurn(updatedGame.currentTurn).then((nextTurn) => {
+                    dispatch({ type: 'SET_CURRENT_TURN', payload: nextTurn });
+                  });
+                }
+              });
+            }
+          }}
+        />
+      )}
     </>
   );
 }
