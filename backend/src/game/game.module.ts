@@ -14,8 +14,14 @@ import { PerformanceMonitorService } from './performance-monitor.service';
 import { OptimizedEventMatcherService } from './optimized-event-matcher.service';
 import { PerformanceController } from './performance.controller';
 
+// Event module for random events
+import { EventModule } from '../event/event.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Game, Choice, ChoiceHistory, Turn])],
+  imports: [
+    TypeOrmModule.forFeature([Game, Choice, ChoiceHistory, Turn]),
+    EventModule,
+  ],
   controllers: [GameController], // PerformanceController - 이벤트 데이터 준비 후 활성화
   providers: [
     GameService,
