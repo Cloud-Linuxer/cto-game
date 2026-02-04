@@ -6,6 +6,7 @@ import type {
   LeaderboardSubmitResponse,
   LeaderboardResponse,
   LeaderboardStatistics,
+  TrustHistoryEntry,
 } from './types';
 
 const api = axios.create({
@@ -49,6 +50,12 @@ export const gameApi = {
   // 모든 턴 조회
   getAllTurns: async (): Promise<Turn[]> => {
     const response = await api.get<Turn[]>('/turn');
+    return response.data;
+  },
+
+  // 신뢰도 히스토리 조회 (EPIC-04 Feature 5)
+  getTrustHistory: async (gameId: string): Promise<TrustHistoryEntry[]> => {
+    const response = await api.get<TrustHistoryEntry[]>(`/game/${gameId}/trust-history`);
     return response.data;
   },
 };

@@ -176,7 +176,7 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
     label: '도전 모드',
     description: '균형 잡힌 전략 경험',
     initialCash: 10_000_000,
-    initialTrust: 40,
+    initialTrust: 50, // Updated from 40 to align with GDD (EPIC-04)
     initialMaxCapacity: 10_000,
     maxTurns: 25,
     earlyPitchTrustThreshold: 5,
@@ -196,7 +196,7 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
     label: '전문가 모드',
     description: '실제 CTO의 의사결정을 경험',
     initialCash: 7_000_000,
-    initialTrust: 25,
+    initialTrust: 30, // Updated from 25 to align with GDD (EPIC-04)
     initialMaxCapacity: 5_000,
     maxTurns: 22,
     earlyPitchTrustThreshold: 8,
@@ -220,7 +220,7 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
 export const GAME_CONSTANTS = {
   // --- Initial game state (defaults, overridden by difficulty) ---
   INITIAL_CASH: 10_000_000,
-  INITIAL_TRUST: 40,
+  INITIAL_TRUST: 50, // Updated from 40 to align with GDD (EPIC-04)
   INITIAL_USERS: 0,
   INITIAL_MAX_CAPACITY: 10_000,
   INITIAL_INFRASTRUCTURE: ['EC2'] as readonly string[],
@@ -341,6 +341,7 @@ export const GAME_CONSTANTS = {
     DANGER_THRESHOLD: 15,    // below this = danger zone → faster recovery
     DANGER_RECOVERY_AMOUNT: 2, // +2 trust per turn in danger zone
     MAX_NATURAL: 30,         // natural recovery won't push trust above this
+    CRISIS_RECOVERY_BONUS: 5, // EPIC-04 Feature 3: increased from 3 to 5
   },
 
   // Grace period before bankruptcy
@@ -360,5 +361,42 @@ export const GAME_CONSTANTS = {
   COMEBACK: {
     DANGER_ZONE_RATIO: 0.30,     // below 30% of nearest victory goal
     COMEBACK_MULTIPLIER: 1.25,   // 1.25x positive effects in danger zone
+  },
+
+  // --- EPIC-04 Feature 3: Trust Recovery Mechanisms ---
+
+  // Stable operations bonus (3 consecutive turns with capacity ≤ 80%)
+  STABLE_OPERATIONS: {
+    REQUIRED_TURNS: 3,           // consecutive turns needed
+    CAPACITY_THRESHOLD: 0.80,    // must stay below 80% capacity
+    TRUST_BONUS: 3,              // +3 trust bonus
+  },
+
+  // Transparency bonus (customer communication after outage)
+  TRANSPARENCY: {
+    EFFECT_MULTIPLIER: 1.5,      // 1.5x trust recovery for transparency-tagged choices
+  },
+
+  // --- EPIC-04 Feature 6: Alternative Investment Path ---
+
+  ALTERNATIVE_INVESTMENT: {
+    // Bridge financing limits
+    BRIDGE_MAX_USES: 2,                 // Max 2 bridge rounds per game
+    BRIDGE_FUNDING_RATIO: 0.3,          // 30% of regular series amount
+    BRIDGE_EQUITY_DILUTION: 5,          // Additional 5% equity dilution
+
+    // Government grant
+    GOVERNMENT_GRANT_AMOUNT: 200_000_000,     // Fixed 2억 won
+    GOVERNMENT_GRANT_TRUST_BONUS: 3,          // +3 trust (government certification)
+
+    // Series base amounts for calculating bridge financing
+    SERIES_BASE_AMOUNTS: {
+      A: 1_000_000_000,    // 10억 won
+      B: 10_000_000_000,   // 100억 won
+      C: 50_000_000_000,   // 500억 won
+    },
+
+    // Trust threshold for triggering alternative investment options
+    TRUST_THRESHOLD_RATIO: 0.6,  // If trust < 60% of required, show alternatives
   },
 } as const;

@@ -177,3 +177,23 @@ export interface LeaderboardStatistics {
   highestScore: number;
   averageTurn: number;
 }
+
+// Trust History 관련 타입 (EPIC-04 Feature 5)
+export type TrustChangeFactorType = 'choice' | 'recovery' | 'penalty' | 'bonus';
+
+export interface TrustChangeFactor {
+  type: TrustChangeFactorType;
+  amount: number;
+  message: string;
+}
+
+export interface TrustHistoryEntry {
+  id: number;
+  gameId: string;
+  turnNumber: number;
+  trustBefore: number;
+  trustAfter: number;
+  change: number;
+  factors: TrustChangeFactor[];
+  createdAt: string;
+}

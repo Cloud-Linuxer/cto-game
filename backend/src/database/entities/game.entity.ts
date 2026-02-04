@@ -107,6 +107,19 @@ export class Game {
   @Column({ type: 'int', default: 0 })
   consecutiveNegativeCashTurns: number; // tracks turns with negative cash for grace period
 
+  // --- EPIC-04 Feature 2: Capacity Warning System fields ---
+
+  @Column({ type: 'boolean', default: false })
+  capacityWarningActive: boolean; // whether first capacity exceeded warning is active
+
+  @Column({ type: 'int', default: 0 })
+  consecutiveCapacityExceeded: number; // consecutive capacity exceeded count (0 = no warning)
+
+  // --- EPIC-04 Feature 3: Trust Recovery Mechanisms fields ---
+
+  @Column({ type: 'int', default: 0 })
+  consecutiveStableTurns: number; // consecutive turns with capacity ≤ 80% (for stable operations bonus)
+
   // --- Event System fields ---
 
   @Column({ type: 'int', nullable: true })
@@ -114,6 +127,17 @@ export class Game {
 
   @Column({ type: 'simple-json', default: '[]' })
   activeEvents: string[]; // Array of active event IDs
+
+  // --- EPIC-04 Feature 6: Alternative Investment Path fields ---
+
+  @Column({ type: 'int', default: 0 })
+  bridgeFinancingUsed: number; // Number of times bridge financing was used (max 2)
+
+  @Column({ type: 'boolean', default: false })
+  governmentGrantUsed: boolean; // Whether government grant was used (max 1 per game)
+
+  @Column({ type: 'boolean', default: false })
+  governmentReportRequired: boolean; // Whether government report is required next turn
 
   @CreateDateColumn()
   createdAt: Date;

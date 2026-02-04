@@ -4,3 +4,4 @@ export * from './turn-response.dto';
 export * from './choice-response.dto';
 export * from './start-game.dto';
 export * from './event-trigger-condition.dto';
+export * from './trust-history-response.dto';

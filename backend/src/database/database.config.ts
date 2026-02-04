@@ -4,6 +4,7 @@ import { Turn } from './entities/turn.entity';
 import { Choice } from './entities/choice.entity';
 import { ChoiceHistory } from './entities/choice-history.entity';
 import { Leaderboard } from './entities/leaderboard.entity';
+import { TrustHistory } from './entities/trust-history.entity';
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -12,7 +13,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USER || 'cto_admin',
   password: process.env.DB_PASSWORD || 'cto_game_password',
   database: process.env.DB_NAME || 'cto_game',
-  entities: [Game, Turn, Choice, ChoiceHistory, Leaderboard],
+  entities: [Game, Turn, Choice, ChoiceHistory, Leaderboard, TrustHistory],
   synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV === 'development',
   extra: {

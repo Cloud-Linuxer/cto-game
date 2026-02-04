@@ -47,6 +47,9 @@ export class GameResponseDto {
   @ApiProperty({ description: '용량 초과 메시지', required: false })
   capacityExceededMessage?: string;
 
+  @ApiProperty({ description: '용량 경고 메시지 (EPIC-04 Feature 2)', required: false })
+  capacityWarningMessage?: string;
+
   @ApiProperty({ description: '채용된 인원 목록', type: [String], required: false })
   hiredStaff?: string[];
 

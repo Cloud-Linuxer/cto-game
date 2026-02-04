@@ -30,4 +30,7 @@ export class Choice {
 
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ type: 'simple-json', nullable: true })
+  tags?: string[]; // EPIC-04 Feature 3: Tags like ['transparency'] for trust recovery multiplier
 }

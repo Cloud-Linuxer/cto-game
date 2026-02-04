@@ -1,6 +1,7 @@
 import type { GameState, DifficultyMode, VictoryPath } from '@/lib/types';
 import { VICTORY_PATH_INFO } from '@/lib/types';
 import { DIFFICULTY_GOALS } from '@/lib/game-constants';
+import TrustGauge from '@/components/metrics/TrustGauge';
 
 interface MetricsPanelProps {
   gameState: GameState;
@@ -151,32 +152,26 @@ export default function MetricsPanel({ gameState }: MetricsPanelProps) {
           </div>
         </div>
 
-        {/* 신뢰도 */}
+        {/* 신뢰도 - Enhanced Gauge */}
         <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md lg:shadow-lg border border-slate-200">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
               <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex-1">
-              <div className="text-xs sm:text-sm text-slate-600 font-medium">신뢰도</div>
-              <div className="text-lg lg:text-xl font-bold text-purple-600">
-                {gameState.trust}%
-              </div>
+              <div className="text-xs sm:text-sm text-slate-600 font-medium">신뢰도 상세</div>
+              <div className="text-xs text-slate-500">목표: {goals.trust}%</div>
             </div>
           </div>
-          <div className="text-xs text-slate-500 mb-2">목표: {goals.trust}%</div>
-          <div className="w-full bg-slate-200 rounded-full h-2 sm:h-2.5 lg:h-3 overflow-hidden shadow-inner">
-            <div
-              className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500 relative overflow-hidden shadow-sm"
-              style={{ width: `${trustProgress}%` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
-            </div>
-          </div>
-          <div className="text-right text-xs text-purple-600 font-semibold mt-1">
-            {trustProgress.toFixed(1)}%
+          <TrustGauge
+            trust={gameState.trust}
+            difficultyMode={mode}
+            vertical={true}
+          />
+          <div className="text-right text-xs text-slate-500 font-medium mt-2">
+            목표 달성률: {trustProgress.toFixed(1)}%
           </div>
         </div>
 

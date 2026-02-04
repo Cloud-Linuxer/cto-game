@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Game, GameStatus, GameGrade, CapacityWarningLevel } from '../database/entities/game.entity';
 import { Choice } from '../database/entities/choice.entity';
 import { ChoiceHistory } from '../database/entities/choice-history.entity';
+import { TrustChangeFactor } from '../database/entities/trust-history.entity';
 import { GameResponseDto } from '../common/dto';
 import {
   GAME_CONSTANTS,
@@ -20,6 +21,8 @@ import {
   VictoryPathCondition,
 } from './game-constants';
 import { EventService } from '../event/event.service';
+import { TrustHistoryService } from './trust-history.service';
+import { AlternativeInvestmentService } from './alternative-investment.service';
 
 @Injectable()
 export class GameService {
@@ -33,6 +36,8 @@ export class GameService {
     @InjectRepository(ChoiceHistory)
     private readonly historyRepository: Repository<ChoiceHistory>,
     private readonly eventService: EventService,
+    private readonly trustHistoryService: TrustHistoryService,
+    private readonly alternativeInvestmentService: AlternativeInvestmentService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -79,6 +84,12 @@ export class GameService {
     game.capacityExceededCount = 0;
     game.resilienceStacks = 0;
     game.consecutiveNegativeCashTurns = 0;
+    game.capacityWarningActive = false;
+    game.consecutiveCapacityExceeded = 0;
+    game.consecutiveStableTurns = 0; // EPIC-04 Feature 3
+    game.bridgeFinancingUsed = 0; // EPIC-04 Feature 6
+    game.governmentGrantUsed = false; // EPIC-04 Feature 6
+    game.governmentReportRequired = false; // EPIC-04 Feature 6
 
     const savedGame = await this.gameRepository.save(game);
     return this.toDto(savedGame);
@@ -134,6 +145,10 @@ export class GameService {
     const maxTurns = this.getMaxTurns(game);
     const recoveryMessages: string[] = [];
 
+    // --- Trust change tracking (EPIC-04 Feature 5) ---
+    const trustBefore = game.trust;
+    const trustFactors: TrustChangeFactor[] = [];
+
     // --- Phase 3: Turn-start recovery ---
     const turnRecovery = this.applyTurnStartRecovery(game, config);
     recoveryMessages.push(...turnRecovery);
@@ -174,20 +189,11 @@ export class GameService {
       investmentScaleFactor = this.calculateInvestmentScale(game.trust, config.seriesCMinTrust);
     }
 
-    // --- Capacity check (graduated penalty) ---
+    // --- Capacity warning system (EPIC-04 Feature 2) ---
+    // Track whether capacity is exceeded and what penalty/message to show
     let capacityExceeded = false;
     let capacityPenalty = 0;
-    if (game.users > game.maxUserCapacity) {
-      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
-      game.trust = Math.max(0, game.trust - capacityPenalty);
-      capacityExceeded = true;
-      game.capacityExceededCount++;
-      const resilienceMsg = this.awardResilienceStack(game);
-      if (resilienceMsg) recoveryMessages.push(resilienceMsg);
-      this.logger.verbose(
-        `턴 시작 시 용량 초과 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${capacityPenalty}`,
-      );
-    }
+    let capacityWarningMessage: string | undefined;
 
     // --- Infra update ---
     game.infrastructure = this.mergeInfrastructure(
@@ -212,6 +218,11 @@ export class GameService {
       const trustLoss = Math.max(5, Math.floor(game.trust * 0.5));
       game.trust = Math.max(0, game.trust - trustLoss);
       this.logger.warn(`초기 투자 피칭 실패: 신뢰도 -${trustLoss} (기존 전액 초기화에서 변경)`);
+      trustFactors.push({
+        type: 'penalty',
+        amount: -trustLoss,
+        message: '초기 투자 피칭 실패',
+      });
     } else {
       // Apply effects with difficulty multipliers + comeback bonus
       let userGain = this.applyEffectMultiplier(
@@ -222,23 +233,10 @@ export class GameService {
         userGain = Math.floor(userGain * comebackMult);
       }
       const newUserCount = game.users + userGain;
+      game.users = newUserCount;
 
-      if (newUserCount > game.maxUserCapacity) {
-        game.users = newUserCount;
-        const newPenalty = this.calculateCapacityPenalty(newUserCount, game.maxUserCapacity);
-        game.trust = Math.max(0, game.trust - newPenalty);
-        capacityExceeded = true;
-        capacityPenalty = newPenalty;
-        game.capacityExceededCount++;
-        // Phase 3: Award resilience stack for surviving capacity exceeded
-        const resilienceMsg = this.awardResilienceStack(game);
-        if (resilienceMsg) recoveryMessages.push(resilienceMsg);
-        this.logger.warn(
-          `용량 초과! users=${newUserCount}, maxCapacity=${game.maxUserCapacity}, penalty=-${newPenalty}`,
-        );
-      } else {
-        game.users = newUserCount;
-      }
+      // Check capacity AFTER all effects are applied and capacity is recalculated
+      // The consecutive counter is updated at the END of the turn, not during processing
 
       // Cash: apply investment scaling for series rounds + comeback
       let cashEffect = choice.effects.cash;
@@ -251,7 +249,7 @@ export class GameService {
       }
       game.cash += cashEffect;
 
-      // Trust: apply multiplier + comeback
+      // Trust: apply multiplier + comeback + transparency bonus (EPIC-04 Feature 3)
       let trustGain = this.applyTrustEffectMultiplier(
         Math.floor(choice.effects.trust * game.trustMultiplier),
         config,
@@ -259,7 +257,26 @@ export class GameService {
       if (trustGain > 0 && comebackMult > 1.0) {
         trustGain = Math.floor(trustGain * comebackMult);
       }
+
+      // Transparency bonus: 1.5x trust recovery for transparency-tagged choices after capacity warning
+      if (choice.tags?.includes('transparency') && game.capacityWarningActive && trustGain > 0) {
+        const originalTrustGain = trustGain;
+        trustGain = Math.floor(trustGain * GAME_CONSTANTS.TRANSPARENCY.EFFECT_MULTIPLIER);
+        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${originalTrustGain} → ${trustGain})`);
+        this.logger.debug(`Transparency bonus applied: ${originalTrustGain} → ${trustGain}`);
+      }
+
       game.trust += trustGain;
+
+      // Track trust change from choice effect
+      if (trustGain !== 0) {
+        const choiceText = choice.text.length > 30 ? choice.text.substring(0, 30) + '...' : choice.text;
+        trustFactors.push({
+          type: 'choice',
+          amount: trustGain,
+          message: `선택: ${choiceText}`,
+        });
+      }
     }
 
     // Staff hiring
@@ -322,6 +339,100 @@ export class GameService {
       game.multiChoiceEnabled = false;
     }
 
+    // --- Final capacity check and consecutive counter update (EPIC-04 Feature 2) ---
+    // This happens AFTER all effects and infrastructure changes are applied
+    if (game.users > game.maxUserCapacity) {
+      const fullPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+
+      // Determine penalty based on consecutive counter
+      if (game.consecutiveCapacityExceeded === 0) {
+        // First capacity exceeded: 50% penalty
+        capacityPenalty = Math.floor(fullPenalty * 0.5);
+        capacityWarningMessage = '⚠️ 서비스 응답 지연 발생 - 다음 턴까지 인프라를 개선하세요';
+        this.logger.warn(
+          `첫 용량 초과 경고: users=${game.users}, maxCapacity=${game.maxUserCapacity}, reducedPenalty=-${capacityPenalty} (원래 -${fullPenalty})`,
+        );
+      } else {
+        // Second or subsequent: full penalty
+        capacityPenalty = fullPenalty;
+        capacityWarningMessage = `🔥 서비스 장애 발생! (연속 ${game.consecutiveCapacityExceeded + 1}회)`;
+        this.logger.warn(
+          `연속 용량 초과 (${game.consecutiveCapacityExceeded + 1}회): users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${fullPenalty}`,
+        );
+      }
+
+      game.trust = Math.max(0, game.trust - capacityPenalty);
+      capacityExceeded = true;
+      game.capacityExceededCount++;
+
+      // Track capacity penalty
+      trustFactors.push({
+        type: 'penalty',
+        amount: -capacityPenalty,
+        message: `용량 초과 (${game.users.toLocaleString()}명 > ${game.maxUserCapacity.toLocaleString()}명)`,
+      });
+
+      // Award resilience stack + crisis recovery bonus (EPIC-04 Feature 3: increased to 5)
+      const resilienceMsg = this.awardResilienceStack(game);
+      if (resilienceMsg) recoveryMessages.push(resilienceMsg);
+
+      // Crisis recovery bonus when surviving capacity exceeded (after resilience stack award)
+      if (game.capacityExceededCount > 0 && game.resilienceStacks > 0) {
+        const crisisBonus = GAME_CONSTANTS.TRUST_RECOVERY.CRISIS_RECOVERY_BONUS;
+        game.trust = Math.min(100, game.trust + crisisBonus);
+        recoveryMessages.push(`✅ 장애 극복으로 신뢰도가 회복되었습니다 (+${crisisBonus})`);
+        this.logger.debug(`Crisis recovery bonus applied: +${crisisBonus} trust`);
+
+        // Track crisis recovery bonus
+        trustFactors.push({
+          type: 'recovery',
+          amount: crisisBonus,
+          message: '장애 극복 보너스',
+        });
+      }
+
+      // Increment consecutive counter
+      game.capacityWarningActive = true;
+      game.consecutiveCapacityExceeded++;
+
+      // Reset stable operations counter (EPIC-04 Feature 3)
+      game.consecutiveStableTurns = 0;
+    } else {
+      // Capacity normalized - reset consecutive counter
+      if (game.consecutiveCapacityExceeded > 0) {
+        this.logger.debug(`용량 정상화: 경고 카운터 리셋 (이전: ${game.consecutiveCapacityExceeded}회)`);
+      }
+      game.consecutiveCapacityExceeded = 0;
+      game.capacityWarningActive = false;
+
+      // --- EPIC-04 Feature 3: Stable operations bonus ---
+      // Check if capacity is at or below 80% threshold
+      const capacityRatio = game.maxUserCapacity > 0 ? game.users / game.maxUserCapacity : 0;
+      if (capacityRatio <= GAME_CONSTANTS.STABLE_OPERATIONS.CAPACITY_THRESHOLD) {
+        game.consecutiveStableTurns++;
+        if (game.consecutiveStableTurns >= GAME_CONSTANTS.STABLE_OPERATIONS.REQUIRED_TURNS) {
+          const stableBonus = GAME_CONSTANTS.STABLE_OPERATIONS.TRUST_BONUS;
+          game.trust = Math.min(100, game.trust + stableBonus);
+          recoveryMessages.push(`✅ 안정적 서비스 운영이 시장 신뢰를 높였습니다 (+${stableBonus})`);
+          this.logger.debug(
+            `Stable operations bonus: ${game.consecutiveStableTurns} turns at ≤80% capacity, +${stableBonus} trust`,
+          );
+
+          // Track stable operations bonus
+          trustFactors.push({
+            type: 'bonus',
+            amount: stableBonus,
+            message: `안정 운영 보너스 (${game.consecutiveStableTurns}턴 연속)`,
+          });
+
+          game.consecutiveStableTurns = 0; // Reset after bonus awarded
+        }
+      } else {
+        // Capacity above 80% but not exceeded - reset stable counter
+        game.consecutiveStableTurns = 0;
+      }
+    }
+
     // --- Win/lose check ---
     if (game.currentTurn !== GAME_CONSTANTS.IPO_SELECTION_TURN) {
       game.status = this.checkGameStatus(game);
@@ -345,6 +456,21 @@ export class GameService {
 
     // Save
     const updatedGame = await this.gameRepository.save(game);
+
+    // --- EPIC-04 Feature 5: Record trust history ---
+    const trustAfter = game.trust;
+    const trustChange = trustAfter - trustBefore;
+    if (trustChange !== 0 || trustFactors.length > 0) {
+      await this.trustHistoryService.record({
+        gameId,
+        turnNumber: game.currentTurn - 1, // Record for the turn that just completed
+        trustBefore,
+        trustAfter,
+        change: trustChange,
+        factors: trustFactors,
+      });
+    }
+
     const dto = this.toDto(updatedGame);
 
     // Attach extra info
@@ -360,7 +486,13 @@ export class GameService {
 
     if (capacityExceeded) {
       dto.capacityExceeded = true;
-      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다. 신뢰도 -${capacityPenalty}`;
+      const baseMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과했습니다. 신뢰도 -${capacityPenalty}`;
+      dto.capacityExceededMessage = capacityWarningMessage
+        ? `${capacityWarningMessage}\n${baseMessage}`
+        : baseMessage;
+      if (capacityWarningMessage) {
+        dto.capacityWarningMessage = capacityWarningMessage;
+      }
     }
 
     if (consultingMessage) {
@@ -441,6 +573,7 @@ export class GameService {
     const currentTurn = game.currentTurn;
     let capacityExceeded = false;
     let capacityPenalty = 0;
+    let capacityWarningMessage: string | undefined;
     let consultingMessage: string | undefined;
     let hasConsultingEffectApplied = false;
     let nextTurn = currentTurn;
@@ -495,6 +628,14 @@ export class GameService {
         config,
       );
       if (trustGain > 0 && comebackMult > 1.0) trustGain = Math.floor(trustGain * comebackMult);
+
+      // EPIC-04 Feature 3: Transparency bonus
+      if (choice.tags?.includes('transparency') && game.capacityWarningActive && trustGain > 0) {
+        const originalTrustGain = trustGain;
+        trustGain = Math.floor(trustGain * GAME_CONSTANTS.TRANSPARENCY.EFFECT_MULTIPLIER);
+        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${originalTrustGain} → ${trustGain})`);
+      }
+
       game.trust += trustGain;
 
       // Staff
@@ -516,19 +657,65 @@ export class GameService {
       await this.historyRepository.save(history);
     }
 
-    // Capacity check (graduated)
+    // Recalculate capacity + resilience bonus BEFORE checking
+    const rawCapacity = this.calculateMaxCapacity(game.infrastructure, game.hasConsultingEffect);
+    game.maxUserCapacity = this.applyResilienceToCapacity(rawCapacity, game.resilienceStacks);
+
+    // Capacity check (graduated with warning system) - AFTER recalculation
     if (game.users > game.maxUserCapacity) {
-      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+      const fullPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+
+      // EPIC-04 Feature 2: Apply warning system
+      if (game.consecutiveCapacityExceeded === 0) {
+        capacityPenalty = Math.floor(fullPenalty * 0.5);
+        capacityWarningMessage = '⚠️ 서비스 응답 지연 발생 - 다음 턴까지 인프라를 개선하세요';
+      } else {
+        capacityPenalty = fullPenalty;
+        capacityWarningMessage = `🔥 서비스 장애 발생! (연속 ${game.consecutiveCapacityExceeded + 1}회)`;
+      }
+
       game.trust = Math.max(0, game.trust - capacityPenalty);
       capacityExceeded = true;
       game.capacityExceededCount++;
+
       const resilienceMsg = this.awardResilienceStack(game);
       if (resilienceMsg) recoveryMessages.push(resilienceMsg);
-    }
 
-    // Recalculate capacity + resilience bonus
-    const rawCapacity = this.calculateMaxCapacity(game.infrastructure, game.hasConsultingEffect);
-    game.maxUserCapacity = this.applyResilienceToCapacity(rawCapacity, game.resilienceStacks);
+      // EPIC-04 Feature 3: Crisis recovery bonus (increased to 5)
+      if (game.capacityExceededCount > 0 && game.resilienceStacks > 0) {
+        const crisisBonus = GAME_CONSTANTS.TRUST_RECOVERY.CRISIS_RECOVERY_BONUS;
+        game.trust = Math.min(100, game.trust + crisisBonus);
+        recoveryMessages.push(`✅ 장애 극복으로 신뢰도가 회복되었습니다 (+${crisisBonus})`);
+      }
+
+      // Increment consecutive counter
+      game.capacityWarningActive = true;
+      game.consecutiveCapacityExceeded++;
+
+      // Reset stable operations counter
+      game.consecutiveStableTurns = 0;
+    } else {
+      // Capacity normalized: reset warning counters
+      if (game.consecutiveCapacityExceeded > 0) {
+        this.logger.debug(`용량 정상화: 경고 카운터 리셋 (이전: ${game.consecutiveCapacityExceeded}회)`);
+      }
+      game.consecutiveCapacityExceeded = 0;
+      game.capacityWarningActive = false;
+
+      // --- EPIC-04 Feature 3: Stable operations bonus ---
+      const capacityRatio = game.maxUserCapacity > 0 ? game.users / game.maxUserCapacity : 0;
+      if (capacityRatio <= GAME_CONSTANTS.STABLE_OPERATIONS.CAPACITY_THRESHOLD) {
+        game.consecutiveStableTurns++;
+        if (game.consecutiveStableTurns >= GAME_CONSTANTS.STABLE_OPERATIONS.REQUIRED_TURNS) {
+          const stableBonus = GAME_CONSTANTS.STABLE_OPERATIONS.TRUST_BONUS;
+          game.trust = Math.min(100, game.trust + stableBonus);
+          recoveryMessages.push(`✅ 안정적 서비스 운영이 시장 신뢰를 높였습니다 (+${stableBonus})`);
+          game.consecutiveStableTurns = 0;
+        }
+      } else {
+        game.consecutiveStableTurns = 0;
+      }
+    }
 
     // Consulting message
     if (hasConsultingEffectApplied) {
@@ -550,14 +737,6 @@ export class GameService {
 
     game.currentTurn = nextTurn;
 
-    // Post-turn capacity check
-    if (game.users > game.maxUserCapacity && !capacityExceeded) {
-      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
-      game.trust = Math.max(0, game.trust - capacityPenalty);
-      capacityExceeded = true;
-      game.capacityExceededCount++;
-    }
-
     // Win/lose check
     game.status = this.checkGameStatus(game);
 
@@ -576,7 +755,13 @@ export class GameService {
 
     if (capacityExceeded) {
       dto.capacityExceeded = true;
-      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다. 신뢰도 -${capacityPenalty}`;
+      const baseMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과했습니다. 신뢰도 -${capacityPenalty}`;
+      dto.capacityExceededMessage = capacityWarningMessage
+        ? `${capacityWarningMessage}\n${baseMessage}`
+        : baseMessage;
+      if (capacityWarningMessage) {
+        dto.capacityWarningMessage = capacityWarningMessage;
+      }
     }
 
     if (consultingMessage) {
@@ -599,6 +784,9 @@ export class GameService {
    * 게임 삭제
    */
   async deleteGame(gameId: string): Promise<void> {
+    // Delete associated trust history first
+    await this.trustHistoryService.deleteHistory(gameId);
+
     const result = await this.gameRepository.delete({ gameId });
 
     if (result.affected === 0) {

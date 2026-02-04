@@ -2,6 +2,7 @@
 
 import type { GameState } from '@/lib/types';
 import Tooltip from './Tooltip';
+import TrustGauge from './metrics/TrustGauge';
 
 interface CompactMetricsBarProps {
   gameState: GameState;
@@ -42,11 +43,14 @@ export default function CompactMetricsBar({ gameState }: CompactMetricsBarProps)
         </div>
       </Tooltip>
 
-      {/* 신뢰도 */}
-      <Tooltip content="서비스 신뢰도 (목표: 99%)" position="bottom">
-        <div className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] bg-purple-50 rounded-full whitespace-nowrap shrink-0 snap-start">
-          <span className="text-sm">❤️</span>
-          <span className="text-sm font-semibold text-purple-700">{gameState.trust}%</span>
+      {/* 신뢰도 - Enhanced with Gauge */}
+      <Tooltip content="서비스 신뢰도 (투자 유치와 게임 성공에 중요)" position="bottom">
+        <div className="min-w-[200px] px-3 py-2 bg-purple-50 rounded-lg shrink-0 snap-start">
+          <TrustGauge
+            trust={gameState.trust}
+            difficultyMode={gameState.difficultyMode}
+            vertical={false}
+          />
         </div>
       </Tooltip>
     </div>

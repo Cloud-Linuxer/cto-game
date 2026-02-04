@@ -16,12 +16,21 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { GameService } from './game.service';
-import { GameResponseDto, ExecuteChoiceDto, StartGameDto } from '../common/dto';
+import { TrustHistoryService } from './trust-history.service';
+import {
+  GameResponseDto,
+  ExecuteChoiceDto,
+  StartGameDto,
+  TrustHistoryResponseDto,
+} from '../common/dto';
 
 @ApiTags('game')
 @Controller('game')
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly trustHistoryService: TrustHistoryService,
+  ) {}
 
   @Post('start')
   @ApiOperation({ summary: '새 게임 시작' })
@@ -93,5 +102,23 @@ export class GameController {
   })
   async deleteGame(@Param('gameId') gameId: string): Promise<void> {
     return this.gameService.deleteGame(gameId);
+  }
+
+  @Get(':gameId/trust-history')
+  @ApiOperation({ summary: '신뢰도 히스토리 조회' })
+  @ApiParam({ name: 'gameId', description: '게임 ID' })
+  @ApiResponse({
+    status: 200,
+    description: '신뢰도 히스토리 조회 성공',
+    type: [TrustHistoryResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: '게임을 찾을 수 없습니다',
+  })
+  async getTrustHistory(
+    @Param('gameId') gameId: string,
+  ): Promise<TrustHistoryResponseDto[]> {
+    return this.trustHistoryService.getHistory(gameId);
   }
 }
