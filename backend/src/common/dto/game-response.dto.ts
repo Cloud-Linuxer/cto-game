@@ -97,4 +97,57 @@ export class GameResponseDto {
 
   @ApiProperty({ description: '회복/복원 이벤트 메시지 목록', type: [String], required: false })
   recoveryMessages?: string[];
+
+  // --- Dynamic Event System (EPIC-03) ---
+
+  @ApiProperty({ description: '랜덤 이벤트 발생 여부', required: false })
+  randomEventTriggered?: boolean;
+
+  @ApiProperty({
+    description: '랜덤 이벤트 데이터',
+    required: false,
+    type: 'object',
+    properties: {
+      eventId: { type: 'string', description: '이벤트 ID' },
+      eventType: { type: 'string', description: '이벤트 타입' },
+      eventText: { type: 'string', description: '이벤트 설명 텍스트' },
+      severity: { type: 'string', description: '심각도', enum: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'POSITIVE'] },
+      choices: {
+        type: 'array',
+        description: '선택지 목록',
+        items: {
+          type: 'object',
+          properties: {
+            choiceId: { type: 'string' },
+            text: { type: 'string' },
+            effects: {
+              type: 'object',
+              properties: {
+                usersDelta: { type: 'number', nullable: true },
+                cashDelta: { type: 'number', nullable: true },
+                trustDelta: { type: 'number', nullable: true },
+                addInfrastructure: { type: 'array', items: { type: 'string' }, nullable: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  randomEventData?: {
+    eventId: string;
+    eventType: string;
+    eventText: string;
+    severity?: string;
+    choices: Array<{
+      choiceId: string;
+      text: string;
+      effects: {
+        usersDelta?: number;
+        cashDelta?: number;
+        trustDelta?: number;
+        addInfrastructure?: string[];
+      };
+    }>;
+  };
 }

@@ -6,6 +6,7 @@ import { Game, GameStatus } from '../database/entities/game.entity';
 import { Choice } from '../database/entities/choice.entity';
 import { ChoiceHistory } from '../database/entities/choice-history.entity';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { EventService } from '../event/event.service';
 
 describe('GameService', () => {
   let service: GameService;
@@ -27,6 +28,11 @@ describe('GameService', () => {
     save: jest.fn(),
   };
 
+  const mockEventService = {
+    checkRandomEvent: jest.fn().mockResolvedValue(null), // No events by default
+    initializeEventSeed: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +48,10 @@ describe('GameService', () => {
         {
           provide: getRepositoryToken(ChoiceHistory),
           useValue: mockHistoryRepository,
+        },
+        {
+          provide: EventService,
+          useValue: mockEventService,
         },
       ],
     }).compile();

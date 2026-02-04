@@ -19,6 +19,7 @@ import {
   VictoryPath,
   VictoryPathCondition,
 } from './game-constants';
+import { EventService } from '../event/event.service';
 
 @Injectable()
 export class GameService {
@@ -31,6 +32,7 @@ export class GameService {
     private readonly choiceRepository: Repository<Choice>,
     @InjectRepository(ChoiceHistory)
     private readonly historyRepository: Repository<ChoiceHistory>,
+    private readonly eventService: EventService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -372,6 +374,44 @@ export class GameService {
     }
     if (recoveryMessages.length > 0) {
       dto.recoveryMessages = recoveryMessages;
+    }
+
+    // --- Dynamic Event System (EPIC-03) ---
+    // Check if a random event should trigger after this turn
+    if (game.status === GameStatus.PLAYING) {
+      try {
+        const triggeredEvent = await this.eventService.checkRandomEvent(updatedGame);
+
+        if (triggeredEvent) {
+          dto.randomEventTriggered = true;
+          dto.randomEventData = {
+            eventId: triggeredEvent.eventId,
+            eventType: triggeredEvent.eventType,
+            eventText: this.interpolateEventText(triggeredEvent.description, updatedGame),
+            severity: triggeredEvent.severity,
+            choices: triggeredEvent.choices.map((choice) => ({
+              choiceId: choice.choiceId,
+              text: choice.text,
+              effects: {
+                usersDelta: choice.effect?.usersDelta,
+                cashDelta: choice.effect?.cashDelta,
+                trustDelta: choice.effect?.trustDelta,
+                addInfrastructure: choice.effect?.addInfrastructure,
+              },
+            })),
+          };
+
+          this.logger.log(
+            `Random event triggered for game ${gameId}: ${triggeredEvent.eventId} (${triggeredEvent.eventType})`,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to check random event for game ${gameId}: ${error.message}`,
+          error.stack,
+        );
+        // Don't fail the entire request if event check fails
+      }
     }
 
     return dto;
@@ -1099,5 +1139,20 @@ export class GameService {
         : undefined,
       comebackActive: this.getComebackMultiplier(game, config) > 1.0,
     };
+  }
+
+  /**
+   * Interpolate event text with game state values
+   * Replaces placeholders like {users}, {cash}, {trust} with actual values
+   */
+  private interpolateEventText(text: string, game: Game): string {
+    if (!text) return '';
+
+    return text
+      .replace(/{users}/g, game.users.toLocaleString())
+      .replace(/{cash}/g, game.cash.toLocaleString())
+      .replace(/{trust}/g, game.trust.toString())
+      .replace(/{currentTurn}/g, game.currentTurn.toString())
+      .replace(/{infrastructure}/g, game.infrastructure.join(', '));
   }
 }

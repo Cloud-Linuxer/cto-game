@@ -313,7 +313,14 @@ export class EventService {
 
     // User changes
     if (effect.usersDelta) {
-      game.users = Math.max(0, game.users + effect.usersDelta);
+      let usersDelta = effect.usersDelta;
+
+      // Apply auto-defense for negative effects
+      if (usersDelta < 0) {
+        usersDelta = this.applyAutoDefense(game, usersDelta, 'users');
+      }
+
+      game.users = Math.max(0, game.users + usersDelta);
     }
     if (effect.usersMultiplier) {
       game.users = Math.floor(game.users * effect.usersMultiplier);
@@ -321,7 +328,14 @@ export class EventService {
 
     // Cash changes
     if (effect.cashDelta) {
-      game.cash += effect.cashDelta;
+      let cashDelta = effect.cashDelta;
+
+      // Apply auto-defense for negative effects
+      if (cashDelta < 0) {
+        cashDelta = this.applyAutoDefense(game, cashDelta, 'cash');
+      }
+
+      game.cash += cashDelta;
     }
     if (effect.cashMultiplier) {
       game.cash = Math.floor(game.cash * effect.cashMultiplier);
@@ -329,7 +343,14 @@ export class EventService {
 
     // Trust changes
     if (effect.trustDelta) {
-      game.trust = Math.max(0, Math.min(100, game.trust + effect.trustDelta));
+      let trustDelta = effect.trustDelta;
+
+      // Apply auto-defense for negative effects
+      if (trustDelta < 0) {
+        trustDelta = this.applyAutoDefense(game, trustDelta, 'trust');
+      }
+
+      game.trust = Math.max(0, Math.min(100, game.trust + trustDelta));
     }
     if (effect.trustMultiplier) {
       game.trust = Math.max(
@@ -379,6 +400,77 @@ export class EventService {
         game.status = effect.setStatus as any;
       }
     }
+  }
+
+  /**
+   * Apply auto-defense based on infrastructure
+   * Reduces negative event effects based on infrastructure tier
+   *
+   * Defense mechanisms:
+   * - CloudFront: 50% DDoS attack damage reduction
+   * - Aurora Global DB: 70% region failure damage reduction
+   * - DR (Disaster Recovery): 30% all failure damage reduction
+   * - Multi-region: 100% immunity to region failures (complete negation)
+   *
+   * @param game Current game state
+   * @param damage Negative effect value (should be < 0)
+   * @param effectType Type of effect being defended against
+   * @returns Mitigated damage value
+   */
+  private applyAutoDefense(
+    game: Game,
+    damage: number,
+    effectType: 'users' | 'cash' | 'trust',
+  ): number {
+    // Only apply to negative effects
+    if (damage >= 0) {
+      return damage;
+    }
+
+    let reductionFactor = 0;
+
+    // Multi-region provides complete immunity to region failures
+    if (game.infrastructure.includes('multi-region')) {
+      this.logger.log(
+        `Auto-Defense: Multi-region provides 100% protection (effect: ${effectType}, original: ${damage})`,
+      );
+      return 0; // Complete negation
+    }
+
+    // CloudFront: 50% DDoS attack damage reduction
+    if (game.infrastructure.includes('CloudFront')) {
+      reductionFactor += 0.5;
+      this.logger.log(
+        `Auto-Defense: CloudFront reduces ${effectType} damage by 50%`,
+      );
+    }
+
+    // Aurora Global DB: 70% region failure damage reduction
+    if (game.infrastructure.includes('Aurora Global DB')) {
+      reductionFactor += 0.7;
+      this.logger.log(
+        `Auto-Defense: Aurora Global DB reduces ${effectType} damage by 70%`,
+      );
+    }
+
+    // DR (Disaster Recovery): 30% all failure damage reduction
+    if (game.infrastructure.includes('DR')) {
+      reductionFactor += 0.3;
+      this.logger.log(
+        `Auto-Defense: DR reduces ${effectType} damage by 30%`,
+      );
+    }
+
+    // Cap total reduction at 90% to ensure some impact remains
+    reductionFactor = Math.min(reductionFactor, 0.9);
+
+    const mitigatedDamage = Math.floor(damage * (1 - reductionFactor));
+
+    this.logger.log(
+      `Auto-Defense applied: ${effectType} damage reduced from ${damage} to ${mitigatedDamage} (${(reductionFactor * 100).toFixed(0)}% reduction)`,
+    );
+
+    return mitigatedDamage;
   }
 
   /**
