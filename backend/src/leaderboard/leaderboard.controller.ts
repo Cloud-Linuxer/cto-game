@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { LeaderboardService } from './leaderboard.service';
@@ -36,7 +36,7 @@ export class LeaderboardController {
     const gameState = await this.gameService.getGame(dto.gameId);
 
     if (gameState.status !== 'WON_IPO') {
-      throw new Error('IPO를 달성하지 못한 게임입니다.');
+      throw new BadRequestException('IPO를 달성하지 못한 게임입니다.');
     }
 
     // 리더보드에 추가
@@ -52,7 +52,8 @@ export class LeaderboardController {
   @ApiOperation({ summary: '상위 점수 조회' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: '조회할 개수 (기본: 10)' })
   async getTopScores(@Query('limit') limit: number = 10): Promise<Leaderboard[]> {
-    return await this.leaderboardService.getTopScores(limit);
+    const safeLimit = Math.min(Math.max(1, limit || 10), 100);
+    return await this.leaderboardService.getTopScores(safeLimit);
   }
 
   @Get()
@@ -63,7 +64,9 @@ export class LeaderboardController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
   ) {
-    return await this.leaderboardService.getLeaderboard(page, limit);
+    const safeLimit = Math.min(Math.max(1, limit || 20), 100);
+    const safePage = Math.min(Math.max(1, page || 1), 1000);
+    return await this.leaderboardService.getLeaderboard(safePage, safeLimit);
   }
 
   @Get('recent')
@@ -90,6 +93,9 @@ export class LeaderboardController {
   @ApiOperation({ summary: '리더보드 초기화 (개발용)' })
   @ApiResponse({ status: 200, description: '리더보드가 초기화되었습니다.' })
   async clearLeaderboard(): Promise<{ message: string; deletedCount: number }> {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException('프로덕션 환경에서는 리더보드 초기화가 불가합니다.');
+    }
     const deletedCount = await this.leaderboardService.clearAll();
     return {
       message: '리더보드가 초기화되었습니다.',

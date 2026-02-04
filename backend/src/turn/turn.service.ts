@@ -47,23 +47,31 @@ export class TurnService {
       order: { turnNumber: 'ASC' },
     });
 
-    const result: TurnResponseDto[] = [];
+    // Batch load all choices in a single query instead of N+1
+    const allChoices = await this.choiceRepository.find({
+      order: { choiceId: 'ASC' },
+    });
 
-    for (const turn of turns) {
-      const choices = await this.choiceRepository.find({
-        where: { turnNumber: turn.turnNumber },
-      });
-
-      result.push({
-        turnId: turn.turnId,
-        turnNumber: turn.turnNumber,
-        eventText: turn.eventText,
-        description: turn.description,
-        choices: choices.map((choice) => this.choiceToDto(choice)),
-      });
+    // Group choices by turn number for O(1) lookup
+    const choicesByTurn = new Map<number, Choice[]>();
+    for (const choice of allChoices) {
+      const existing = choicesByTurn.get(choice.turnNumber);
+      if (existing) {
+        existing.push(choice);
+      } else {
+        choicesByTurn.set(choice.turnNumber, [choice]);
+      }
     }
 
-    return result;
+    return turns.map((turn) => ({
+      turnId: turn.turnId,
+      turnNumber: turn.turnNumber,
+      eventText: turn.eventText,
+      description: turn.description,
+      choices: (choicesByTurn.get(turn.turnNumber) || []).map((choice) =>
+        this.choiceToDto(choice),
+      ),
+    }));
   }
 
   /**

@@ -1,17 +1,29 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Game, GameStatus } from '../database/entities/game.entity';
+import { Game, GameStatus, GameGrade, CapacityWarningLevel } from '../database/entities/game.entity';
 import { Choice } from '../database/entities/choice.entity';
 import { ChoiceHistory } from '../database/entities/choice-history.entity';
 import { GameResponseDto } from '../common/dto';
+import {
+  GAME_CONSTANTS,
+  DIFFICULTY_CONFIGS,
+  VICTORY_PATH_CONDITIONS,
+  DifficultyMode,
+  DifficultyConfig,
+  VictoryPath,
+  VictoryPathCondition,
+} from './game-constants';
 
 @Injectable()
 export class GameService {
+  private readonly logger = new Logger(GameService.name);
+
   constructor(
     @InjectRepository(Game)
     private readonly gameRepository: Repository<Game>,
@@ -21,25 +33,50 @@ export class GameService {
     private readonly historyRepository: Repository<ChoiceHistory>,
   ) {}
 
+  // ---------------------------------------------------------------------------
+  // Difficulty helpers
+  // ---------------------------------------------------------------------------
+
+  private getDifficultyConfig(game: Game): DifficultyConfig {
+    const mode = (game.difficultyMode || 'NORMAL') as DifficultyMode;
+    return DIFFICULTY_CONFIGS[mode] || DIFFICULTY_CONFIGS.NORMAL;
+  }
+
+  private getMaxTurns(game: Game): number {
+    return this.getDifficultyConfig(game).maxTurns;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
   /**
    * 새 게임 시작
    */
-  async startGame(): Promise<GameResponseDto> {
+  async startGame(difficultyMode?: DifficultyMode): Promise<GameResponseDto> {
+    const mode = difficultyMode || 'NORMAL';
+    const config = DIFFICULTY_CONFIGS[mode];
+
     const game = new Game();
     game.currentTurn = 1;
-    game.users = 0;
-    game.cash = 10000000; // 초기 자금 1000만원
-    game.trust = 0; // 초기 신뢰도 0
-    game.infrastructure = ['EC2'];
+    game.users = GAME_CONSTANTS.INITIAL_USERS;
+    game.cash = config.initialCash;
+    game.trust = config.initialTrust;
+    game.infrastructure = [...GAME_CONSTANTS.INITIAL_INFRASTRUCTURE];
     game.status = GameStatus.PLAYING;
-    game.investmentRounds = 0; // 투자 라운드 0회
-    game.equityPercentage = 100; // 지분율 100%
-    game.multiChoiceEnabled = false; // 멀티 선택 비활성화
-    game.userAcquisitionMultiplier = 1.0; // 유저 획득 기본 배율
-    game.trustMultiplier = 1.0; // 신뢰도 획득 기본 배율
-    game.maxUserCapacity = 10000; // 초기 EC2 용량 (2배 상향)
-    game.hasConsultingEffect = false; // 컨설팅 효과 없음
-    game.hiredStaff = []; // 채용된 인원 목록
+    game.investmentRounds = GAME_CONSTANTS.INITIAL_INVESTMENT_ROUNDS;
+    game.equityPercentage = GAME_CONSTANTS.INITIAL_EQUITY_PERCENTAGE;
+    game.multiChoiceEnabled = false;
+    game.userAcquisitionMultiplier = GAME_CONSTANTS.INITIAL_USER_ACQUISITION_MULTIPLIER;
+    game.trustMultiplier = GAME_CONSTANTS.INITIAL_TRUST_MULTIPLIER;
+    game.maxUserCapacity = config.initialMaxCapacity;
+    game.hasConsultingEffect = false;
+    game.hiredStaff = [];
+    game.difficultyMode = mode;
+    game.grade = null;
+    game.capacityExceededCount = 0;
+    game.resilienceStacks = 0;
+    game.consecutiveNegativeCashTurns = 0;
 
     const savedGame = await this.gameRepository.save(game);
     return this.toDto(savedGame);
@@ -65,7 +102,6 @@ export class GameService {
     gameId: string,
     choiceId: number,
   ): Promise<GameResponseDto> {
-    // 1. 게임 조회 및 검증
     const game = await this.gameRepository.findOne({ where: { gameId } });
 
     if (!game) {
@@ -78,7 +114,6 @@ export class GameService {
       );
     }
 
-    // 2. 선택지 조회 및 검증
     const choice = await this.choiceRepository.findOne({
       where: { choiceId },
     });
@@ -93,277 +128,250 @@ export class GameService {
       );
     }
 
-    // 3. 투자 유치 신뢰도 조건 체크
-    // 턴 2: 초기 투자자 피칭 (choice ID 8)
-    const isEarlyPitching = game.currentTurn === 2 && choiceId === 8;
+    const config = this.getDifficultyConfig(game);
+    const maxTurns = this.getMaxTurns(game);
+    const recoveryMessages: string[] = [];
+
+    // --- Phase 3: Turn-start recovery ---
+    const turnRecovery = this.applyTurnStartRecovery(game, config);
+    recoveryMessages.push(...turnRecovery);
+
+    // --- Investment check (scaled, not blocking) ---
+    const isEarlyPitching =
+      game.currentTurn === GAME_CONSTANTS.EARLY_PITCH_TURN &&
+      choiceId === GAME_CONSTANTS.EARLY_PITCH_CHOICE_ID;
     let earlyPitchingFailed = false;
+    let investmentScaleFactor = 1.0;
 
-    // 시리즈 A, B, C 투자
-    const isSeriesAInvestment = game.currentTurn === 12 && choice.effects.cash > 100000000; // 시리즈 A: 5억+ 투자
-    const isSeriesBInvestment = game.currentTurn === 18 && choice.effects.cash > 1000000000; // 시리즈 B: 20억+ 투자
-    const isSeriesCInvestment = game.currentTurn === 23 && choice.effects.cash > 3000000000; // 시리즈 C: 50억+ 투자
+    const isSeriesAInvestment =
+      game.currentTurn === GAME_CONSTANTS.SERIES_A_TURN &&
+      choice.effects.cash > GAME_CONSTANTS.SERIES_A_MIN_CASH_EFFECT;
+    const isSeriesBInvestment =
+      game.currentTurn === GAME_CONSTANTS.SERIES_B_TURN &&
+      choice.effects.cash > GAME_CONSTANTS.SERIES_B_MIN_CASH_EFFECT;
+    const isSeriesCInvestment =
+      game.currentTurn === GAME_CONSTANTS.SERIES_C_TURN &&
+      choice.effects.cash > GAME_CONSTANTS.SERIES_C_MIN_CASH_EFFECT;
 
-    // 초기 피칭 실패 시 효과 무효화
-    if (isEarlyPitching && game.trust < 6) {
+    // Early pitch: penalty but NOT trust=0 wipeout
+    if (isEarlyPitching && game.trust < config.earlyPitchTrustThreshold) {
       earlyPitchingFailed = true;
-      console.log(`[WARNING] 초기 투자 피칭 실패: 신뢰도 ${game.trust}% < 6%`);
-    }
-
-    // 신뢰도 조건 미달 시 투자 실패
-    if (isSeriesAInvestment && game.trust < 30) {
-      throw new BadRequestException(
-        `시리즈 A 투자 유치 실패: 신뢰도가 ${game.trust}%로 최소 요구치인 30%에 미달합니다.`,
-      );
-    }
-    if (isSeriesBInvestment && game.trust < 50) {
-      throw new BadRequestException(
-        `시리즈 B 투자 유치 실패: 신뢰도가 ${game.trust}%로 최소 요구치인 50%에 미달합니다.`,
-      );
-    }
-    if (isSeriesCInvestment && game.trust < 70) {
-      throw new BadRequestException(
-        `시리즈 C 투자 유치 실패: 신뢰도가 ${game.trust}%로 최소 요구치인 70%에 미달합니다.`,
+      this.logger.warn(
+        `초기 투자 피칭 실패: 신뢰도 ${game.trust}% < ${config.earlyPitchTrustThreshold}%`,
       );
     }
 
-    // 4. 먼저 현재 용량으로 초과 체크 (인프라 개선 전)
+    // Series investments: scale instead of block
+    if (isSeriesAInvestment) {
+      investmentScaleFactor = this.calculateInvestmentScale(game.trust, config.seriesAMinTrust);
+    }
+    if (isSeriesBInvestment) {
+      investmentScaleFactor = this.calculateInvestmentScale(game.trust, config.seriesBMinTrust);
+    }
+    if (isSeriesCInvestment) {
+      investmentScaleFactor = this.calculateInvestmentScale(game.trust, config.seriesCMinTrust);
+    }
+
+    // --- Capacity check (graduated penalty) ---
     let capacityExceeded = false;
+    let capacityPenalty = 0;
     if (game.users > game.maxUserCapacity) {
-      game.trust = Math.max(0, game.trust - 10);
+      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+      game.trust = Math.max(0, game.trust - capacityPenalty);
       capacityExceeded = true;
-      console.log(`[CAPACITY CHECK] 턴 시작 시 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+      game.capacityExceededCount++;
+      const resilienceMsg = this.awardResilienceStack(game);
+      if (resilienceMsg) recoveryMessages.push(resilienceMsg);
+      this.logger.verbose(
+        `턴 시작 시 용량 초과 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${capacityPenalty}`,
+      );
     }
 
-    // 5. 인프라 개선 적용 (페널티 적용 후)
+    // --- Infra update ---
     game.infrastructure = this.mergeInfrastructure(
       game.infrastructure,
       choice.effects.infra,
     );
 
-    // DR 구성 여부 체크
     if (choice.effects.infra.includes('dr-configured')) {
       game.hasDR = true;
     }
 
-    // 인프라 개선 감지 - 최대 용량 증가
-    // Route53(DNS), CloudWatch(모니터링)은 용량과 무관, S3는 스토리지
-    const infraCapacityMap = {
-      'EC2': 10000,  // 기본 서버 용량 (2배 상향)
-      'Route53': 10000,  // DNS는 용량과 무관, EC2 유지
-      'CloudWatch': 10000,  // 모니터링은 용량과 무관, EC2 유지
-      'RDS': 25000,  // 데이터베이스 분리 효과
-      'S3': 25000,  // 정적 파일 분리 효과
-      'Auto Scaling': 50000,  // 자동 확장
-      'ECS': 80000,  // 컨테이너 오케스트레이션
-      'Aurora': 100000,  // 고성능 DB
-      'Redis': 100000,  // 캐시 레이어 추가
-      'EKS': 150000,  // 쿠버네티스 클러스터
-      'Karpenter': 150000,  // 동적 노드 스케일링
-      'Lambda': 200000,  // 서버리스 (2배 상향)
-      'Bedrock': 200000,  // AI 서비스
-      'Aurora Global DB': 300000,  // 글로벌 DB (2배 상향)
-      'CloudFront': 500000,  // CDN (2배 상향)
-      'dr-configured': 600000,  // 재해 복구 (2배 상향)
-      'multi-region': 1000000,  // 멀티 리전 (2배 상향)
-    };
+    // Recalculate capacity (additive system) + resilience bonus
+    const baseCapacity = this.calculateMaxCapacity(game.infrastructure, game.hasConsultingEffect);
+    game.maxUserCapacity = this.applyResilienceToCapacity(baseCapacity, game.resilienceStacks);
 
-    // 현재 인프라에서 최대 용량 계산
-    let maxCapacity = 10000; // 기본값 (EC2 초기 용량 - 2배 상향)
-    for (const infra of game.infrastructure) {
-      if (infraCapacityMap[infra] && infraCapacityMap[infra] > maxCapacity) {
-        maxCapacity = infraCapacityMap[infra];
-      }
-    }
+    // Phase 3: Comeback multiplier
+    const comebackMult = this.getComebackMultiplier(game, config);
 
-    // 컨설팅 효과가 있으면 3배 적용
-    if (game.hasConsultingEffect) {
-      maxCapacity = maxCapacity * 3;
-      console.log(`[CAPACITY] 컨설팅 효과 적용: ${maxCapacity / 3} -> ${maxCapacity} (3배)`);
-    }
-
-    game.maxUserCapacity = maxCapacity;
-
-    // 6. 효과 적용
-    // 초기 피칭 실패 시 효과 무효화
+    // --- Apply effects ---
     if (earlyPitchingFailed) {
-      // 피칭 실패: 자금과 신뢰도 효과 무효화
-      game.trust = 0; // 신뢰도 0으로 초기화
-      console.log(`[PITCHING FAILED] 초기 투자 피칭 실패로 신뢰도 0으로 초기화`);
+      // Penalty: lose half current trust instead of resetting to 0
+      const trustLoss = Math.max(5, Math.floor(game.trust * 0.5));
+      game.trust = Math.max(0, game.trust - trustLoss);
+      this.logger.warn(`초기 투자 피칭 실패: 신뢰도 -${trustLoss} (기존 전액 초기화에서 변경)`);
     } else {
-      // 정상 효과 적용
-      // 유저 획득 배율 적용 (디자이너 고용 효과)
-      const userGain = Math.floor(choice.effects.users * game.userAcquisitionMultiplier);
+      // Apply effects with difficulty multipliers + comeback bonus
+      let userGain = this.applyEffectMultiplier(
+        Math.floor(choice.effects.users * game.userAcquisitionMultiplier),
+        config,
+      );
+      if (userGain > 0 && comebackMult > 1.0) {
+        userGain = Math.floor(userGain * comebackMult);
+      }
       const newUserCount = game.users + userGain;
 
-      // 최대 용량 초과 시 장애 발생 (신뢰도 급락)
       if (newUserCount > game.maxUserCapacity) {
-        game.users = newUserCount; // 유저는 증가하지만
-        game.trust = Math.max(0, game.trust - 10); // 신뢰도 -10 (용량 초과 장애)
+        game.users = newUserCount;
+        const newPenalty = this.calculateCapacityPenalty(newUserCount, game.maxUserCapacity);
+        game.trust = Math.max(0, game.trust - newPenalty);
         capacityExceeded = true;
-        console.log(`[WARNING] 용량 초과! users=${newUserCount}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+        capacityPenalty = newPenalty;
+        game.capacityExceededCount++;
+        // Phase 3: Award resilience stack for surviving capacity exceeded
+        const resilienceMsg = this.awardResilienceStack(game);
+        if (resilienceMsg) recoveryMessages.push(resilienceMsg);
+        this.logger.warn(
+          `용량 초과! users=${newUserCount}, maxCapacity=${game.maxUserCapacity}, penalty=-${newPenalty}`,
+        );
       } else {
         game.users = newUserCount;
       }
 
-      game.cash += choice.effects.cash;
+      // Cash: apply investment scaling for series rounds + comeback
+      let cashEffect = choice.effects.cash;
+      if (investmentScaleFactor !== 1.0 && cashEffect > 0) {
+        cashEffect = Math.floor(cashEffect * investmentScaleFactor);
+        this.logger.debug(`투자 배율 적용: ${investmentScaleFactor.toFixed(2)}x -> cash=${cashEffect}`);
+      }
+      if (cashEffect > 0 && comebackMult > 1.0) {
+        cashEffect = Math.floor(cashEffect * comebackMult);
+      }
+      game.cash += cashEffect;
 
-      // 신뢰도 배율 적용 (기획자 고용 효과) - 장애 페널티 이후 적용
-      const trustGain = Math.floor(choice.effects.trust * game.trustMultiplier);
+      // Trust: apply multiplier + comeback
+      let trustGain = this.applyTrustEffectMultiplier(
+        Math.floor(choice.effects.trust * game.trustMultiplier),
+        config,
+      );
+      if (trustGain > 0 && comebackMult > 1.0) {
+        trustGain = Math.floor(trustGain * comebackMult);
+      }
       game.trust += trustGain;
     }
 
-    // 개발자 고용 감지 (text에 "개발자"와 "채용"이 포함)
-    if (choice.text.includes('개발자') && choice.text.includes('채용')) {
-      game.multiChoiceEnabled = true;
-      if (!game.hiredStaff.includes('개발자')) {
-        game.hiredStaff.push('개발자');
-      }
-      console.log(`[HIRING] 개발자 채용 완료! multiChoiceEnabled=${game.multiChoiceEnabled}`);
-    }
+    // Staff hiring
+    this.applyStaffHiring(choice, game);
 
-    // 디자이너 고용 감지 (text에 "디자이너"와 "채용"이 포함)
-    if (choice.text.includes('디자이너') && choice.text.includes('채용')) {
-      game.userAcquisitionMultiplier = 2.0; // 2배로 변경
-      if (!game.hiredStaff.includes('디자이너')) {
-        game.hiredStaff.push('디자이너');
-      }
-      console.log(`[HIRING] 디자이너 채용 완료! userAcquisitionMultiplier=${game.userAcquisitionMultiplier}`);
-    }
-
-    // 기획자 고용 감지 (text에 "기획자"와 "채용"이 포함)
-    if (choice.text.includes('기획자') && choice.text.includes('채용')) {
-      game.trustMultiplier = 2.0; // 신뢰도 2배
-      if (!game.hiredStaff.includes('기획자')) {
-        game.hiredStaff.push('기획자');
-      }
-      console.log(`[HIRING] 기획자 채용 완료! trustMultiplier=${game.trustMultiplier}`);
-    }
-
-    // 4. 선택 히스토리 저장
+    // History
     const history = new ChoiceHistory();
     history.gameId = gameId;
     history.turnNumber = game.currentTurn;
     history.choiceId = choiceId;
     await this.historyRepository.save(history);
 
-    // 4-1. 외부 전문가 투입 선택시 특별 처리 (Choice 68)
-    let consultingMessage: string | undefined;
-    if (choiceId === 68 && !game.hasConsultingEffect) {
-      // 아직 컨설팅 효과가 없는 경우에만 적용
-      const oldCapacity = game.maxUserCapacity;
-      game.hasConsultingEffect = true; // 컨설팅 효과 영구 적용 플래그 설정
-      game.maxUserCapacity = oldCapacity * 3; // 즉시 3배 효과 적용
-      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
-      console.log(`[CONSULTING] 컨설팅 효과 적용: 용량 ${oldCapacity} -> ${game.maxUserCapacity}`);
-    }
+    // Consulting effect
+    const consultingMessage = this.applyConsultingEffect(choiceId, game);
 
-    // 5. 턴 진행
+    // --- Turn progression ---
     let nextTurn = choice.nextTurn;
 
-    // 25턴이 최대 턴이므로, 25턴을 넘어가지 못하도록 제한
-    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
-      console.log(`[TURN LIMIT] nextTurn(${nextTurn})이 최대 턴(25)을 초과 - 25로 제한`);
-      nextTurn = 25; // 25턴에서 게임 종료 처리를 위해 25로 고정
+    if (nextTurn > maxTurns && !this.isSpecialTurn(nextTurn)) {
+      nextTurn = maxTurns;
     }
 
-    // 특수 선택지 처리
-    if (choiceId === 9502) {
-      // 계속하기 선택: IPO 달성 턴으로 돌아가기
+    // IPO continue choice
+    if (choiceId === GAME_CONSTANTS.IPO_CONTINUE_CHOICE_ID) {
       const returnTurn = game.ipoAchievedTurn || game.currentTurn + 1;
-
-      // 25턴 이후로는 갈 수 없으므로 체크
-      if (returnTurn > 25) {
-        console.log(`[IPO] 계속하기 불가 - 복귀 턴(${returnTurn})이 최대 턴(25)을 초과`);
-        // 게임 종료 처리 (IPO 성공과 동일하게 처리)
+      if (returnTurn > maxTurns) {
         game.status = GameStatus.WON_IPO;
-        nextTurn = 25; // 25턴에서 종료
+        nextTurn = maxTurns;
       } else {
         nextTurn = returnTurn;
-        game.ipoConditionMet = false; // IPO 조건 플래그 해제
-        console.log(`[IPO] 계속하기 선택 - 턴 ${nextTurn}으로 복귀`);
+        game.ipoConditionMet = false;
       }
     }
 
-    // 긴급 이벤트 체크 (현재 턴이 긴급 이벤트가 아닐 때만)
-    const currentIsEmergency = game.currentTurn >= 888 && game.currentTurn <= 890;
-    if (nextTurn === 19 && !game.hasDR && !currentIsEmergency) {
-      // 턴 18 다음 턴(19)으로 가는데 DR이 없으면 긴급 이벤트 발생
-      nextTurn = 888; // 리전 장애 긴급 이벤트 턴
+    // Emergency event check
+    const currentIsEmergency = this.isEmergencyTurn(game.currentTurn);
+    if (nextTurn === GAME_CONSTANTS.EMERGENCY_TRIGGER_NEXT_TURN && !game.hasDR && !currentIsEmergency) {
+      nextTurn = GAME_CONSTANTS.EMERGENCY_REDIRECT_TURN;
     }
 
-    // IPO 조건 달성 체크 (턴 950이 아닐 때만)
-    if (game.currentTurn !== 950 && !game.ipoConditionMet) {
+    // IPO condition check
+    if (game.currentTurn !== GAME_CONSTANTS.IPO_SELECTION_TURN && !game.ipoConditionMet) {
       const ipoConditionsMet = this.checkFullIPOConditions(game);
       if (ipoConditionsMet) {
         game.ipoConditionMet = true;
-        game.ipoAchievedTurn = nextTurn; // 다음 턴 번호를 저장 (950으로 이동하기 전 원래 가야 할 턴)
-        nextTurn = 950; // IPO 선택 턴으로 이동
-        console.log(`[IPO] 조건 달성! 턴 950으로 이동 (복귀 턴: ${game.ipoAchievedTurn})`);
+        game.ipoAchievedTurn = nextTurn;
+        nextTurn = GAME_CONSTANTS.IPO_SELECTION_TURN;
       }
     }
 
-    console.log(`[DEBUG] Before: currentTurn=${game.currentTurn}, nextTurn=${nextTurn}, choiceId=${choiceId}`);
-
-    // 절대적 보장: 게임은 25턴을 넘을 수 없음
-    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
-      console.log(`[TURN LIMIT ENFORCED] Preventing advancement beyond turn 25. Attempted: ${nextTurn}`);
-      nextTurn = 25;
+    // Absolute turn cap
+    if (nextTurn > maxTurns && !this.isSpecialTurn(nextTurn)) {
+      nextTurn = maxTurns;
     }
 
     game.currentTurn = nextTurn;
-    console.log(`[DEBUG] After: game.currentTurn=${game.currentTurn}`);
 
-    // 25턴 도달 시 단일 선택만 가능하도록 제한 (24턴에서 25턴으로 진입하는 경우)
-    if (game.currentTurn === 25) {
+    // Force single choice on final turn
+    if (game.currentTurn === maxTurns) {
       game.multiChoiceEnabled = false;
-      console.log(`[TURN 25] 최종 턴 도달 - 단일 선택만 가능하도록 강제 설정`);
     }
 
-    // 7. 승패 조건 체크 (Turn 950에서는 체크하지 않음 - 선택 턴이므로)
-    if (game.currentTurn !== 950) {
+    // --- Win/lose check ---
+    if (game.currentTurn !== GAME_CONSTANTS.IPO_SELECTION_TURN) {
       game.status = this.checkGameStatus(game);
-      console.log(`[DEBUG] Game status after check: ${game.status}`);
-    } else {
-      console.log(`[DEBUG] Turn 950 - IPO 선택 턴, 상태 체크 건너뜀`);
     }
 
-    // 25턴 완료 시 게임 종료 처리
-    // 25턴에서 선택을 완료한 경우 (어떤 선택이든 게임 종료)
-    const previousTurn = history.turnNumber; // 방금 선택한 턴
-    if (previousTurn === 25 && game.status === GameStatus.PLAYING) {
-      // 25턴에서 선택을 완료한 경우 - nextTurn과 관계없이 게임 종료
-      const hasIPO = this.checkIPOConditions(game);
-      if (!hasIPO) {
-        game.status = GameStatus.LOST_FIRED_CTO;
-        console.log(`[TURN 25 COMPLETED] IPO 조건 미충족 - CTO 해고`);
-        console.log(`[TURN 25 COMPLETED] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+    // Final turn completion: check all victory paths
+    const previousTurn = history.turnNumber;
+    if (previousTurn === maxTurns && game.status === GameStatus.PLAYING) {
+      const bestPath = this.findBestVictoryPath(game);
+      if (bestPath) {
+        game.status = this.victoryPathToStatus(bestPath);
       } else {
-        // IPO 조건을 충족한 경우
-        game.status = GameStatus.WON_IPO;
-        console.log(`[TURN 25 COMPLETED] IPO 조건 충족 - IPO 성공!`);
-        console.log(`[TURN 25 COMPLETED] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
+        game.status = GameStatus.LOST_FIRED_CTO;
       }
     }
 
-    // 7. 게임 상태 저장
+    // Calculate grade on game end
+    if (game.status !== GameStatus.PLAYING) {
+      game.grade = this.calculateGrade(game);
+    }
+
+    // Save
     const updatedGame = await this.gameRepository.save(game);
     const dto = this.toDto(updatedGame);
 
-    // 투자 실패 정보 추가
+    // Attach extra info
     if (earlyPitchingFailed) {
       dto.investmentFailed = true;
-      dto.investmentFailureMessage = '투자에 실패하였습니다. 신뢰도가 부족합니다.';
+      dto.investmentFailureMessage = '초기 투자 피칭에 실패했습니다. 신뢰도가 부족하여 투자 규모가 축소되었습니다.';
     }
 
-    // 용량 초과 정보 추가 (게임이 종료된 경우에도 마지막 메시지 표시)
+    if (investmentScaleFactor < 1.0 && !earlyPitchingFailed) {
+      dto.investmentFailed = true;
+      dto.investmentFailureMessage = `신뢰도 부족으로 투자 규모가 ${Math.round(investmentScaleFactor * 100)}%로 축소되었습니다.`;
+    }
+
     if (capacityExceeded) {
       dto.capacityExceeded = true;
-      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다.`;
+      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다. 신뢰도 -${capacityPenalty}`;
     }
 
-    // 컨설팅 효과 메시지 추가
     if (consultingMessage) {
       dto.consultingMessage = consultingMessage;
+    }
+
+    // Phase 3: Recovery info
+    if (comebackMult > 1.0) {
+      dto.comebackActive = true;
+      recoveryMessages.push(`위기 극복 보너스 활성! 긍정적 효과 ${Math.round((comebackMult - 1) * 100)}% 증가`);
+    }
+    if (recoveryMessages.length > 0) {
+      dto.recoveryMessages = recoveryMessages;
     }
 
     return dto;
@@ -376,7 +384,6 @@ export class GameService {
     gameId: string,
     choiceIds: number[],
   ): Promise<GameResponseDto> {
-    // 1. 게임 조회 및 검증
     const game = await this.gameRepository.findOne({ where: { gameId } });
 
     if (!game) {
@@ -389,13 +396,23 @@ export class GameService {
       );
     }
 
+    const config = this.getDifficultyConfig(game);
+    const maxTurns = this.getMaxTurns(game);
     const currentTurn = game.currentTurn;
     let capacityExceeded = false;
+    let capacityPenalty = 0;
     let consultingMessage: string | undefined;
-    let hasConsultingEffect = false;
+    let hasConsultingEffectApplied = false;
     let nextTurn = currentTurn;
+    const recoveryMessages: string[] = [];
 
-    // 2. 모든 선택지 효과를 누적 적용
+    // Phase 3: Turn-start recovery
+    const turnRecovery = this.applyTurnStartRecovery(game, config);
+    recoveryMessages.push(...turnRecovery);
+
+    // Phase 3: Comeback multiplier
+    const comebackMult = this.getComebackMultiplier(game, config);
+
     for (const choiceId of choiceIds) {
       const choice = await this.choiceRepository.findOne({
         where: { choiceId },
@@ -411,55 +428,47 @@ export class GameService {
         );
       }
 
-      // 인프라 개선 적용
+      // Infra
       game.infrastructure = this.mergeInfrastructure(
         game.infrastructure,
         choice.effects.infra,
       );
 
-      // DR 구성 체크
       if (choice.effects.infra.includes('dr-configured')) {
         game.hasDR = true;
       }
 
-      // 효과 누적
-      const userGain = Math.floor(choice.effects.users * game.userAcquisitionMultiplier);
+      // Effects with difficulty multiplier + comeback
+      let userGain = this.applyEffectMultiplier(
+        Math.floor(choice.effects.users * game.userAcquisitionMultiplier),
+        config,
+      );
+      if (userGain > 0 && comebackMult > 1.0) userGain = Math.floor(userGain * comebackMult);
       game.users += userGain;
-      game.cash += choice.effects.cash;
-      const trustGain = Math.floor(choice.effects.trust * game.trustMultiplier);
+
+      let cashEffect = choice.effects.cash;
+      if (cashEffect > 0 && comebackMult > 1.0) cashEffect = Math.floor(cashEffect * comebackMult);
+      game.cash += cashEffect;
+
+      let trustGain = this.applyTrustEffectMultiplier(
+        Math.floor(choice.effects.trust * game.trustMultiplier),
+        config,
+      );
+      if (trustGain > 0 && comebackMult > 1.0) trustGain = Math.floor(trustGain * comebackMult);
       game.trust += trustGain;
 
-      // 인원 채용 감지
-      if (choice.text.includes('개발자') && choice.text.includes('채용')) {
-        game.multiChoiceEnabled = true;
-        if (!game.hiredStaff.includes('개발자')) {
-          game.hiredStaff.push('개발자');
-        }
-      }
-      if (choice.text.includes('디자이너') && choice.text.includes('채용')) {
-        game.userAcquisitionMultiplier = 2.0;
-        if (!game.hiredStaff.includes('디자이너')) {
-          game.hiredStaff.push('디자이너');
-        }
-      }
-      if (choice.text.includes('기획자') && choice.text.includes('채용')) {
-        game.trustMultiplier = 2.0;
-        if (!game.hiredStaff.includes('기획자')) {
-          game.hiredStaff.push('기획자');
-        }
+      // Staff
+      this.applyStaffHiring(choice, game);
+
+      // Consulting
+      if (choiceId === GAME_CONSTANTS.CONSULTING_CHOICE_ID && !game.hasConsultingEffect) {
+        hasConsultingEffectApplied = true;
+        game.hasConsultingEffect = true;
       }
 
-      // 외부 전문가 투입 선택시 특별 처리 (Choice 68)
-      if (choiceId === 68 && !game.hasConsultingEffect) {
-        hasConsultingEffect = true;
-        game.hasConsultingEffect = true; // 컨설팅 효과 영구 적용
-        console.log(`[MULTI-CONSULTING] Choice 68 감지 - 컨설팅 효과 영구 적용`);
-      }
-
-      // 다음 턴 결정 (마지막 선택의 nextTurn 사용)
       nextTurn = choice.nextTurn;
 
-      // 히스토리 저장
+      // History
       const history = new ChoiceHistory();
       history.gameId = gameId;
       history.turnNumber = currentTurn;
@@ -467,110 +476,80 @@ export class GameService {
       await this.historyRepository.save(history);
     }
 
-    // 3. 먼저 현재 용량으로 초과 체크 (인프라 개선 전)
+    // Capacity check (graduated)
     if (game.users > game.maxUserCapacity) {
-      game.trust = Math.max(0, game.trust - 10);
+      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+      game.trust = Math.max(0, game.trust - capacityPenalty);
       capacityExceeded = true;
-      console.log(`[MULTI-CAPACITY CHECK] 용량 초과 페널티 적용: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+      game.capacityExceededCount++;
+      const resilienceMsg = this.awardResilienceStack(game);
+      if (resilienceMsg) recoveryMessages.push(resilienceMsg);
     }
 
-    // 4. 인프라 용량 재계산 (페널티 적용 후)
-    const infraCapacityMap = {
-      'EC2': 10000,  // 기본 서버 용량 (2배 상향)
-      'Route53': 10000,  // DNS는 용량과 무관, EC2 유지
-      'CloudWatch': 10000,  // 모니터링은 용량과 무관, EC2 유지
-      'RDS': 25000,  // 데이터베이스 분리 효과
-      'S3': 25000,  // 정적 파일 분리 효과
-      'Auto Scaling': 50000,  // 자동 확장
-      'ECS': 80000,  // 컨테이너 오케스트레이션
-      'Aurora': 100000,  // 고성능 DB
-      'Redis': 100000,  // 캐시 레이어 추가
-      'EKS': 150000,  // 쿠버네티스 클러스터
-      'Karpenter': 150000,  // 동적 노드 스케일링
-      'Lambda': 200000,  // 서버리스 (2배 상향)
-      'Bedrock': 200000,  // AI 서비스
-      'Aurora Global DB': 300000,  // 글로벌 DB (2배 상향)
-      'CloudFront': 500000,  // CDN (2배 상향)
-      'dr-configured': 600000,  // 재해 복구 (2배 상향)
-      'multi-region': 1000000,  // 멀티 리전 (2배 상향)
-    };
+    // Recalculate capacity + resilience bonus
+    const rawCapacity = this.calculateMaxCapacity(game.infrastructure, game.hasConsultingEffect);
+    game.maxUserCapacity = this.applyResilienceToCapacity(rawCapacity, game.resilienceStacks);
 
-    let maxCapacity = 10000;  // 기본값 (EC2 초기 용량 - 2배 상향)
-    for (const infra of game.infrastructure) {
-      if (infraCapacityMap[infra] && infraCapacityMap[infra] > maxCapacity) {
-        maxCapacity = infraCapacityMap[infra];
-      }
+    // Consulting message
+    if (hasConsultingEffectApplied) {
+      const baseCapacity = Math.floor(game.maxUserCapacity / GAME_CONSTANTS.CONSULTING_CAPACITY_MULTIPLIER);
+      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${baseCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 ${GAME_CONSTANTS.CONSULTING_CAPACITY_MULTIPLIER}배 증가했습니다.`;
     }
 
-    // 컨설팅 효과가 있으면 3배 적용
-    if (game.hasConsultingEffect) {
-      maxCapacity = maxCapacity * 3;
-      console.log(`[MULTI-CAPACITY] 컨설팅 효과 적용: ${maxCapacity / 3} -> ${maxCapacity} (3배)`);
+    // Turn progression
+    const currentIsEmergency = this.isEmergencyTurn(game.currentTurn);
+    if (nextTurn === GAME_CONSTANTS.EMERGENCY_TRIGGER_NEXT_TURN && !game.hasDR && !currentIsEmergency) {
+      nextTurn = GAME_CONSTANTS.EMERGENCY_REDIRECT_TURN;
     }
 
-    game.maxUserCapacity = maxCapacity;
-
-    // 4-1. 컨설팅 효과 적용 (Choice 68 처리)
-    if (hasConsultingEffect) {
-      // hasConsultingEffect가 true면 이미 위에서 3배가 적용되었으므로 메시지만 설정
-      const baseCapacity = Math.floor(game.maxUserCapacity / 3); // 3배 적용 전 원래 용량
-      consultingMessage = `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n인프라 수용량이 ${baseCapacity.toLocaleString()}명에서 ${game.maxUserCapacity.toLocaleString()}명으로 3배 증가했습니다.`;
-      console.log(`[MULTI-CONSULTING] 컨설팅 효과 적용 완료 (수용량: ${game.maxUserCapacity})`);
+    if (nextTurn > maxTurns && !this.isSpecialTurn(nextTurn)) {
+      nextTurn = maxTurns;
     }
 
-    // 5. 턴 진행
-    const currentIsEmergency = game.currentTurn >= 888 && game.currentTurn <= 890;
-    if (nextTurn === 19 && !game.hasDR && !currentIsEmergency) {
-      nextTurn = 888;
-    }
-
-    // 절대적 보장: 게임은 25턴을 넘을 수 없음
-    if (nextTurn > 25 && nextTurn !== 888 && nextTurn !== 950) {
-      console.log(`[TURN LIMIT ENFORCED - MULTI] Preventing advancement beyond turn 25. Attempted: ${nextTurn}`);
-      nextTurn = 25;
-    }
-
-    // 25턴에서 선택을 했다면 이제 게임이 종료되어야 함
-    const shouldEndGame = currentTurn === 25 && game.status === GameStatus.PLAYING;
+    const shouldEndGame = currentTurn === maxTurns && game.status === GameStatus.PLAYING;
 
     game.currentTurn = nextTurn;
 
-    // 5-1. 매 턴 용량 초과 지속 체크 (executeMultipleChoices)
+    // Post-turn capacity check
     if (game.users > game.maxUserCapacity && !capacityExceeded) {
-      game.trust = Math.max(0, game.trust - 10);
+      capacityPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
+      game.trust = Math.max(0, game.trust - capacityPenalty);
       capacityExceeded = true;
-      console.log(`[MULTI-CAPACITY CHECK] 매 턴 용량 초과 지속 페널티: users=${game.users}, maxCapacity=${game.maxUserCapacity}, trust penalty=-10`);
+      game.capacityExceededCount++;
     }
 
-    // 6. 승패 조건 체크
+    // Win/lose check
     game.status = this.checkGameStatus(game);
 
-    // 25턴에서 선택을 완료했다면 게임 종료
     if (shouldEndGame) {
-      const hasIPO = this.checkIPOConditions(game);
-      if (!hasIPO) {
-        game.status = GameStatus.LOST_FIRED_CTO;
-        console.log(`[TURN 25 COMPLETED - MULTI] IPO 조건 미충족 - CTO 해고`);
-        console.log(`[TURN 25 COMPLETED - MULTI] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
-      } else {
-        game.status = GameStatus.WON_IPO;
-        console.log(`[TURN 25 COMPLETED - MULTI] IPO 조건 충족 - IPO 성공!`);
-        console.log(`[TURN 25 COMPLETED - MULTI] users=${game.users}, cash=${game.cash}, trust=${game.trust}`);
-      }
+      const bestPath = this.findBestVictoryPath(game);
+      game.status = bestPath ? this.victoryPathToStatus(bestPath) : GameStatus.LOST_FIRED_CTO;
     }
 
-    // 7. 게임 상태 저장
+    // Grade on end
+    if (game.status !== GameStatus.PLAYING) {
+      game.grade = this.calculateGrade(game);
+    }
+
     const updatedGame = await this.gameRepository.save(game);
     const dto = this.toDto(updatedGame);
 
     if (capacityExceeded) {
       dto.capacityExceeded = true;
-      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다.`;
+      dto.capacityExceededMessage = `인프라 용량(${game.maxUserCapacity.toLocaleString()}명)을 초과하여 서비스 장애가 발생했습니다. 신뢰도 -${capacityPenalty}`;
     }
 
-    // 컨설팅 효과 메시지 추가
     if (consultingMessage) {
       dto.consultingMessage = consultingMessage;
+    }
+
+    // Phase 3: Recovery info
+    if (comebackMult > 1.0) {
+      dto.comebackActive = true;
+      recoveryMessages.push(`위기 극복 보너스 활성! 긍정적 효과 ${Math.round((comebackMult - 1) * 100)}% 증가`);
+    }
+    if (recoveryMessages.length > 0) {
+      dto.recoveryMessages = recoveryMessages;
     }
 
     return dto;
@@ -587,108 +566,507 @@ export class GameService {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Private: Balance mechanics
+  // ---------------------------------------------------------------------------
+
   /**
-   * 인프라 병합 (중복 제거)
+   * 투자 배율 계산: blocking 대신 trust/목표 비율로 투자금 스케일링
    */
-  private mergeInfrastructure(
-    current: string[],
-    additions: string[],
-  ): string[] {
+  private calculateInvestmentScale(currentTrust: number, targetTrust: number): number {
+    if (targetTrust <= 0) return 1.0;
+    const ratio = currentTrust / targetTrust;
+    return Math.min(
+      GAME_CONSTANTS.INVESTMENT_MAX_SCALE,
+      Math.max(GAME_CONSTANTS.INVESTMENT_MIN_SCALE, ratio),
+    );
+  }
+
+  /**
+   * 용량 초과 페널티: 초과 비율에 따른 단계적 페널티
+   */
+  private calculateCapacityPenalty(users: number, maxCapacity: number): number {
+    if (maxCapacity <= 0) return GAME_CONSTANTS.CAPACITY_EXCEEDED_TRUST_PENALTY;
+
+    const excessRatio = (users - maxCapacity) / maxCapacity;
+    const tiers = GAME_CONSTANTS.CAPACITY_PENALTY_TIERS;
+
+    // Find the matching tier (tiers are sorted ascending by excessRatio)
+    let penalty = tiers[0].penalty; // minimum penalty
+    for (const tier of tiers) {
+      if (excessRatio >= tier.excessRatio) {
+        penalty = tier.penalty;
+      }
+    }
+
+    return penalty;
+  }
+
+  /**
+   * 효과 배율 적용 (유저 수): 양수면 positive multiplier, 음수면 negative multiplier
+   */
+  private applyEffectMultiplier(value: number, config: DifficultyConfig): number {
+    if (value >= 0) {
+      return Math.floor(value * config.positiveEffectMultiplier);
+    }
+    return Math.floor(value * config.negativeEffectMultiplier);
+  }
+
+  /**
+   * 신뢰도 효과 배율 적용
+   */
+  private applyTrustEffectMultiplier(value: number, config: DifficultyConfig): number {
+    if (value >= 0) {
+      return Math.floor(value * config.positiveEffectMultiplier);
+    }
+    return Math.floor(value * config.negativeEffectMultiplier);
+  }
+
+  /**
+   * 등급 계산 (게임 종료 시)
+   */
+  private calculateGrade(game: Game): GameGrade {
+    const thresholds = GAME_CONSTANTS.GRADE_THRESHOLDS;
+
+    if (
+      game.users >= thresholds.S.minUsers &&
+      game.cash >= thresholds.S.minCash &&
+      game.trust >= thresholds.S.minTrust
+    ) {
+      return 'S';
+    }
+    if (
+      game.users >= thresholds.A.minUsers &&
+      game.cash >= thresholds.A.minCash &&
+      game.trust >= thresholds.A.minTrust
+    ) {
+      return 'A';
+    }
+    if (
+      game.users >= thresholds.B.minUsers &&
+      game.cash >= thresholds.B.minCash &&
+      game.trust >= thresholds.B.minTrust
+    ) {
+      return 'B';
+    }
+    if (
+      game.users >= thresholds.C.minUsers &&
+      game.cash >= thresholds.C.minCash &&
+      game.trust >= thresholds.C.minTrust
+    ) {
+      return 'C';
+    }
+    return 'F';
+  }
+
+  /**
+   * 용량 경고 레벨 계산
+   */
+  private getCapacityWarningLevel(game: Game): CapacityWarningLevel {
+    if (game.maxUserCapacity <= 0) return 'RED';
+    const ratio = game.users / game.maxUserCapacity;
+    if (ratio >= GAME_CONSTANTS.CAPACITY_WARNING_RED) return 'RED';
+    if (ratio >= GAME_CONSTANTS.CAPACITY_WARNING_YELLOW) return 'YELLOW';
+    return 'GREEN';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Staff & consulting
+  // ---------------------------------------------------------------------------
+
+  private applyStaffHiring(choice: Choice, game: Game): void {
+    if (choice.text.includes('개발자') && choice.text.includes('채용')) {
+      game.multiChoiceEnabled = true;
+      if (!game.hiredStaff.includes('개발자')) {
+        game.hiredStaff.push('개발자');
+      }
+    }
+
+    if (choice.text.includes('디자이너') && choice.text.includes('채용')) {
+      // Graduated multiplier: base + per-hire bonus
+      const currentMultiplier = game.userAcquisitionMultiplier;
+      game.userAcquisitionMultiplier = Math.min(
+        2.5,
+        currentMultiplier + GAME_CONSTANTS.STAFF_MULTIPLIERS.DESIGNER_USERS - 1.0 + GAME_CONSTANTS.STAFF_HIRE_BONUS * game.hiredStaff.length,
+      );
+      if (!game.hiredStaff.includes('디자이너')) {
+        game.hiredStaff.push('디자이너');
+      }
+    }
+
+    if (choice.text.includes('기획자') && choice.text.includes('채용')) {
+      const currentMultiplier = game.trustMultiplier;
+      game.trustMultiplier = Math.min(
+        2.5,
+        currentMultiplier + GAME_CONSTANTS.STAFF_MULTIPLIERS.PLANNER_TRUST - 1.0 + GAME_CONSTANTS.STAFF_HIRE_BONUS * game.hiredStaff.length,
+      );
+      if (!game.hiredStaff.includes('기획자')) {
+        game.hiredStaff.push('기획자');
+      }
+    }
+  }
+
+  private applyConsultingEffect(choiceId: number, game: Game): string | undefined {
+    if (choiceId !== GAME_CONSTANTS.CONSULTING_CHOICE_ID || game.hasConsultingEffect) {
+      return undefined;
+    }
+
+    const oldCapacity = game.maxUserCapacity;
+    game.hasConsultingEffect = true;
+    game.maxUserCapacity = oldCapacity * GAME_CONSTANTS.CONSULTING_CAPACITY_MULTIPLIER;
+
+    return (
+      `🎯 AWS Solutions Architect 컨설팅 효과가 발생했습니다!\n\n` +
+      `아키텍처의 성능이 극대화되어 병목 현상이 해소되었습니다.\n` +
+      `인프라 수용량이 ${oldCapacity.toLocaleString()}명에서 ` +
+      `${game.maxUserCapacity.toLocaleString()}명으로 ` +
+      `${GAME_CONSTANTS.CONSULTING_CAPACITY_MULTIPLIER}배 증가했습니다.`
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Capacity calculation (ADDITIVE system)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Additive capacity: base + sum of each infra's contribution.
+   * Old system used "max of all infra" which was too binary.
+   */
+  private calculateMaxCapacity(infrastructure: string[], hasConsultingEffect: boolean): number {
+    let totalCapacity = GAME_CONSTANTS.BASE_CAPACITY;
+
+    for (const infra of infrastructure) {
+      const contribution = GAME_CONSTANTS.INFRASTRUCTURE_CAPACITY[infra];
+      if (contribution) {
+        totalCapacity += contribution;
+      }
+    }
+
+    if (hasConsultingEffect) {
+      totalCapacity = totalCapacity * GAME_CONSTANTS.CONSULTING_CAPACITY_MULTIPLIER;
+    }
+
+    return totalCapacity;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Recovery & Resilience mechanics (Phase 3)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Apply turn-start recovery effects:
+   * - Natural trust recovery when trust is low
+   * - Debt interest when cash is negative
+   * - Resilience bonus to capacity
+   * Returns messages describing what recovery happened.
+   */
+  private applyTurnStartRecovery(game: Game, config: DifficultyConfig): string[] {
+    const messages: string[] = [];
+    const recovery = GAME_CONSTANTS.TRUST_RECOVERY;
+    const resilience = GAME_CONSTANTS.RESILIENCE;
+
+    // --- Natural trust recovery ---
+    if (game.trust < recovery.THRESHOLD && game.trust < recovery.MAX_NATURAL) {
+      let recoveryAmount = 0;
+
+      if (game.trust < recovery.DANGER_THRESHOLD) {
+        recoveryAmount = recovery.DANGER_RECOVERY_AMOUNT;
+      } else {
+        recoveryAmount = recovery.RECOVERY_AMOUNT;
+      }
+
+      // Resilience stacks boost trust recovery
+      recoveryAmount += game.resilienceStacks * resilience.TRUST_RECOVERY_PER_STACK;
+
+      const newTrust = Math.min(recovery.MAX_NATURAL, game.trust + recoveryAmount);
+      const actualRecovery = newTrust - game.trust;
+      if (actualRecovery > 0) {
+        game.trust = newTrust;
+        messages.push(`시장 안정화로 신뢰도가 +${actualRecovery}% 회복되었습니다.`);
+        this.logger.debug(`Natural trust recovery: +${actualRecovery} (stacks=${game.resilienceStacks})`);
+      }
+    }
+
+    // --- Debt interest ---
+    if (game.cash < 0) {
+      const interest = Math.floor(Math.abs(game.cash) * GAME_CONSTANTS.BANKRUPTCY_GRACE.DEBT_INTEREST_RATE);
+      game.cash -= interest;
+      game.consecutiveNegativeCashTurns++;
+      if (interest > 0) {
+        messages.push(`부채 이자로 ${interest.toLocaleString()}원이 추가 발생했습니다. (연속 ${game.consecutiveNegativeCashTurns}턴 적자)`);
+      }
+    } else {
+      // Reset grace counter when cash is positive
+      game.consecutiveNegativeCashTurns = 0;
+    }
+
+    return messages;
+  }
+
+  /**
+   * Award resilience stack when surviving capacity exceeded events.
+   * Only awarded once per capacity exceeded event, capped at MAX_STACKS.
+   */
+  private awardResilienceStack(game: Game): string | null {
+    const resilience = GAME_CONSTANTS.RESILIENCE;
+    if (game.resilienceStacks < resilience.MAX_STACKS) {
+      game.resilienceStacks++;
+      const bonusPercent = game.resilienceStacks * resilience.CAPACITY_BONUS_PER_STACK * 100;
+      return `인프라 장애를 극복하여 복원력이 향상되었습니다! (복원력 ${game.resilienceStacks}/${resilience.MAX_STACKS}, 용량 +${bonusPercent}%)`;
+    }
+    return null;
+  }
+
+  /**
+   * Check if comeback multiplier should apply for a given metric.
+   * Returns the multiplier (1.0 if no comeback, >1.0 if in danger zone).
+   */
+  private getComebackMultiplier(game: Game, config: DifficultyConfig): number {
+    const comeback = GAME_CONSTANTS.COMEBACK;
+
+    // Check if any primary metric is in danger zone relative to easiest victory path
+    const userRatio = game.users / config.ipoMinUsers;
+    const cashRatio = game.cash / config.ipoMinCash;
+    const trustRatio = game.trust / config.ipoMinTrust;
+
+    const inDanger = userRatio < comeback.DANGER_ZONE_RATIO ||
+      cashRatio < comeback.DANGER_ZONE_RATIO ||
+      trustRatio < comeback.DANGER_ZONE_RATIO;
+
+    return inDanger ? comeback.COMEBACK_MULTIPLIER : 1.0;
+  }
+
+  /**
+   * Apply resilience bonus to max capacity.
+   */
+  private applyResilienceToCapacity(baseCapacity: number, resilienceStacks: number): number {
+    const bonus = resilienceStacks * GAME_CONSTANTS.RESILIENCE.CAPACITY_BONUS_PER_STACK;
+    return Math.floor(baseCapacity * (1 + bonus));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Victory path mechanics
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Check if a specific victory path condition is met.
+   */
+  private checkVictoryPath(game: Game, path: VictoryPath): boolean {
+    const mode = (game.difficultyMode || 'NORMAL') as DifficultyMode;
+    const conditions = VICTORY_PATH_CONDITIONS[mode]?.[path];
+    if (!conditions) return false;
+
+    if (game.users < conditions.minUsers) return false;
+    if (game.cash < conditions.minCash) return false;
+    if (game.trust < conditions.minTrust) return false;
+
+    if (conditions.minInfraCount && game.infrastructure.length < conditions.minInfraCount) {
+      return false;
+    }
+
+    if (conditions.requiredInfra) {
+      for (const infra of conditions.requiredInfra) {
+        if (!game.infrastructure.includes(infra)) return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Find the best (highest priority) victory path that the game qualifies for.
+   * Priority order: IPO > TECH_LEADER > ACQUISITION > PROFITABILITY
+   */
+  private findBestVictoryPath(game: Game): VictoryPath | null {
+    const paths: VictoryPath[] = ['IPO', 'TECH_LEADER', 'ACQUISITION', 'PROFITABILITY'];
+    for (const path of paths) {
+      if (this.checkVictoryPath(game, path)) {
+        return path;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Map VictoryPath to GameStatus
+   */
+  private victoryPathToStatus(path: VictoryPath): GameStatus {
+    switch (path) {
+      case 'IPO': return GameStatus.WON_IPO;
+      case 'ACQUISITION': return GameStatus.WON_ACQUISITION;
+      case 'PROFITABILITY': return GameStatus.WON_PROFITABILITY;
+      case 'TECH_LEADER': return GameStatus.WON_TECH_LEADER;
+    }
+  }
+
+  /**
+   * Map GameStatus to VictoryPath (for won statuses)
+   */
+  private statusToVictoryPath(status: GameStatus): VictoryPath | null {
+    switch (status) {
+      case GameStatus.WON_IPO: return 'IPO';
+      case GameStatus.WON_ACQUISITION: return 'ACQUISITION';
+      case GameStatus.WON_PROFITABILITY: return 'PROFITABILITY';
+      case GameStatus.WON_TECH_LEADER: return 'TECH_LEADER';
+      default: return null;
+    }
+  }
+
+  /**
+   * Calculate progress (0-100%) toward each victory path.
+   */
+  private calculateVictoryPathProgress(game: Game): Record<string, number> {
+    const mode = (game.difficultyMode || 'NORMAL') as DifficultyMode;
+    const allConditions = VICTORY_PATH_CONDITIONS[mode];
+    if (!allConditions) return {};
+
+    const progress: Record<string, number> = {};
+
+    for (const [path, conditions] of Object.entries(allConditions) as [VictoryPath, VictoryPathCondition][]) {
+      const metrics: number[] = [];
+
+      metrics.push(Math.min(100, (game.users / conditions.minUsers) * 100));
+      metrics.push(Math.min(100, (game.cash / conditions.minCash) * 100));
+      metrics.push(Math.min(100, (game.trust / conditions.minTrust) * 100));
+
+      if (conditions.minInfraCount) {
+        metrics.push(Math.min(100, (game.infrastructure.length / conditions.minInfraCount) * 100));
+      }
+
+      if (conditions.requiredInfra && conditions.requiredInfra.length > 0) {
+        const met = conditions.requiredInfra.filter(i => game.infrastructure.includes(i)).length;
+        metrics.push((met / conditions.requiredInfra.length) * 100);
+      }
+
+      // Average of all metric progress values
+      const avg = metrics.reduce((a, b) => a + b, 0) / metrics.length;
+      progress[path] = Math.round(avg);
+    }
+
+    return progress;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private: Turn helpers
+  // ---------------------------------------------------------------------------
+
+  private isEmergencyTurn(turn: number): boolean {
+    return turn >= GAME_CONSTANTS.EMERGENCY_TURN_START && turn <= GAME_CONSTANTS.EMERGENCY_TURN_END;
+  }
+
+  private isSpecialTurn(turn: number): boolean {
+    return this.isEmergencyTurn(turn) || turn === GAME_CONSTANTS.IPO_SELECTION_TURN;
+  }
+
+  private mergeInfrastructure(current: string[], additions: string[]): string[] {
     const merged = new Set([...current, ...additions]);
     return Array.from(merged);
   }
 
-  /**
-   * 승패 조건 체크
-   */
+  // ---------------------------------------------------------------------------
+  // Private: Win/lose conditions
+  // ---------------------------------------------------------------------------
+
   private checkGameStatus(game: Game): GameStatus {
-    // 실패 조건 체크 (우선순위 높음)
-    if (game.cash < 0) {
-      return GameStatus.LOST_BANKRUPT; // 파산
+    const config = this.getDifficultyConfig(game);
+    const maxTurns = this.getMaxTurns(game);
+
+    // Bankruptcy: grace period before actual bankruptcy
+    if (game.cash < config.bankruptcyThreshold) {
+      // Hard threshold exceeded → immediate bankruptcy (no grace)
+      return GameStatus.LOST_BANKRUPT;
+    }
+    if (game.cash < 0 && game.consecutiveNegativeCashTurns >= GAME_CONSTANTS.BANKRUPTCY_GRACE.GRACE_TURNS) {
+      // Grace period exhausted → bankruptcy
+      return GameStatus.LOST_BANKRUPT;
     }
 
-    if (game.users > 0 && game.trust < 20) {
-      return GameStatus.LOST_OUTAGE; // 서버 다운 → 신뢰도 급락 (회생 불가)
+    // Outage: trust below threshold (graduated by difficulty)
+    if (game.users > 0 && game.trust < config.trustOutageThreshold) {
+      return GameStatus.LOST_OUTAGE;
     }
 
-    if (game.equityPercentage < 20) {
-      return GameStatus.LOST_EQUITY; // 투자자에게 지분 빼앗김 (80% 초과 희석)
+    // Equity dilution
+    if (game.equityPercentage < GAME_CONSTANTS.EQUITY_MIN_THRESHOLD) {
+      return GameStatus.LOST_EQUITY;
     }
 
-    // 긴급 이벤트 턴은 게임 종료 조건에서 제외 (888, 889, 890)
-    const isEmergencyEvent = game.currentTurn >= 888 && game.currentTurn <= 890;
+    // Emergency turns exempt from max turn check
+    const isEmergencyEvent = this.isEmergencyTurn(game.currentTurn);
 
-    // 25턴 도달 시 IPO 조건 체크 (긴급 이벤트 제외)
-    if (game.currentTurn >= 25 && !isEmergencyEvent) {
-      const hasIPO = this.checkIPOConditions(game);
-      if (!hasIPO) {
-        return GameStatus.LOST_FIRED_CTO; // CTO 해고 - 25턴까지 IPO 목표 달성 실패
+    if (game.currentTurn >= maxTurns && !isEmergencyEvent) {
+      const bestPath = this.findBestVictoryPath(game);
+      if (!bestPath) {
+        return GameStatus.LOST_FIRED_CTO;
       }
     }
 
-    // 성공 조건 체크 (IPO 성공) - 턴 950(IPO 선택 턴)이 아닐 때만
-    if (game.currentTurn !== 950) {
-      if (
-        game.users >= 100000 &&
-        game.cash >= 300000000 &&
-        game.trust >= 80 &&
-        game.infrastructure.includes('RDS') &&
-        game.infrastructure.includes('EKS')
-      ) {
-        // 턴 999 (최종 성공 엔딩)에서만 WON_IPO 반환
-        if (game.currentTurn === 999) {
+    // IPO success check
+    if (game.currentTurn !== GAME_CONSTANTS.IPO_SELECTION_TURN) {
+      if (this.checkFullIPOConditions(game)) {
+        if (game.currentTurn === GAME_CONSTANTS.IPO_FINAL_SUCCESS_TURN) {
           return GameStatus.WON_IPO;
         }
       }
     }
 
-    // 게임 진행 중
     return GameStatus.PLAYING;
   }
 
-  /**
-   * IPO 조건 확인 (기본)
-   */
   private checkIPOConditions(game: Game): boolean {
-    return game.users >= 100000 && game.cash >= 300000000 && game.trust >= 80;
+    const config = this.getDifficultyConfig(game);
+    return (
+      game.users >= config.ipoMinUsers &&
+      game.cash >= config.ipoMinCash &&
+      game.trust >= config.ipoMinTrust
+    );
   }
 
-  /**
-   * 완전한 IPO 조건 확인 (인프라 포함)
-   */
   private checkFullIPOConditions(game: Game): boolean {
-    // 디버깅: 현재 게임 상태 로깅
-    console.log(`[IPO DEBUG] Turn ${game.currentTurn} 상태:`);
-    console.log(`  - Users: ${game.users} (필요: 100000)`);
-    console.log(`  - Cash: ${game.cash} (필요: 300000000)`);
-    console.log(`  - Trust: ${game.trust} (필요: 80)`);
-    console.log(`  - Infrastructure: ${JSON.stringify(game.infrastructure)}`);
-    console.log(`  - Has RDS: ${game.infrastructure.includes('RDS')}`);
-    console.log(`  - Has EKS: ${game.infrastructure.includes('EKS')}`);
+    const config = this.getDifficultyConfig(game);
 
-    const usersCheck = game.users >= 100000;
-    const cashCheck = game.cash >= 300000000;
-    const trustCheck = game.trust >= 80;
-    const dbCheck = game.infrastructure.includes('RDS'); // RDS로 변경 (Aurora Global DB는 게임에 존재하지 않음)
-    const eksCheck = game.infrastructure.includes('EKS');
+    const usersCheck = game.users >= config.ipoMinUsers;
+    const cashCheck = game.cash >= config.ipoMinCash;
+    const trustCheck = game.trust >= config.ipoMinTrust;
+    const infraCheck = GAME_CONSTANTS.IPO_REQUIRED_INFRA.every((infra) =>
+      game.infrastructure.includes(infra),
+    );
 
-    console.log(`[IPO DEBUG] 조건 체크 결과:`);
-    console.log(`  - Users ✓: ${usersCheck}`);
-    console.log(`  - Cash ✓: ${cashCheck}`);
-    console.log(`  - Trust ✓: ${trustCheck}`);
-    console.log(`  - RDS ✓: ${dbCheck}`);
-    console.log(`  - EKS ✓: ${eksCheck}`);
+    this.logger.debug(
+      `IPO check: users=${usersCheck}(${game.users}/${config.ipoMinUsers}), cash=${cashCheck}(${game.cash}/${config.ipoMinCash}), trust=${trustCheck}(${game.trust}/${config.ipoMinTrust}), infra=${infraCheck}`,
+    );
 
-    const result = usersCheck && cashCheck && trustCheck && dbCheck && eksCheck;
-    console.log(`[IPO DEBUG] 최종 결과: ${result}`);
-
-    return result;
+    return usersCheck && cashCheck && trustCheck && infraCheck;
   }
 
-  /**
-   * Entity to DTO 변환
-   */
+  // ---------------------------------------------------------------------------
+  // DTO conversion
+  // ---------------------------------------------------------------------------
+
   private toDto(game: Game): GameResponseDto {
+    const config = this.getDifficultyConfig(game);
+    const capacityWarning = this.getCapacityWarningLevel(game);
+    const maxTurns = this.getMaxTurns(game);
+
+    // Build warnings array
+    const warnings: string[] = [];
+    if (capacityWarning === 'YELLOW') {
+      warnings.push(`인프라 용량의 ${Math.round((game.users / game.maxUserCapacity) * 100)}%를 사용 중입니다. 인프라 확장을 고려하세요.`);
+    }
+    if (capacityWarning === 'RED') {
+      warnings.push(`인프라 용량의 ${Math.round((game.users / game.maxUserCapacity) * 100)}%를 사용 중입니다! 즉시 인프라를 확장하세요!`);
+    }
+    if (game.trust > 0 && game.trust < config.trustOutageThreshold + 10) {
+      warnings.push(`신뢰도가 ${game.trust}%로 위험 수준에 접근 중입니다. ${config.trustOutageThreshold}% 미만이 되면 서비스가 중단됩니다.`);
+    }
+    if (game.cash > 0 && game.cash < 3_000_000) {
+      warnings.push(`자금이 ${game.cash.toLocaleString()}원으로 부족합니다. 파산 위험이 있습니다.`);
+    }
+
+    // Victory path progress (always calculated for UI)
+    const victoryPathProgress = this.calculateVictoryPathProgress(game);
+    const victoryPath = this.statusToVictoryPath(game.status);
+
     return {
       gameId: game.gameId,
       currentTurn: game.currentTurn,
@@ -702,6 +1080,24 @@ export class GameService {
       maxUserCapacity: game.maxUserCapacity,
       hiredStaff: game.hiredStaff,
       multiChoiceEnabled: game.multiChoiceEnabled,
+      // Phase 1 additions
+      difficultyMode: game.difficultyMode,
+      grade: game.grade,
+      maxTurns,
+      capacityWarningLevel: capacityWarning,
+      warnings,
+      capacityUsagePercent: game.maxUserCapacity > 0
+        ? Math.round((game.users / game.maxUserCapacity) * 100)
+        : 0,
+      // Phase 2 additions
+      victoryPath,
+      victoryPathProgress,
+      // Phase 3 additions
+      resilienceStacks: game.resilienceStacks,
+      bankruptcyGraceTurns: game.cash < 0
+        ? Math.max(0, GAME_CONSTANTS.BANKRUPTCY_GRACE.GRACE_TURNS - game.consecutiveNegativeCashTurns)
+        : undefined,
+      comebackActive: this.getComebackMultiplier(game, config) > 1.0,
     };
   }
 }

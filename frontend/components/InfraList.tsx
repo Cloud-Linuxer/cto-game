@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { IPO_REQUIRED_INFRA } from '@/lib/game-constants';
 
 interface InfraListProps {
   infrastructure: string[];
@@ -22,7 +23,7 @@ export default function InfraList({ infrastructure }: InfraListProps) {
     'Karpenter': '🔧',
   };
 
-  const requiredInfra = ['Aurora Global DB', 'EKS'];
+  const requiredInfra: readonly string[] = IPO_REQUIRED_INFRA;
   const hasRequired = requiredInfra.filter(req => infrastructure.includes(req));
   const progress = (hasRequired.length / requiredInfra.length) * 100;
 
@@ -65,7 +66,7 @@ export default function InfraList({ infrastructure }: InfraListProps) {
         ) : (
           infrastructure.map((infra, index) => (
             <div
-              key={index}
+              key={`infra-${infra}`}
               className="group bg-white p-3 sm:p-4 rounded-lg lg:rounded-xl border border-slate-200 shadow-sm lg:shadow-md hover:shadow-lg lg:hover:shadow-xl hover:scale-[1.02] lg:hover:scale-105 transition-all duration-300"
             >
               <div className="flex items-center gap-2 sm:gap-3">

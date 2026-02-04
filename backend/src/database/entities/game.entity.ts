@@ -9,12 +9,18 @@ import {
 export enum GameStatus {
   PLAYING = 'PLAYING',
   WON_IPO = 'WON_IPO',
+  WON_ACQUISITION = 'WON_ACQUISITION',
+  WON_PROFITABILITY = 'WON_PROFITABILITY',
+  WON_TECH_LEADER = 'WON_TECH_LEADER',
   LOST_BANKRUPT = 'LOST_BANKRUPT',
   LOST_OUTAGE = 'LOST_OUTAGE',
   LOST_FAILED_IPO = 'LOST_FAILED_IPO',
-  LOST_EQUITY = 'LOST_EQUITY', // 투자자에게 지분 빼앗김
-  LOST_FIRED_CTO = 'LOST_FIRED_CTO', // CTO 해고 (25턴 IPO 실패)
+  LOST_EQUITY = 'LOST_EQUITY',
+  LOST_FIRED_CTO = 'LOST_FIRED_CTO',
 }
+
+export type GameGrade = 'S' | 'A' | 'B' | 'C' | 'F';
+export type CapacityWarningLevel = 'GREEN' | 'YELLOW' | 'RED';
 
 @Entity('games')
 export class Game {
@@ -50,37 +56,64 @@ export class Game {
   status: GameStatus;
 
   @Column({ type: 'boolean', default: false })
-  hasDR: boolean; // DR 구성 여부
+  hasDR: boolean;
 
   @Column({ type: 'int', default: 0 })
-  investmentRounds: number; // 투자 라운드 횟수
+  investmentRounds: number;
 
   @Column({ type: 'int', default: 100 })
-  equityPercentage: number; // 남은 지분율 (%)
+  equityPercentage: number;
 
   @Column({ type: 'boolean', default: false })
-  multiChoiceEnabled: boolean; // 개발자 고용 시 다음 턴에 2개 선택 가능
+  multiChoiceEnabled: boolean;
 
   @Column({ type: 'float', default: 1.0 })
-  userAcquisitionMultiplier: number; // 디자이너 고용 시 유저 획득 배율 (2배)
+  userAcquisitionMultiplier: number;
 
   @Column({ type: 'float', default: 1.0 })
-  trustMultiplier: number; // 기획자 고용 시 신뢰도 획득 배율 (2배)
+  trustMultiplier: number;
 
   @Column({ type: 'int', default: 5000 })
-  maxUserCapacity: number; // 인프라가 수용 가능한 최대 유저 수
+  maxUserCapacity: number;
 
   @Column({ type: 'boolean', default: false })
-  hasConsultingEffect: boolean; // AWS SA 컨설팅 효과 적용 여부 (3배 용량 증가)
+  hasConsultingEffect: boolean;
 
   @Column({ type: 'simple-json', default: '[]' })
-  hiredStaff: string[]; // 채용된 인원 목록 (개발자, 디자이너, 기획자 등)
+  hiredStaff: string[];
 
   @Column({ type: 'boolean', default: false })
-  ipoConditionMet: boolean; // IPO 조건 달성 여부
+  ipoConditionMet: boolean;
 
   @Column({ type: 'int', nullable: true })
-  ipoAchievedTurn: number; // IPO 조건을 달성한 턴
+  ipoAchievedTurn: number;
+
+  // --- Phase 1: New fields ---
+
+  @Column({ type: 'varchar', length: 10, default: 'NORMAL' })
+  difficultyMode: string;
+
+  @Column({ type: 'varchar', length: 2, nullable: true })
+  grade: string; // S, A, B, C, F - set on game end
+
+  @Column({ type: 'int', default: 0 })
+  capacityExceededCount: number; // track how many times capacity was exceeded
+
+  // --- Phase 3: Recovery & Resilience fields ---
+
+  @Column({ type: 'int', default: 0 })
+  resilienceStacks: number; // earned by surviving capacity exceeded events
+
+  @Column({ type: 'int', default: 0 })
+  consecutiveNegativeCashTurns: number; // tracks turns with negative cash for grace period
+
+  // --- Event System fields ---
+
+  @Column({ type: 'int', nullable: true })
+  eventSeed: number; // Seed for deterministic random event generation
+
+  @Column({ type: 'simple-json', default: '[]' })
+  activeEvents: string[]; // Array of active event IDs
 
   @CreateDateColumn()
   createdAt: Date;

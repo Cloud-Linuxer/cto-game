@@ -13,7 +13,9 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD || 'cto_game_password',
   database: process.env.DB_NAME || 'cto_game',
   entities: [Game, Turn, Choice, ChoiceHistory, Leaderboard],
-  synchronize: true, // 개발 환경에서만 사용, 프로덕션에서는 false
+  synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV === 'development',
-  timezone: 'Z', // UTC 타임존 명시
+  extra: {
+    timezone: 'Z', // UTC 타임존 명시
+  },
 };

@@ -67,7 +67,7 @@ describe('GameService', () => {
         currentTurn: 1,
         users: 0,
         cash: 10000000,
-        trust: 0,
+        trust: 40,
         infrastructure: ['EC2'],
         status: GameStatus.PLAYING,
         hasDR: false,
@@ -76,11 +76,18 @@ describe('GameService', () => {
         multiChoiceEnabled: false,
         userAcquisitionMultiplier: 1.0,
         trustMultiplier: 1.0,
-        maxUserCapacity: 5000,
+        maxUserCapacity: 10000,
         hasConsultingEffect: false,
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -93,7 +100,7 @@ describe('GameService', () => {
       expect(result.currentTurn).toBe(1);
       expect(result.users).toBe(0);
       expect(result.cash).toBe(10000000);
-      expect(result.trust).toBe(0);
+      expect(result.trust).toBe(40);
       expect(result.infrastructure).toEqual(['EC2']);
       expect(result.status).toBe(GameStatus.PLAYING);
       expect(mockGameRepository.save).toHaveBeenCalledTimes(1);
@@ -121,6 +128,13 @@ describe('GameService', () => {
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -166,6 +180,13 @@ describe('GameService', () => {
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -192,6 +213,11 @@ describe('GameService', () => {
         cash: 15000000,
         trust: 60,
         infrastructure: ['EC2', 'Aurora'],
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
       };
 
       mockGameRepository.findOne.mockResolvedValue(game);
@@ -218,6 +244,8 @@ describe('GameService', () => {
         trust: 0,
         infrastructure: ['EC2'],
         status: GameStatus.LOST_BANKRUPT,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         hasDR: false,
         investmentRounds: 0,
@@ -230,6 +258,11 @@ describe('GameService', () => {
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
         updatedAt: new Date(),
       };
 
@@ -260,6 +293,13 @@ describe('GameService', () => {
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -282,7 +322,7 @@ describe('GameService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('자금이 음수가 되면 파산 상태로 변경해야 함', async () => {
+    it('자금이 파산 임계값(-3천만원) 미만이 되면 파산 상태로 변경해야 함', async () => {
       const game: Game = {
         gameId: 'test-game-id',
         currentTurn: 1,
@@ -302,6 +342,13 @@ describe('GameService', () => {
         hiredStaff: [],
         ipoConditionMet: false,
         ipoAchievedTurn: null,
+        difficultyMode: 'NORMAL',
+        grade: null,
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
+        eventSeed: null,
+        activeEvents: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -311,8 +358,8 @@ describe('GameService', () => {
         turnNumber: 1,
         text: '대규모 투자',
         effects: {
-          users: 10000,
-          cash: -5000000, // -500만원
+          users: 100,
+          cash: -35000000, // -3500만원 (파산 임계값 -3000만원 초과)
           trust: -10,
           infra: [],
         },
@@ -323,11 +370,16 @@ describe('GameService', () => {
 
       const bankruptGame: Game = {
         ...game,
-        cash: -4000000,
+        cash: -34000000,
         trust: 40,
-        users: 10000,
+        users: 100,
         currentTurn: 2,
         status: GameStatus.LOST_BANKRUPT,
+        difficultyMode: 'NORMAL',
+        grade: 'F',
+        capacityExceededCount: 0,
+        resilienceStacks: 0,
+        consecutiveNegativeCashTurns: 0,
       };
 
       mockGameRepository.findOne.mockResolvedValue(game);

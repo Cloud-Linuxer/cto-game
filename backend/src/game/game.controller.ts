@@ -16,7 +16,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { GameService } from './game.service';
-import { GameResponseDto, ExecuteChoiceDto } from '../common/dto';
+import { GameResponseDto, ExecuteChoiceDto, StartGameDto } from '../common/dto';
 
 @ApiTags('game')
 @Controller('game')
@@ -25,13 +25,14 @@ export class GameController {
 
   @Post('start')
   @ApiOperation({ summary: '새 게임 시작' })
+  @ApiBody({ type: StartGameDto, required: false })
   @ApiResponse({
     status: 201,
     description: '게임이 성공적으로 시작되었습니다',
     type: GameResponseDto,
   })
-  async startGame(): Promise<GameResponseDto> {
-    return this.gameService.startGame();
+  async startGame(@Body() dto?: StartGameDto): Promise<GameResponseDto> {
+    return this.gameService.startGame(dto?.difficulty);
   }
 
   @Get(':gameId')
@@ -72,7 +73,6 @@ export class GameController {
     @Param('gameId') gameId: string,
     @Body() dto: ExecuteChoiceDto,
   ): Promise<GameResponseDto> {
-    // choiceId가 배열이면 여러 선택 실행, 아니면 단일 선택 실행
     if (Array.isArray(dto.choiceId)) {
       return this.gameService.executeMultipleChoices(gameId, dto.choiceId);
     }

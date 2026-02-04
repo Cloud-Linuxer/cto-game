@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Leaderboard } from '../database/entities/leaderboard.entity';
 import { GameResponseDto } from '../common/dto/game-response.dto';
+import { DIFFICULTY_CONFIGS, VICTORY_PATH_CONDITIONS, DifficultyMode, VictoryPath } from '../game/game-constants';
 
 @Injectable()
 export class LeaderboardService {
@@ -11,7 +12,7 @@ export class LeaderboardService {
     private leaderboardRepository: Repository<Leaderboard>,
   ) {}
 
-  // 점수 계산 로직 (유저수, 금액, 신뢰도만 사용)
+  // 점수 계산 로직 (난이도 배율 적용)
   calculateScore(gameState: GameResponseDto): number {
     // 유저수 점수 (1명당 1점)
     const userScore = gameState.users;
@@ -22,8 +23,21 @@ export class LeaderboardService {
     // 신뢰도 점수 (1%당 1000점)
     const trustScore = gameState.trust * 1000;
 
-    // 총 점수 = 유저수 + 금액점수 + 신뢰도점수
-    const score = userScore + cashScore + trustScore;
+    // 기본 점수
+    const baseScore = userScore + cashScore + trustScore;
+
+    // 난이도 배율 적용
+    const mode = (gameState.difficultyMode || 'NORMAL') as DifficultyMode;
+    const config = DIFFICULTY_CONFIGS[mode] || DIFFICULTY_CONFIGS.NORMAL;
+    let score = Math.floor(baseScore * config.scoreMultiplier);
+
+    // 승리 경로 배율 적용
+    if (gameState.victoryPath) {
+      const vpConditions = VICTORY_PATH_CONDITIONS[mode]?.[gameState.victoryPath as VictoryPath];
+      if (vpConditions) {
+        score = Math.floor(score * vpConditions.scoreMultiplier);
+      }
+    }
 
     return score;
   }
@@ -41,7 +55,8 @@ export class LeaderboardService {
       finalTrust: gameState.trust,
       finalInfrastructure: gameState.infrastructure,
       teamSize: gameState.hiredStaff ? gameState.hiredStaff.length : 0,
-      difficulty: 'NORMAL', // 추후 난이도 기능 추가 시 변경
+      difficulty: gameState.difficultyMode || 'NORMAL',
+      victoryPath: gameState.victoryPath || gameState.status || 'WON_IPO',
     });
 
     return await this.leaderboardRepository.save(leaderboardEntry);
@@ -81,7 +96,7 @@ export class LeaderboardService {
   // 플레이어의 순위 조회
   async getPlayerRank(score: number): Promise<number> {
     const count = await this.leaderboardRepository.count({
-      where: { score: score + 1 }, // score보다 높은 점수의 개수
+      where: { score: MoreThan(score) },
     });
     return count + 1;
   }
@@ -119,7 +134,6 @@ export class LeaderboardService {
 
   // 리더보드 초기화
   async clearAll(): Promise<number> {
-    // 모든 레코드 조회 후 삭제
     const allRecords = await this.leaderboardRepository.find();
     if (allRecords.length === 0) {
       return 0;

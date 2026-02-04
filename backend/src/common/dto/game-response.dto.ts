@@ -55,4 +55,46 @@ export class GameResponseDto {
 
   @ApiProperty({ description: '컨설팅 효과 메시지', required: false })
   consultingMessage?: string;
+
+  // --- Phase 1 additions ---
+
+  @ApiProperty({ description: '난이도 모드', enum: ['EASY', 'NORMAL', 'HARD'], required: false })
+  difficultyMode?: string;
+
+  @ApiProperty({ description: '등급 (S/A/B/C/F)', required: false })
+  grade?: string;
+
+  @ApiProperty({ description: '최대 턴 수 (난이도에 따라 다름)', required: false })
+  maxTurns?: number;
+
+  @ApiProperty({ description: '용량 경고 레벨', enum: ['GREEN', 'YELLOW', 'RED'], required: false })
+  capacityWarningLevel?: string;
+
+  @ApiProperty({ description: '경고 메시지 목록', type: [String], required: false })
+  warnings?: string[];
+
+  @ApiProperty({ description: '용량 사용률 (%)', required: false })
+  capacityUsagePercent?: number;
+
+  // --- Phase 2 additions ---
+
+  @ApiProperty({ description: '달성한 승리 경로', required: false })
+  victoryPath?: string;
+
+  @ApiProperty({ description: '승리 경로별 진행률 (%)', required: false })
+  victoryPathProgress?: Record<string, number>;
+
+  // --- Phase 3 additions ---
+
+  @ApiProperty({ description: '복원력 스택 수 (0-3)', required: false })
+  resilienceStacks?: number;
+
+  @ApiProperty({ description: '파산 유예 잔여 턴 (0이면 유예 없음)', required: false })
+  bankruptcyGraceTurns?: number;
+
+  @ApiProperty({ description: '컴백 보너스 활성 여부', required: false })
+  comebackActive?: boolean;
+
+  @ApiProperty({ description: '회복/복원 이벤트 메시지 목록', type: [String], required: false })
+  recoveryMessages?: string[];
 }

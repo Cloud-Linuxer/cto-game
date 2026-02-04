@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Turn } from '@/lib/types';
+import { MAX_MULTI_CHOICES, CHOICE_CATEGORIES, type ChoiceCategory } from '@/lib/game-constants';
 import ChoiceCard from './ChoiceCard';
 
 interface StoryPanelProps {
@@ -13,10 +14,10 @@ interface StoryPanelProps {
   hiredStaff?: string[];
 }
 
-type Category = '전체' | '마케팅' | '인프라' | '재무';
+type Category = ChoiceCategory;
 
 export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoices, disabled, multiChoiceEnabled, hiredStaff = [] }: StoryPanelProps) {
-  const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
+  const [selectedCategory, setSelectedCategory] = useState<Category>(CHOICE_CATEGORIES.ALL);
   const [selectedChoices, setSelectedChoices] = useState<number[]>([]);
 
   // 채용된 직원 확인
@@ -25,15 +26,15 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
   const hasPlanner = hiredStaff.includes('기획자');
 
   // 카테고리별 아이콘 매핑
-  const categoryIcons: Record<Category, string> = {
-    '전체': '📋',
-    '마케팅': '📢',
-    '인프라': '🏗️',
-    '재무': '💰',
+  const categoryIcons: Record<ChoiceCategory, string> = {
+    [CHOICE_CATEGORIES.ALL]: '📋',
+    [CHOICE_CATEGORIES.MARKETING]: '📢',
+    [CHOICE_CATEGORIES.INFRA]: '🏗️',
+    [CHOICE_CATEGORIES.FINANCE]: '💰',
   };
 
   // 카테고리 필터링
-  const filteredChoices = selectedCategory === '전체'
+  const filteredChoices = selectedCategory === CHOICE_CATEGORIES.ALL
     ? turn.choices
     : turn.choices.filter(choice => choice.category === selectedCategory);
 
@@ -51,11 +52,11 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
       if (prev.includes(choiceId)) {
         // 이미 선택된 경우 제거
         return prev.filter(id => id !== choiceId);
-      } else if (prev.length < 2) {
-        // 아직 2개 미만인 경우 추가
+      } else if (prev.length < MAX_MULTI_CHOICES) {
+        // 아직 최대 선택 수 미만인 경우 추가
         return [...prev, choiceId];
       }
-      // 이미 2개 선택된 경우 무시
+      // 이미 최대 수만큼 선택된 경우 무시
       return prev;
     });
   };
@@ -65,10 +66,15 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
 
     // 선택된 선택지들을 한 번에 실행 (1턴에 여러 선택)
     try {
-      await onSelectChoice(selectedChoices);
+      if (onSelectMultipleChoices) {
+        await onSelectMultipleChoices(selectedChoices);
+      } else {
+        // fallback: 첫 번째 선택지만 실행
+        await onSelectChoice(selectedChoices[0]);
+      }
       setSelectedChoices([]);
-    } catch (error) {
-      console.error('Multiple choice execution failed:', error);
+    } catch {
+      // 에러는 상위 컴포넌트에서 처리
     }
   };
 
@@ -174,7 +180,7 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
 
           {/* 카테고리 필터 */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-            {(['전체', '마케팅', '인프라', '재무'] as Category[]).map((category) => (
+            {(Object.values(CHOICE_CATEGORIES) as ChoiceCategory[]).map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -186,7 +192,7 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
               >
                 <span>{categoryIcons[category]}</span>
                 <span>{category}</span>
-                {category !== '전체' && (
+                {category !== CHOICE_CATEGORIES.ALL && (
                   <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
                     selectedCategory === category
                       ? 'bg-white/20'

@@ -9,7 +9,7 @@ import type {
 } from './types';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseURL: '/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -19,8 +19,10 @@ const api = axios.create({
 
 export const gameApi = {
   // 새 게임 시작
-  startGame: async (): Promise<GameState> => {
-    const response = await api.post<GameState>('/game/start');
+  startGame: async (difficulty?: 'EASY' | 'NORMAL' | 'HARD'): Promise<GameState> => {
+    const response = await api.post<GameState>('/game/start', {
+      difficulty: difficulty || 'NORMAL',
+    });
     return response.data;
   },
 

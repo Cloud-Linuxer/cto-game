@@ -32,6 +32,9 @@ export class Leaderboard {
   @Column({ type: 'varchar', length: 20 })
   difficulty: string; // 'EASY', 'NORMAL', 'HARD'
 
+  @Column({ type: 'varchar', length: 30, default: 'WON_IPO' })
+  victoryPath: string; // 'WON_IPO', 'WON_ACQUISITION', 'WON_PROFITABILITY', 'WON_TECH_LEADER'
+
   @CreateDateColumn({ type: 'timestamptz' })
   achievedAt: Date;
 }

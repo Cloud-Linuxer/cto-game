@@ -57,10 +57,16 @@ async function bootstrap() {
   // CORS 설정
   app.enableCors({
     origin: (origin, callback) => {
-      // localhost 또는 trycloudflare.com 도메인 허용
-      if (!origin ||
-          origin.startsWith('http://localhost') ||
-          origin.endsWith('.trycloudflare.com')) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const allowedPatterns = [
+        /^http:\/\/localhost(:\d+)?$/,
+        /^https?:\/\/localhost(:\d+)?$/,
+        /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/,
+      ];
+      if (allowedPatterns.some(pattern => pattern.test(origin))) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -84,23 +90,27 @@ async function bootstrap() {
   // API 프리픽스 설정
   app.setGlobalPrefix('api');
 
-  // Swagger 문서 설정
-  const config = new DocumentBuilder()
-    .setTitle('AWS CTO Game API')
-    .setDescription('AWS 스타트업 타이쿤 게임 백엔드 API')
-    .setVersion('1.0')
-    .addTag('game', '게임 관리 API')
-    .addTag('turn', '턴 정보 API')
-    .build();
+  // Swagger 문서 설정 (프로덕션 환경에서는 비활성화)
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('AWS CTO Game API')
+      .setDescription('AWS 스타트업 타이쿤 게임 백엔드 API')
+      .setVersion('1.0')
+      .addTag('game', '게임 관리 API')
+      .addTag('turn', '턴 정보 API')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 Swagger docs available at: http://localhost:${port}/api-docs`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📚 Swagger docs available at: http://localhost:${port}/api-docs`);
+  }
 
   // Seed database AFTER app has fully started
   try {

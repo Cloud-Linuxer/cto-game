@@ -144,9 +144,7 @@ describe('TurnService', () => {
       ];
 
       mockTurnRepository.find.mockResolvedValue(turns);
-      mockChoiceRepository.find
-        .mockResolvedValueOnce(choices1)
-        .mockResolvedValueOnce(choices2);
+      mockChoiceRepository.find.mockResolvedValue([...choices1, ...choices2]);
 
       const result = await service.getAllTurns();
 
@@ -155,8 +153,13 @@ describe('TurnService', () => {
       expect(result[1].turnNumber).toBe(2);
       expect(result[0].choices).toHaveLength(1);
       expect(result[1].choices).toHaveLength(1);
+      expect(result[0].choices[0].choiceId).toBe(1);
+      expect(result[1].choices[0].choiceId).toBe(2);
       expect(mockTurnRepository.find).toHaveBeenCalledWith({
         order: { turnNumber: 'ASC' },
+      });
+      expect(mockChoiceRepository.find).toHaveBeenCalledWith({
+        order: { choiceId: 'ASC' },
       });
     });
   });

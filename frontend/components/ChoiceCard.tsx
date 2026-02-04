@@ -58,6 +58,15 @@ export default function ChoiceCard({
     <>
     <div
       onClick={toggleTooltip}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleTooltip();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${title} 선택지 상세 보기`}
       className={`group relative w-full text-left p-4 bg-white rounded-lg hover:shadow-lg transition-all duration-150 min-h-[180px] flex flex-col cursor-pointer ${
         isSelected
           ? 'border-2 border-indigo-600 shadow-md'
