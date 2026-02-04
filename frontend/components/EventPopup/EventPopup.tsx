@@ -26,6 +26,8 @@ import {
   errorVariants,
   spinnerVariants,
 } from '@/utils/eventAnimations';
+import { useKeyboardNavigation, getKeyboardShortcutLabel } from '@/hooks/useKeyboardNavigation';
+import { useEventPerformance, sendEventMetrics } from '@/hooks/useEventPerformance';
 
 export interface EventPopupProps {
   eventData: EventData;
@@ -49,6 +51,27 @@ const EventPopup: React.FC<EventPopupProps> = ({
 }) => {
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // Performance monitoring
+  const { startChoiceTimer, recordChoiceComplete, recordPopupClose } = useEventPerformance({
+    eventId: eventData.eventId,
+    enabled: process.env.NODE_ENV === 'development',
+    onMetricsCollected: sendEventMetrics,
+  });
+
+  // Keyboard navigation
+  useKeyboardNavigation({
+    choicesCount: eventData.choices.length,
+    onSelectChoice: (choiceIndex) => {
+      const choice = eventData.choices[choiceIndex];
+      if (choice) {
+        handleSelectChoice(choice.choiceId);
+      }
+    },
+    enabled: !isProcessing && !error,
+    allowEscape: false, // 선택 강제
+    isProcessing,
+  });
 
   /**
    * 팝업 열릴 때 포커스 관리
@@ -81,9 +104,12 @@ const EventPopup: React.FC<EventPopupProps> = ({
     if (isProcessing) return;
 
     setSelectedChoiceId(choiceId);
+    startChoiceTimer();
 
     try {
       await onSelectChoice(choiceId);
+      recordChoiceComplete();
+      recordPopupClose();
       onComplete?.();
     } catch (err) {
       console.error('Event choice execution failed:', err);
@@ -212,6 +238,7 @@ const EventPopup: React.FC<EventPopupProps> = ({
                     onSelect={handleSelectChoice}
                     isSelected={selectedChoiceId === choice.choiceId}
                     disabled={isProcessing}
+                    keyboardShortcut={getKeyboardShortcutLabel(index)}
                   />
                 </motion.div>
               ))}
@@ -250,6 +277,7 @@ interface ChoiceButtonProps {
   onSelect: (choiceId: string) => void;
   isSelected: boolean;
   disabled: boolean;
+  keyboardShortcut?: string;
 }
 
 const ChoiceButton: React.FC<ChoiceButtonProps> = ({
@@ -257,6 +285,7 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
   onSelect,
   isSelected,
   disabled,
+  keyboardShortcut,
 }) => {
   return (
     <motion.div
@@ -283,6 +312,17 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
       whileHover={!disabled ? { scale: 1.01 } : {}}
       whileTap={!disabled ? { scale: 0.99 } : {}}
     >
+      {/* 키보드 단축키 배지 */}
+      {keyboardShortcut && (
+        <div className="absolute top-2 left-2">
+          <div className="w-7 h-7 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center border border-slate-300 dark:border-slate-600">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {keyboardShortcut}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* 선택 체크마크 */}
       {isSelected && (
         <div className="absolute top-2 right-2">
@@ -295,7 +335,7 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
       )}
 
       {/* 선택지 텍스트 */}
-      <div className="mb-3 pr-8">
+      <div className="mb-3 pr-8 pl-2">
         <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
           {choice.text}
         </p>
