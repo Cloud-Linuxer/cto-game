@@ -4,16 +4,28 @@
  * EventPopup Component
  *
  * 메인 이벤트 팝업 컨테이너
- * Milestone 1: 기본 UI 구조 (애니메이션 없음)
+ * Milestone 2: 애니메이션 통합 완료 ✨
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { EventData } from '@/types/event.types';
 import EventHeader from './EventHeader';
 import EventContent from './EventContent';
 import EventFooter from './EventFooter';
 import EffectPreview from './EffectPreview';
 import styles from './EventPopup.module.css';
+import {
+  backdropVariants,
+  popupVariants,
+  headerVariants,
+  contentVariants,
+  choiceListVariants,
+  choiceVariants,
+  selectedVariants,
+  errorVariants,
+  spinnerVariants,
+} from '@/utils/eventAnimations';
 
 export interface EventPopupProps {
   eventData: EventData;
@@ -89,80 +101,135 @@ const EventPopup: React.FC<EventPopupProps> = ({
   };
 
   return (
-    <>
+    <AnimatePresence mode="wait">
       {/* 배경 블러 오버레이 */}
-      <div className={styles.backdrop} aria-hidden="true" />
+      <motion.div
+        className={styles.backdrop}
+        variants={backdropVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        aria-hidden="true"
+      />
 
       {/* 팝업 컨테이너 */}
       <div className={styles.popupContainer}>
-        <div
+        <motion.div
           ref={popupRef}
           className={styles.popup}
+          variants={popupVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           role="dialog"
           aria-modal="true"
           aria-labelledby="event-title"
           aria-describedby="event-description"
         >
           {/* 로딩 오버레이 */}
-          {isProcessing && (
-            <div className={styles.loadingOverlay}>
-              <div className={styles.spinner} />
-              <p className="mt-4 text-lg font-semibold text-slate-700 dark:text-slate-300">
-                선택을 처리하는 중...
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {isProcessing && (
+              <motion.div
+                className={styles.loadingOverlay}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className={styles.spinner}
+                  variants={spinnerVariants}
+                  animate="animate"
+                />
+                <p className="mt-4 text-lg font-semibold text-slate-700 dark:text-slate-300">
+                  선택을 처리하는 중...
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 에러 메시지 */}
-          {error && (
-            <div className={styles.errorContainer}>
-              <div className={styles.errorMessage}>
-                ⚠️ {error}
-              </div>
-              <button
-                onClick={handleRetry}
-                className={styles.retryButton}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                className={styles.errorContainer}
+                variants={errorVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
               >
-                다시 시도
-              </button>
-            </div>
-          )}
+                <div className={styles.errorMessage}>
+                  ⚠️ {error}
+                </div>
+                <button
+                  onClick={handleRetry}
+                  className={styles.retryButton}
+                >
+                  다시 시도
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 헤더 */}
-          <div className={styles.header}>
+          <motion.div
+            className={styles.header}
+            variants={headerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <EventHeader eventType={eventData.eventType} />
-          </div>
+          </motion.div>
 
           {/* 본문 */}
-          <div className={styles.content}>
+          <motion.div
+            className={styles.content}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <EventContent
               title={eventData.title}
               description={eventData.eventText}
             />
-          </div>
+          </motion.div>
 
           {/* 선택지 목록 */}
-          <div className={styles.choicesContainer}>
+          <motion.div
+            className={styles.choicesContainer}
+            variants={choiceListVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <div className={styles.choicesGrid}>
-              {eventData.choices.map((choice) => (
-                <ChoiceButton
+              {eventData.choices.map((choice, index) => (
+                <motion.div
                   key={choice.choiceId}
-                  choice={choice}
-                  onSelect={handleSelectChoice}
-                  isSelected={selectedChoiceId === choice.choiceId}
-                  disabled={isProcessing}
-                />
+                  custom={index}
+                  variants={choiceVariants}
+                >
+                  <ChoiceButton
+                    choice={choice}
+                    onSelect={handleSelectChoice}
+                    isSelected={selectedChoiceId === choice.choiceId}
+                    disabled={isProcessing}
+                  />
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* 푸터 */}
-          <div className={styles.footer}>
+          <motion.div
+            className={styles.footer}
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <EventFooter gameId={gameId} />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
-    </>
+    </AnimatePresence>
   );
 };
 
@@ -192,7 +259,7 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
   disabled,
 }) => {
   return (
-    <div
+    <motion.div
       className={`
         relative p-4 rounded-lg border-2 transition-all duration-200
         ${isSelected
@@ -210,6 +277,11 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
           onSelect(choice.choiceId);
         }
       }}
+      variants={selectedVariants}
+      initial="initial"
+      animate={isSelected ? 'selected' : 'initial'}
+      whileHover={!disabled ? { scale: 1.01 } : {}}
+      whileTap={!disabled ? { scale: 0.99 } : {}}
     >
       {/* 선택 체크마크 */}
       {isSelected && (
@@ -250,7 +322,7 @@ const ChoiceButton: React.FC<ChoiceButtonProps> = ({
       >
         {isSelected ? '✓ 선택됨' : '이 선택지를 선택'}
       </button>
-    </div>
+    </motion.div>
   );
 };
 
