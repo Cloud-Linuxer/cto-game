@@ -10,6 +10,8 @@ import { Game, GameStatus, GameGrade, CapacityWarningLevel } from '../database/e
 import { Choice } from '../database/entities/choice.entity';
 import { ChoiceHistory } from '../database/entities/choice-history.entity';
 import { TrustChangeFactor } from '../database/entities/trust-history.entity';
+import { Quiz, QuizDifficulty } from '../database/entities/quiz.entity';
+import { QuizHistory } from '../database/entities/quiz-history.entity';
 import { GameResponseDto } from '../common/dto';
 import {
   GAME_CONSTANTS,
@@ -23,6 +25,8 @@ import {
 import { EventService } from '../event/event.service';
 import { TrustHistoryService } from './trust-history.service';
 import { AlternativeInvestmentService } from './alternative-investment.service';
+import { QuizService } from '../quiz/quiz.service';
+import { SecureRandomService } from '../security/secure-random.service';
 
 @Injectable()
 export class GameService {
@@ -35,9 +39,15 @@ export class GameService {
     private readonly choiceRepository: Repository<Choice>,
     @InjectRepository(ChoiceHistory)
     private readonly historyRepository: Repository<ChoiceHistory>,
+    @InjectRepository(Quiz)
+    private readonly quizRepository: Repository<Quiz>,
+    @InjectRepository(QuizHistory)
+    private readonly quizHistoryRepository: Repository<QuizHistory>,
     private readonly eventService: EventService,
     private readonly trustHistoryService: TrustHistoryService,
     private readonly alternativeInvestmentService: AlternativeInvestmentService,
+    private readonly quizService: QuizService,
+    private readonly secureRandomService: SecureRandomService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -91,8 +101,17 @@ export class GameService {
     game.governmentGrantUsed = false; // EPIC-04 Feature 6
     game.governmentReportRequired = false; // EPIC-04 Feature 6
 
+    // Save game first to get gameId, then generate quiz turns
     const savedGame = await this.gameRepository.save(game);
-    return this.toDto(savedGame);
+
+    // EPIC-07: Generate 5 random quiz turns with minimum 3-turn spacing
+    savedGame.quizTurns = this.generateQuizTurns(savedGame.gameId);
+    savedGame.correctQuizCount = 0;
+    savedGame.quizBonus = 0;
+
+    // Save again with quiz turns
+    const finalGame = await this.gameRepository.save(savedGame);
+    return this.toDto(finalGame);
   }
 
   /**
@@ -139,6 +158,20 @@ export class GameService {
       throw new BadRequestException(
         `현재 턴(${game.currentTurn})의 선택지가 아닙니다`,
       );
+    }
+
+    // EPIC-07: Check if there's a pending quiz that must be answered before proceeding
+    const hasPendingQuiz = game.quizTurns && game.quizTurns.includes(game.currentTurn);
+    if (hasPendingQuiz) {
+      const quizHistory = await this.quizHistoryRepository.findOne({
+        where: { gameId, turnNumber: game.currentTurn },
+      });
+
+      if (!quizHistory) {
+        throw new BadRequestException(
+          '퀴즈를 먼저 풀어야 다음 턴으로 진행할 수 있습니다.',
+        );
+      }
     }
 
     const config = this.getDifficultyConfig(game);
@@ -566,6 +599,20 @@ export class GameService {
       throw new BadRequestException(
         `게임이 이미 종료되었습니다: ${game.status}`,
       );
+    }
+
+    // EPIC-07: Check if there's a pending quiz that must be answered before proceeding
+    const hasPendingQuiz = game.quizTurns && game.quizTurns.includes(game.currentTurn);
+    if (hasPendingQuiz) {
+      const quizHistory = await this.quizHistoryRepository.findOne({
+        where: { gameId, turnNumber: game.currentTurn },
+      });
+
+      if (!quizHistory) {
+        throw new BadRequestException(
+          '퀴즈를 먼저 풀어야 다음 턴으로 진행할 수 있습니다.',
+        );
+      }
     }
 
     const config = this.getDifficultyConfig(game);
@@ -1326,6 +1373,10 @@ export class GameService {
         ? Math.max(0, GAME_CONSTANTS.BANKRUPTCY_GRACE.GRACE_TURNS - game.consecutiveNegativeCashTurns)
         : undefined,
       comebackActive: this.getComebackMultiplier(game, config) > 1.0,
+      // EPIC-07: Quiz System additions
+      quizTurns: game.quizTurns,
+      correctQuizCount: game.correctQuizCount,
+      quizBonus: game.quizBonus,
     };
   }
 
@@ -1342,5 +1393,234 @@ export class GameService {
       .replace(/{trust}/g, game.trust.toString())
       .replace(/{currentTurn}/g, game.currentTurn.toString())
       .replace(/{infrastructure}/g, game.infrastructure.join(', '));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Quiz System Integration (EPIC-07)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Generate 5 random quiz turns with minimum 3-turn spacing
+   *
+   * Uses SecureRandomService for reproducible random generation based on game seed.
+   * Ensures no two quiz turns are closer than 3 turns apart.
+   *
+   * @param gameSeed Game ID used as seed for reproducibility
+   * @returns Array of 5 turn numbers sorted in ascending order
+   */
+  private generateQuizTurns(gameSeed: string): number[] {
+    const turns: number[] = [];
+    const availableTurns = Array.from({ length: 25 }, (_, i) => i + 1);
+
+    // Create a simple seeded random function based on gameSeed
+    // Using a hash-based approach for reproducibility
+    const createHash = require('crypto').createHash;
+    const seedHash = createHash('sha256').update(gameSeed).digest();
+
+    let attempts = 0;
+    const maxAttempts = 100; // Prevent infinite loop
+
+    while (turns.length < 5 && attempts < maxAttempts) {
+      attempts++;
+
+      if (availableTurns.length === 0) {
+        this.logger.warn(
+          `No more available turns for quiz generation. Generated ${turns.length}/5 quizzes.`,
+        );
+        break;
+      }
+
+      // Select random turn from available turns using hash + attempt as seed
+      const attemptSeed = createHash('sha256')
+        .update(gameSeed + attempts.toString())
+        .digest();
+      const randomIndex = attemptSeed.readUInt32BE(0) % availableTurns.length;
+      const selectedTurn = availableTurns[randomIndex];
+
+      // Check minimum 3-turn spacing with all existing quiz turns
+      const hasValidSpacing = turns.every(
+        (existingTurn) => Math.abs(existingTurn - selectedTurn) >= 3,
+      );
+
+      if (hasValidSpacing) {
+        turns.push(selectedTurn);
+        this.logger.debug(`Quiz turn selected: ${selectedTurn}`);
+      }
+
+      // Remove selected turn from available pool regardless of spacing result
+      availableTurns.splice(randomIndex, 1);
+    }
+
+    if (turns.length < 5) {
+      this.logger.warn(
+        `Could not generate 5 quiz turns with 3-turn spacing. Generated ${turns.length} turns after ${attempts} attempts.`,
+      );
+    }
+
+    const sortedTurns = turns.sort((a, b) => a - b);
+    this.logger.log(
+      `Quiz turns generated: [${sortedTurns.join(', ')}] for game seed ${gameSeed}`,
+    );
+
+    return sortedTurns;
+  }
+
+  /**
+   * Calculate quiz difficulty based on current turn number
+   *
+   * Turn ranges:
+   * - 1-10: EASY
+   * - 11-20: MEDIUM
+   * - 21-25: HARD
+   *
+   * @param turnNumber Current turn number
+   * @returns Quiz difficulty level
+   */
+  private calculateQuizDifficulty(turnNumber: number): QuizDifficulty {
+    if (turnNumber <= 10) {
+      return QuizDifficulty.EASY;
+    }
+    if (turnNumber <= 20) {
+      return QuizDifficulty.MEDIUM;
+    }
+    return QuizDifficulty.HARD;
+  }
+
+  /**
+   * Check if there's a pending quiz for the current turn
+   *
+   * This method should be called:
+   * 1. After each turn progression (in executeChoice)
+   * 2. By the frontend to display quiz modal
+   *
+   * @param gameId Game ID
+   * @returns Quiz object if quiz should be shown, null otherwise
+   * @throws NotFoundException if game not found
+   */
+  async checkForQuiz(gameId: string): Promise<Quiz | null> {
+    const game = await this.gameRepository.findOne({ where: { gameId } });
+
+    if (!game) {
+      throw new NotFoundException(`게임을 찾을 수 없습니다: ${gameId}`);
+    }
+
+    const currentTurn = game.currentTurn;
+    const shouldShowQuiz = game.quizTurns && game.quizTurns.includes(currentTurn);
+
+    if (!shouldShowQuiz) {
+      this.logger.debug(
+        `No quiz for game ${gameId} at turn ${currentTurn}. Quiz turns: [${game.quizTurns ? game.quizTurns.join(', ') : 'none'}]`,
+      );
+      return null;
+    }
+
+    // Check if quiz was already answered for this turn
+    const existingAnswer = await this.quizHistoryRepository.findOne({
+      where: { gameId, turnNumber: currentTurn },
+    });
+
+    if (existingAnswer) {
+      this.logger.debug(
+        `Quiz already answered for game ${gameId} at turn ${currentTurn}`,
+      );
+      return null;
+    }
+
+    // Generate quiz based on current game state
+    const difficulty = this.calculateQuizDifficulty(currentTurn);
+    const infraContext = game.infrastructure;
+
+    this.logger.log(
+      `Generating quiz for game ${gameId} at turn ${currentTurn}: difficulty=${difficulty}, infra=${infraContext.join(',')}`,
+    );
+
+    try {
+      const quiz = await this.quizService.generateQuiz({
+        difficulty,
+        infraContext,
+        turnNumber: currentTurn,
+        gameId: game.gameId,
+        useCache: true,
+      });
+
+      return quiz;
+    } catch (error) {
+      this.logger.error(
+        `Failed to generate quiz for game ${gameId} at turn ${currentTurn}: ${error.message}`,
+        error.stack,
+      );
+      // Return null instead of throwing to allow game to continue without quiz
+      return null;
+    }
+  }
+
+  /**
+   * Handle quiz answer submission
+   *
+   * Validates answer, records history, and updates game statistics.
+   *
+   * @param gameId Game ID
+   * @param quizId Quiz ID
+   * @param answer Player's answer ('A', 'B', 'C', 'D' or 'true', 'false')
+   * @returns Object containing answer correctness, correct answer, and explanation
+   * @throws NotFoundException if game or quiz not found
+   * @throws BadRequestException if answer format is invalid
+   */
+  async handleQuizAnswer(
+    gameId: string,
+    quizId: string,
+    answer: string,
+  ): Promise<{ isCorrect: boolean; correctAnswer: string; explanation: string }> {
+    const game = await this.gameRepository.findOne({ where: { gameId } });
+
+    if (!game) {
+      throw new NotFoundException(`게임을 찾을 수 없습니다: ${gameId}`);
+    }
+
+    // Validate answer with QuizService
+    const isCorrect = await this.quizService.validateAnswer(quizId, answer);
+
+    // Record answer in quiz history
+    await this.quizService.recordAnswer(
+      gameId,
+      quizId,
+      answer,
+      isCorrect,
+      game.currentTurn,
+    );
+
+    // Update game statistics
+    if (isCorrect) {
+      game.correctQuizCount += 1;
+      this.logger.log(
+        `Correct quiz answer for game ${gameId}. Total correct: ${game.correctQuizCount}/5`,
+      );
+    } else {
+      this.logger.log(
+        `Incorrect quiz answer for game ${gameId}. Total correct: ${game.correctQuizCount}/5`,
+      );
+    }
+
+    // Calculate and update bonus score
+    game.quizBonus = this.quizService.calculateQuizBonus(game.correctQuizCount);
+
+    await this.gameRepository.save(game);
+
+    // Get quiz for explanation
+    const quiz = await this.quizRepository.findOne({ where: { quizId } });
+
+    if (!quiz) {
+      throw new NotFoundException(`퀴즈를 찾을 수 없습니다: ${quizId}`);
+    }
+
+    this.logger.log(
+      `Quiz answer handled: gameId=${gameId}, quizId=${quizId}, isCorrect=${isCorrect}, bonus=${game.quizBonus}`,
+    );
+
+    return {
+      isCorrect,
+      correctAnswer: quiz.correctAnswer,
+      explanation: quiz.explanation,
+    };
   }
 }

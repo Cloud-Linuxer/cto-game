@@ -8,28 +8,7 @@ import {
   ValidationLimits,
 } from './validation.types';
 
-// LLM 생성 이벤트 인터페이스 (임시 - 나중에 실제 파일에서 import)
-export interface LLMGeneratedEvent {
-  eventType: 'disaster' | 'opportunity' | 'market_shift' | 'investor_crisis' | 'aws_incident_quiz';
-  priority: number;
-  event: string;
-  choices: Array<{
-    text: string;
-    effects: {
-      users: number;
-      cash: number;
-      trust: number;
-      infra: string[];
-    };
-    reasoning?: string;
-  }>;
-  metadata?: {
-    generatedAt: Date;
-    modelUsed: string;
-    tokensUsed: number;
-    qualityScore?: number;
-  };
-}
+import { LLMGeneratedEvent } from '../dto/llm-response.dto';
 
 @Injectable()
 export class LLMResponseValidatorService {
@@ -39,58 +18,59 @@ export class LLMResponseValidatorService {
   /**
    * 전체 검증 파이프라인 실행
    */
-  async validate(llmEvent: LLMGeneratedEvent, game: Game): Promise<ValidationResult> {
+  async validate(llmEvent: LLMGeneratedEvent, gameState: any): Promise<{isValid: boolean; errors: string[]; fixedEvent?: LLMGeneratedEvent}> {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
     // Stage 1: 구조 검증
     const structureResult = this.validateStructure(llmEvent);
     if (!structureResult.passed) {
       this.logger.warn(`Stage 1 실패: ${structureResult.errors.join(', ')}`);
-      return structureResult;
+      errors.push(...structureResult.errors);
     }
 
     // Stage 2: 밸런스 검증
-    const balanceResult = this.validateBalance(llmEvent, game);
+    const balanceResult = this.validateBalance(llmEvent, gameState);
     if (!balanceResult.passed) {
       this.logger.warn(`Stage 2 실패: ${balanceResult.errors.join(', ')}`);
-      return balanceResult;
+      errors.push(...balanceResult.errors);
     }
 
     // Stage 3: 콘텐츠 품질 검증
     const contentResult = this.validateContent(llmEvent);
     if (!contentResult.passed) {
       this.logger.warn(`Stage 3 실패: ${contentResult.errors.join(', ')}`);
-      return contentResult;
+      errors.push(...contentResult.errors);
     }
 
     // 품질 점수 계산
-    const qualityScore = this.calculateQualityScore(llmEvent, game);
+    const qualityScore = this.calculateQualityScore(llmEvent, gameState);
 
     // 모든 스테이지의 경고 누적
-    const allWarnings = [
-      ...structureResult.warnings,
-      ...balanceResult.warnings,
-      ...contentResult.warnings,
-    ];
+    warnings.push(...structureResult.warnings, ...balanceResult.warnings, ...contentResult.warnings);
+
+    // Auto-fix attempt if there are errors
+    let fixedEvent: LLMGeneratedEvent | undefined;
+    if (errors.length > 0) {
+      fixedEvent = this.attemptAutoFix(llmEvent, errors);
+      if (fixedEvent) {
+        this.logger.log('Auto-fix applied successfully');
+        return { isValid: true, errors: [], fixedEvent };
+      }
+    }
 
     // 최종 판정
     if (qualityScore.overall < 60) {
-      return {
-        passed: false,
-        stage: 'content',
-        errors: [`품질 점수 부족: ${qualityScore.overall}/100`],
-        warnings: allWarnings,
-        qualityScore,
-      };
+      errors.push(`품질 점수 부족: ${qualityScore.overall}/100`);
     }
 
-    this.logger.log(`검증 통과: ${llmEvent.eventType}, 품질 ${qualityScore.overall}/100`);
+    const isValid = errors.length === 0;
 
-    return {
-      passed: true,
-      stage: 'approved',
-      errors: [],
-      warnings: allWarnings,
-      qualityScore,
-    };
+    if (isValid) {
+      this.logger.log(`검증 통과: ${llmEvent.eventType}, 품질 ${qualityScore.overall}/100`);
+    }
+
+    return { isValid, errors };
   }
 
   /**
@@ -104,8 +84,11 @@ export class LLMResponseValidatorService {
     if (!event.eventType) {
       errors.push('eventType 누락');
     }
-    if (!event.event || typeof event.event !== 'string') {
-      errors.push('event 텍스트 누락 또는 잘못된 타입');
+    if (!event.title || typeof event.title !== 'string') {
+      errors.push('title 누락 또는 잘못된 타입');
+    }
+    if (!event.description || typeof event.description !== 'string') {
+      errors.push('description 텍스트 누락 또는 잘못된 타입');
     }
     if (!event.choices || !Array.isArray(event.choices)) {
       errors.push('choices 배열 누락');
@@ -133,29 +116,29 @@ export class LLMResponseValidatorService {
       if (!choice.effects) {
         errors.push(`선택지 ${idx + 1}: effects 누락`);
       } else {
-        // effects 필드 검증
-        if (typeof choice.effects.users !== 'number') {
-          errors.push(`선택지 ${idx + 1}: effects.users가 숫자가 아님`);
+        // Optional fields - check types only if present
+        if (choice.effects.usersDelta !== undefined && typeof choice.effects.usersDelta !== 'number') {
+          errors.push(`선택지 ${idx + 1}: effects.usersDelta가 숫자가 아님`);
         }
-        if (typeof choice.effects.cash !== 'number') {
-          errors.push(`선택지 ${idx + 1}: effects.cash가 숫자가 아님`);
+        if (choice.effects.cashDelta !== undefined && typeof choice.effects.cashDelta !== 'number') {
+          errors.push(`선택지 ${idx + 1}: effects.cashDelta가 숫자가 아님`);
         }
-        if (typeof choice.effects.trust !== 'number') {
-          errors.push(`선택지 ${idx + 1}: effects.trust가 숫자가 아님`);
+        if (choice.effects.trustDelta !== undefined && typeof choice.effects.trustDelta !== 'number') {
+          errors.push(`선택지 ${idx + 1}: effects.trustDelta가 숫자가 아님`);
         }
-        if (!Array.isArray(choice.effects.infra)) {
-          errors.push(`선택지 ${idx + 1}: effects.infra가 배열이 아님`);
+        if (choice.effects.addInfrastructure && !Array.isArray(choice.effects.addInfrastructure)) {
+          errors.push(`선택지 ${idx + 1}: effects.addInfrastructure가 배열이 아님`);
         }
       }
     });
 
     // 텍스트 길이 검증
-    if (event.event) {
-      if (event.event.length < this.limits.eventTextMinLength) {
-        warnings.push(`이벤트 텍스트 너무 짧음: ${event.event.length}자`);
+    if (event.description) {
+      if (event.description.length < this.limits.eventTextMinLength) {
+        warnings.push(`이벤트 텍스트 너무 짧음: ${event.description.length}자`);
       }
-      if (event.event.length > this.limits.eventTextMaxLength) {
-        warnings.push(`이벤트 텍스트 너무 김: ${event.event.length}자`);
+      if (event.description.length > this.limits.eventTextMaxLength) {
+        warnings.push(`이벤트 텍스트 너무 김: ${event.description.length}자`);
       }
     }
 
@@ -170,57 +153,63 @@ export class LLMResponseValidatorService {
   /**
    * Stage 2: 밸런스 검증
    */
-  private validateBalance(event: LLMGeneratedEvent, game: Game): ValidationResult {
+  private validateBalance(event: LLMGeneratedEvent, gameState: any): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     event.choices.forEach((choice, idx) => {
-      const { users, cash, trust } = choice.effects;
+      const { usersDelta = 0, cashDelta = 0, trustDelta = 0 } = choice.effects;
 
       // 효과 범위 검증
-      if (users < this.limits.users.min || users > this.limits.users.max) {
+      if (usersDelta < this.limits.users.min || usersDelta > this.limits.users.max) {
         errors.push(
-          `선택지 ${idx + 1}: 유저 변화 범위 초과 (${users}, 허용: ${this.limits.users.min}~${this.limits.users.max})`,
+          `선택지 ${idx + 1}: 유저 변화 범위 초과 (${usersDelta}, 허용: ${this.limits.users.min}~${this.limits.users.max})`,
         );
       }
 
-      if (cash < this.limits.cash.min || cash > this.limits.cash.max) {
+      if (cashDelta < this.limits.cash.min || cashDelta > this.limits.cash.max) {
         errors.push(
-          `선택지 ${idx + 1}: 현금 변화 범위 초과 (${cash}, 허용: ${this.limits.cash.min}~${this.limits.cash.max})`,
+          `선택지 ${idx + 1}: 현금 변화 범위 초과 (${cashDelta}, 허용: ${this.limits.cash.min}~${this.limits.cash.max})`,
         );
       }
 
-      if (trust < this.limits.trust.min || trust > this.limits.trust.max) {
+      if (trustDelta < this.limits.trust.min || trustDelta > this.limits.trust.max) {
         errors.push(
-          `선택지 ${idx + 1}: 신뢰도 변화 범위 초과 (${trust}, 허용: ${this.limits.trust.min}~${this.limits.trust.max})`,
+          `선택지 ${idx + 1}: 신뢰도 변화 범위 초과 (${trustDelta}, 허용: ${this.limits.trust.min}~${this.limits.trust.max})`,
         );
       }
 
       // 파산 위험 체크
-      const projectedCash = game.cash + cash;
-      if (projectedCash < 0) {
-        warnings.push(
-          `선택지 ${idx + 1}: 파산 위험 (현재 현금 ${game.cash} + ${cash} = ${projectedCash})`,
-        );
+      if (gameState.cash) {
+        const projectedCash = gameState.cash + cashDelta;
+        if (projectedCash < 0) {
+          warnings.push(
+            `선택지 ${idx + 1}: 파산 위험 (현재 현금 ${gameState.cash} + ${cashDelta} = ${projectedCash})`,
+          );
+        }
       }
 
       // 신뢰도 게임오버 위험
-      const projectedTrust = game.trust + trust;
-      if (projectedTrust < 20) {
-        warnings.push(
-          `선택지 ${idx + 1}: 신뢰도 게임오버 위험 (현재 ${game.trust} + ${trust} = ${projectedTrust})`,
-        );
+      if (gameState.trust) {
+        const projectedTrust = gameState.trust + trustDelta;
+        if (projectedTrust < 20) {
+          warnings.push(
+            `선택지 ${idx + 1}: 신뢰도 게임오버 위험 (현재 ${gameState.trust} + ${trustDelta} = ${projectedTrust})`,
+          );
+        }
       }
     });
 
     // 모든 선택지가 파산으로 이어지면 에러
-    const allBankrupt = event.choices.every((choice) => game.cash + choice.effects.cash < 0);
-    if (allBankrupt) {
-      errors.push('모든 선택지가 파산으로 이어짐 (탈출 불가능)');
+    if (gameState.cash) {
+      const allBankrupt = event.choices.every((choice) => gameState.cash + (choice.effects.cashDelta || 0) < 0);
+      if (allBankrupt) {
+        errors.push('모든 선택지가 파산으로 이어짐 (탈출 불가능)');
+      }
     }
 
     // 선택지 간 밸런스 체크
-    const cashEffects = event.choices.map((c) => c.effects.cash);
+    const cashEffects = event.choices.map((c) => c.effects.cashDelta || 0);
     const maxCash = Math.max(...cashEffects);
     const minCash = Math.min(...cashEffects);
 
@@ -247,9 +236,10 @@ export class LLMResponseValidatorService {
 
     // 금지 단어 검사
     const allText = [
-      event.event,
+      event.description,
+      event.title,
       ...event.choices.map((c) => c.text),
-      ...(event.choices.map((c) => c.reasoning).filter(Boolean) as string[]),
+      ...event.choices.map((c) => c.resultText).filter(Boolean),
     ].join(' ');
 
     for (const forbidden of FORBIDDEN_WORDS) {
@@ -258,9 +248,9 @@ export class LLMResponseValidatorService {
       }
     }
 
-    // AWS/클라우드 용어 적절성 체크
+    // AWS/클라우드 용어 적절성 체크 (relaxed for general events)
     const hasAWSContext =
-      /AWS|클라우드|EC2|S3|Lambda|RDS|Aurora|EKS|CloudFront/i.test(allText);
+      /AWS|클라우드|EC2|S3|Lambda|RDS|Aurora|EKS|CloudFront|서버|인프라|데이터베이스|스케일링/i.test(allText);
     if (!hasAWSContext) {
       warnings.push('AWS/클라우드 관련 컨텍스트 부족 (게임 세계관 이탈 가능)');
     }
@@ -272,12 +262,6 @@ export class LLMResponseValidatorService {
 
     if (koreanRatio < 0.5) {
       warnings.push(`한글 비율 낮음: ${(koreanRatio * 100).toFixed(1)}%`);
-    }
-
-    // 이모지 존재 여부 (시각적 강조)
-    const hasEmoji = /[\u{1F300}-\u{1F9FF}]/u.test(event.event);
-    if (!hasEmoji) {
-      warnings.push('이벤트 텍스트에 이모지 없음 (시각적 강조 부족)');
     }
 
     // 선택지 텍스트 중복 체크
@@ -298,7 +282,7 @@ export class LLMResponseValidatorService {
   /**
    * 품질 점수 계산
    */
-  private calculateQualityScore(event: LLMGeneratedEvent, game: Game): EventQualityScore {
+  private calculateQualityScore(event: LLMGeneratedEvent, gameState: any): EventQualityScore {
     let coherence = 100;
     let balance = 100;
     let entertainment = 100;
@@ -306,29 +290,19 @@ export class LLMResponseValidatorService {
 
     // 1. Coherence (문맥 일관성)
     // - 이벤트 타입과 내용 일치도
-    if (event.eventType === 'disaster' && !/(장애|사고|위기|긴급)/.test(event.event)) {
+    if (event.eventType.includes('CRISIS') && !/(장애|사고|위기|긴급)/.test(event.description)) {
       coherence -= 20;
     }
-    if (event.eventType === 'opportunity' && !/(기회|투자|제안|제휴)/.test(event.event)) {
+    if (event.eventType.includes('OPPORTUNITY') && !/(기회|투자|제안|제휴)/.test(event.description)) {
       coherence -= 20;
-    }
-
-    // - 게임 상황 반영도
-    const hasGameContext =
-      event.event.includes(game.users.toLocaleString()) ||
-      event.event.includes(game.cash.toLocaleString()) ||
-      event.event.includes(`${game.trust}`);
-
-    if (!hasGameContext) {
-      coherence -= 15;
     }
 
     // 2. Balance (밸런스 적정성)
     // - 효과 크기 적정성
     const avgCashEffect =
-      event.choices.reduce((sum, c) => sum + Math.abs(c.effects.cash), 0) / event.choices.length;
+      event.choices.reduce((sum, c) => sum + Math.abs(c.effects.cashDelta || 0), 0) / event.choices.length;
     const avgTrustEffect =
-      event.choices.reduce((sum, c) => sum + Math.abs(c.effects.trust), 0) / event.choices.length;
+      event.choices.reduce((sum, c) => sum + Math.abs(c.effects.trustDelta || 0), 0) / event.choices.length;
 
     // 현금 효과가 너무 크거나 작으면 감점
     if (avgCashEffect > 80000000) balance -= 20; // 너무 큼
@@ -340,35 +314,27 @@ export class LLMResponseValidatorService {
 
     // 3. Entertainment (재미 요소)
     // - 텍스트 길이 적정성
-    const eventLength = event.event.length;
+    const eventLength = event.description.length;
     if (eventLength < 30) entertainment -= 30; // 너무 짧으면 큰 감점
     else if (eventLength < 50 || eventLength > 400) entertainment -= 10;
-
-    // - 드라마틱한 표현
-    const hasDrama = /(!!|🚨|💰|📈|⚠️|긴급|위기|기회)/.test(event.event);
-    if (!hasDrama) entertainment -= 20; // 감점 강화
 
     // - 선택지 다양성
     if (event.choices.length >= 3) entertainment += 10;
 
     // - 선택지 텍스트 품질 (단순 문자 선택지는 감점)
-    const hasLowQualityChoice = event.choices.some((c) => c.text.length < 3);
+    const hasLowQualityChoice = event.choices.some((c) => c.text.length < 10);
     if (hasLowQualityChoice) entertainment -= 25;
 
     // 4. Educational (교육 가치)
     // - AWS 서비스 언급
+    const allText = event.description + ' ' + event.choices.map(c => c.text).join(' ');
     const awsServices =
       (
-        event.event.match(
+        allText.match(
           /EC2|S3|Lambda|RDS|Aurora|EKS|CloudFront|Route53|VPC|DynamoDB/g,
         ) || []
       ).length;
     educational = Math.min(100, 60 + awsServices * 10);
-
-    // - 기술적 설명 존재
-    if (event.choices.some((c) => c.reasoning && c.reasoning.length > 30)) {
-      educational += 10;
-    }
 
     const overall = Math.round((coherence + balance + entertainment + educational) / 4);
 
@@ -382,27 +348,35 @@ export class LLMResponseValidatorService {
   }
 
   /**
-   * 자동 수정 시도 (가능한 경우)
+   * Auto-fix attempt
    */
-  async autoFix(event: LLMGeneratedEvent): Promise<LLMGeneratedEvent> {
-    const fixed = { ...event };
+  private attemptAutoFix(event: LLMGeneratedEvent, errors: string[]): LLMGeneratedEvent | null {
+    // Only attempt auto-fix for balance issues
+    const hasBalanceIssues = errors.some(e => e.includes('범위 초과'));
+    if (!hasBalanceIssues) {
+      return null;
+    }
 
-    // 효과 범위 클램핑
-    fixed.choices = fixed.choices.map((choice) => ({
+    const fixed = JSON.parse(JSON.stringify(event)); // Deep clone
+
+    // Fix out-of-range effects
+    fixed.choices = fixed.choices.map(choice => ({
       ...choice,
       effects: {
-        users: this.clamp(choice.effects.users, this.limits.users.min, this.limits.users.max),
-        cash: this.clamp(choice.effects.cash, this.limits.cash.min, this.limits.cash.max),
-        trust: this.clamp(choice.effects.trust, this.limits.trust.min, this.limits.trust.max),
-        infra: choice.effects.infra || [],
+        ...choice.effects,
+        usersDelta: this.clamp(choice.effects.usersDelta || 0, this.limits.users.min, this.limits.users.max),
+        cashDelta: this.clamp(choice.effects.cashDelta || 0, this.limits.cash.min, this.limits.cash.max),
+        trustDelta: this.clamp(choice.effects.trustDelta || 0, this.limits.trust.min, this.limits.trust.max),
       },
     }));
 
-    // 금지 단어 필터링
-    fixed.event = this.filterForbiddenWords(fixed.event);
+    // Filter forbidden words
+    fixed.description = this.filterForbiddenWords(fixed.description);
+    fixed.title = this.filterForbiddenWords(fixed.title);
     fixed.choices = fixed.choices.map((choice) => ({
       ...choice,
       text: this.filterForbiddenWords(choice.text),
+      resultText: choice.resultText ? this.filterForbiddenWords(choice.resultText) : undefined,
     }));
 
     return fixed;

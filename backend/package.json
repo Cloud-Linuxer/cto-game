@@ -21,7 +21,15 @@
     "import-data": "ts-node scripts/import-game-data.ts",
     "data:validate": "node scripts/validate-data.js",
     "data:fix": "node scripts/fix-duplicates.js",
-    "data:seed": "node scripts/seed.js"
+    "data:seed": "node scripts/seed.js",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/database/data-source.ts",
+    "quiz:generate": "ts-node scripts/generate-fallback-quizzes.ts",
+    "quiz:seed": "ts-node scripts/seed-fallback-quizzes.ts",
+    "quiz:full": "npm run quiz:generate && npm run quiz:seed"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
@@ -31,9 +39,10 @@
     "@nestjs/swagger": "^7.2.0",
     "@nestjs/typeorm": "^10.0.1",
     "@types/seedrandom": "^3.0.8",
-    "axios": "^1.12.2",
+    "axios": "^1.13.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "ioredis": "^5.9.2",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",

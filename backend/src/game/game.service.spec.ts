@@ -5,10 +5,14 @@ import { GameService } from './game.service';
 import { Game, GameStatus } from '../database/entities/game.entity';
 import { Choice } from '../database/entities/choice.entity';
 import { ChoiceHistory } from '../database/entities/choice-history.entity';
+import { Quiz, QuizDifficulty } from '../database/entities/quiz.entity';
+import { QuizHistory } from '../database/entities/quiz-history.entity';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EventService } from '../event/event.service';
 import { TrustHistoryService } from './trust-history.service';
 import { AlternativeInvestmentService } from './alternative-investment.service';
+import { QuizService } from '../quiz/quiz.service';
+import { SecureRandomService } from '../security/secure-random.service';
 
 describe('GameService', () => {
   let service: GameService;
@@ -50,6 +54,28 @@ describe('GameService', () => {
     needsAlternativeInvestment: jest.fn().mockReturnValue(false),
   };
 
+  const mockQuizRepository = {
+    findOne: jest.fn(),
+    save: jest.fn(),
+  };
+
+  const mockQuizHistoryRepository = {
+    findOne: jest.fn(),
+    save: jest.fn(),
+  };
+
+  const mockQuizService = {
+    generateQuiz: jest.fn(),
+    validateAnswer: jest.fn(),
+    recordAnswer: jest.fn(),
+    calculateQuizBonus: jest.fn(),
+  };
+
+  const mockSecureRandomService = {
+    initSeed: jest.fn(),
+    getRandomInt: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -67,6 +93,14 @@ describe('GameService', () => {
           useValue: mockHistoryRepository,
         },
         {
+          provide: getRepositoryToken(Quiz),
+          useValue: mockQuizRepository,
+        },
+        {
+          provide: getRepositoryToken(QuizHistory),
+          useValue: mockQuizHistoryRepository,
+        },
+        {
           provide: EventService,
           useValue: mockEventService,
         },
@@ -77,6 +111,14 @@ describe('GameService', () => {
         {
           provide: AlternativeInvestmentService,
           useValue: mockAlternativeInvestmentService,
+        },
+        {
+          provide: QuizService,
+          useValue: mockQuizService,
+        },
+        {
+          provide: SecureRandomService,
+          useValue: mockSecureRandomService,
         },
       ],
     }).compile();
@@ -97,7 +139,7 @@ describe('GameService', () => {
 
   describe('startGame', () => {
     it('새 게임을 시작하고 초기 상태를 반환해야 함', async () => {
-      const savedGame: Game = {
+      const savedGame: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
         users: 0,
@@ -145,13 +187,13 @@ describe('GameService', () => {
       expect(result.trust).toBe(40);
       expect(result.infrastructure).toEqual(['EC2']);
       expect(result.status).toBe(GameStatus.PLAYING);
-      expect(mockGameRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockGameRepository.save).toHaveBeenCalledTimes(2); // Called twice: once to get gameId, once with quiz turns
     });
   });
 
   describe('getGame', () => {
     it('게임 ID로 게임을 조회해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 5,
         users: 1000,
@@ -210,7 +252,7 @@ describe('GameService', () => {
 
   describe('executeChoice', () => {
     it('선택을 실행하고 게임 상태를 업데이트해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
         users: 0,
@@ -262,7 +304,7 @@ describe('GameService', () => {
         description: '투자 유치',
       };
 
-      const updatedGame: Game = {
+      const updatedGame: Partial<Game> = {
         ...game,
         currentTurn: 2,
         users: 1000,
@@ -292,7 +334,7 @@ describe('GameService', () => {
     });
 
     it('게임이 종료되었으면 BadRequestException을 던져야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 10,
         users: 0,
@@ -337,7 +379,7 @@ describe('GameService', () => {
     });
 
     it('잘못된 턴의 선택지면 BadRequestException을 던져야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
         users: 0,
@@ -393,7 +435,7 @@ describe('GameService', () => {
     });
 
     it('자금이 파산 임계값(-3천만원) 미만이 되면 파산 상태로 변경해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
         users: 0,
@@ -445,7 +487,7 @@ describe('GameService', () => {
         description: '',
       };
 
-      const bankruptGame: Game = {
+      const bankruptGame: Partial<Game> = {
         ...game,
         cash: -34000000,
         trust: 40,
@@ -495,7 +537,7 @@ describe('GameService', () => {
 
   describe('EPIC-04 Feature 2: Capacity Warning System', () => {
     it('첫 용량 초과 시 50% 감소된 페널티를 적용하고 경고 메시지를 반환해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
         users: 0,
@@ -548,7 +590,7 @@ describe('GameService', () => {
         description: '',
       };
 
-      const updatedGame: Game = {
+      const updatedGame: Partial<Game> = {
         ...game,
         currentTurn: 2,
         users: 17000,
@@ -573,7 +615,7 @@ describe('GameService', () => {
     });
 
     it('두 번째 연속 용량 초과 시 전체 페널티를 적용해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 2,
         users: 17000, // Already over capacity
@@ -625,7 +667,7 @@ describe('GameService', () => {
         description: '',
       };
 
-      const updatedGame: Game = {
+      const updatedGame: Partial<Game> = {
         ...game,
         currentTurn: 3,
         users: 20000,
@@ -648,7 +690,7 @@ describe('GameService', () => {
     });
 
     it('용량 정상화 후 다시 초과 시 다시 경고부터 시작해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 3,
         users: 8000, // Normalized capacity
@@ -700,7 +742,7 @@ describe('GameService', () => {
         description: '',
       };
 
-      const updatedGame: Game = {
+      const updatedGame: Partial<Game> = {
         ...game,
         currentTurn: 4,
         users: 78000,
@@ -725,7 +767,7 @@ describe('GameService', () => {
     });
 
     it('연속 3회 용량 초과 시 누적 카운터가 증가해야 함', async () => {
-      const game: Game = {
+      const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 3,
         users: 20000, // Already over capacity (2nd time)
@@ -777,7 +819,7 @@ describe('GameService', () => {
         description: '',
       };
 
-      const updatedGame: Game = {
+      const updatedGame: Partial<Game> = {
         ...game,
         currentTurn: 4,
         users: 23000,
@@ -808,7 +850,7 @@ describe('GameService', () => {
     describe('Stable Operations Bonus', () => {
       it('3턴 연속 용량 80% 이하 유지 시 신뢰도 +3 보너스를 획득해야 함', async () => {
         // Turn 1: 60% capacity
-        let game: Game = {
+        let game: Partial<Game> = {
           gameId: 'test-game-id',
           currentTurn: 1,
           users: 6000, // 60% of 10000
@@ -863,7 +905,7 @@ describe('GameService', () => {
         mockChoiceRepository.findOne.mockResolvedValue(choice1);
         mockHistoryRepository.save.mockResolvedValue({});
 
-        const updatedGame1: Game = {
+        const updatedGame1: Partial<Game> = {
           ...game,
           currentTurn: 2,
           users: 7000,
@@ -902,7 +944,7 @@ describe('GameService', () => {
         mockGameRepository.findOne.mockResolvedValue(game);
         mockChoiceRepository.findOne.mockResolvedValue(choice2);
 
-        const updatedGame2: Game = {
+        const updatedGame2: Partial<Game> = {
           ...game,
           currentTurn: 3,
           users: 7500,
@@ -941,7 +983,7 @@ describe('GameService', () => {
         mockGameRepository.findOne.mockResolvedValue(game);
         mockChoiceRepository.findOne.mockResolvedValue(choice3);
 
-        const updatedGame3: Game = {
+        const updatedGame3: Partial<Game> = {
           ...game,
           currentTurn: 4,
           users: 8000,
@@ -956,7 +998,7 @@ describe('GameService', () => {
       });
 
       it('용량이 80%를 초과하면 안정 운영 카운터가 리셋되어야 함', async () => {
-        const game: Game = {
+        const game: Partial<Game> = {
           gameId: 'test-game-id',
           currentTurn: 1,
           users: 10000, // 66.7% of 15000 (base 5000 + EC2 10000)
@@ -1007,7 +1049,7 @@ describe('GameService', () => {
           description: '',
         };
 
-        const updatedGame: Game = {
+        const updatedGame: Partial<Game> = {
           ...game,
           currentTurn: 2,
           users: 13000,
@@ -1027,7 +1069,7 @@ describe('GameService', () => {
 
     describe('Transparency Bonus', () => {
       it('장애 발생 후 투명성 태그 선택지로 신뢰도 회복 시 1.5배 보너스를 받아야 함', async () => {
-        const game: Game = {
+        const game: Partial<Game> = {
           gameId: 'test-game-id',
           currentTurn: 10,
           users: 15000, // Over capacity (10000)
@@ -1079,7 +1121,7 @@ describe('GameService', () => {
           tags: ['transparency'], // Transparency tag
         };
 
-        const updatedGame: Game = {
+        const updatedGame: Partial<Game> = {
           ...game,
           currentTurn: 11,
           trust: 46, // 40 + (4 * 1.5) = 40 + 6 = 46
@@ -1096,7 +1138,7 @@ describe('GameService', () => {
       });
 
       it('용량 경고가 없을 때는 투명성 보너스가 적용되지 않아야 함', async () => {
-        const game: Game = {
+        const game: Partial<Game> = {
           gameId: 'test-game-id',
           currentTurn: 5,
           users: 5000, // Below capacity
@@ -1148,7 +1190,7 @@ describe('GameService', () => {
           tags: ['transparency'],
         };
 
-        const updatedGame: Game = {
+        const updatedGame: Partial<Game> = {
           ...game,
           currentTurn: 6,
           trust: 54, // 50 + 4 (no multiplier)
@@ -1167,7 +1209,7 @@ describe('GameService', () => {
 
     describe('Crisis Recovery Bonus', () => {
       it('용량 초과 후 복원력 스택 획득 시 신뢰도 +5 보너스를 받아야 함', async () => {
-        const game: Game = {
+        const game: Partial<Game> = {
           gameId: 'test-game-id',
           currentTurn: 8,
           users: 13000, // Already high usage
@@ -1225,7 +1267,7 @@ describe('GameService', () => {
         // - Resilience stack: +1
         // - Crisis recovery bonus: +5
         // Final trust: 35 - 1 + 5 = 39
-        const updatedGame: Game = {
+        const updatedGame: Partial<Game> = {
           ...game,
           currentTurn: 9,
           users: 16000,
@@ -1245,6 +1287,428 @@ describe('GameService', () => {
         expect(result.capacityExceeded).toBe(true);
         expect(result.trust).toBe(39); // 35 - 1 (penalty) + 5 (crisis recovery)
         expect(result.recoveryMessages).toContainEqual(expect.stringContaining('장애 극복으로 신뢰도가 회복'));
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // EPIC-07: Quiz System Integration Tests
+  // ---------------------------------------------------------------------------
+
+  describe('Quiz System Integration', () => {
+    describe('startGame with quiz turns', () => {
+      it('게임 시작 시 5개의 퀴즈 턴을 생성해야 함', async () => {
+        // Mock SecureRandomService to return deterministic values
+        let callCount = 0;
+        mockSecureRandomService.getRandomInt.mockImplementation((min: number, max: number) => {
+          const sequence = [3, 8, 15, 20, 24]; // Valid spacing: 3, 8(+5), 15(+7), 20(+5), 24(+4)
+          return sequence[callCount++] - 1; // Convert to 0-based index
+        });
+
+        const savedGame: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 1,
+          users: 0,
+          cash: 10000000,
+          trust: 50,
+          infrastructure: ['EC2'],
+          status: GameStatus.PLAYING,
+          quizTurns: [4, 9, 16, 21, 25], // Expected after sorting (indices converted to turn numbers)
+          correctQuizCount: 0,
+          quizBonus: 0,
+        };
+
+        mockGameRepository.save.mockResolvedValue(savedGame);
+
+        const result = await service.startGame('NORMAL');
+
+        expect(result.quizTurns).toBeDefined();
+        expect(result.quizTurns.length).toBe(5);
+        expect(result.correctQuizCount).toBe(0);
+        expect(result.quizBonus).toBe(0);
+      });
+
+      it('퀴즈 턴 간 최소 3턴 간격이 유지되어야 함', async () => {
+        const savedGame: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 1,
+          users: 0,
+          cash: 10000000,
+          trust: 50,
+          infrastructure: ['EC2'],
+          status: GameStatus.PLAYING,
+          quizTurns: [2, 6, 12, 18, 24],
+          correctQuizCount: 0,
+          quizBonus: 0,
+          difficultyMode: 'NORMAL',
+        };
+
+        mockGameRepository.save.mockResolvedValue(savedGame);
+
+        const result = await service.startGame('NORMAL');
+
+        // Check spacing between consecutive quiz turns
+        const quizTurns = result.quizTurns;
+        for (let i = 1; i < quizTurns.length; i++) {
+          const spacing = quizTurns[i] - quizTurns[i - 1];
+          expect(spacing).toBeGreaterThanOrEqual(3);
+        }
+      });
+    });
+
+    describe('checkForQuiz', () => {
+      it('퀴즈 턴에서 퀴즈를 반환해야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          users: 1000,
+          cash: 5000000,
+          trust: 60,
+          infrastructure: ['EC2', 'Aurora'],
+          quizTurns: [5, 10, 15, 20, 25],
+        };
+
+        const quiz: Partial<Quiz> = {
+          quizId: 'quiz-123',
+          difficulty: QuizDifficulty.EASY,
+          question: 'What is EC2?',
+          correctAnswer: 'A',
+          explanation: 'EC2 is a compute service',
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockQuizHistoryRepository.findOne.mockResolvedValue(null); // No existing answer
+        mockQuizService.generateQuiz.mockResolvedValue(quiz);
+
+        const result = await service.checkForQuiz('test-game-id');
+
+        expect(result).not.toBeNull();
+        expect(result.quizId).toBe('quiz-123');
+        expect(mockQuizService.generateQuiz).toHaveBeenCalledWith({
+          difficulty: QuizDifficulty.EASY,
+          infraContext: ['EC2', 'Aurora'],
+          turnNumber: 5,
+          gameId: 'test-game-id',
+          useCache: true,
+        });
+      });
+
+      it('비퀴즈 턴에서 null을 반환해야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 3,
+          quizTurns: [5, 10, 15, 20, 25],
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+
+        const result = await service.checkForQuiz('test-game-id');
+
+        expect(result).toBeNull();
+        expect(mockQuizService.generateQuiz).not.toHaveBeenCalled();
+      });
+
+      it('이미 답변한 퀴즈는 null을 반환해야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          quizTurns: [5, 10, 15, 20, 25],
+        };
+
+        const existingAnswer: Partial<QuizHistory> = {
+          historyId: 1,
+          gameId: 'test-game-id',
+          quizId: 'quiz-123',
+          turnNumber: 5,
+          isCorrect: true,
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockQuizHistoryRepository.findOne.mockResolvedValue(existingAnswer);
+
+        const result = await service.checkForQuiz('test-game-id');
+
+        expect(result).toBeNull();
+        expect(mockQuizService.generateQuiz).not.toHaveBeenCalled();
+      });
+
+      it('턴 번호에 따라 적절한 난이도를 계산해야 함', async () => {
+        const testCases = [
+          { turn: 5, expectedDifficulty: QuizDifficulty.EASY },
+          { turn: 10, expectedDifficulty: QuizDifficulty.EASY },
+          { turn: 15, expectedDifficulty: QuizDifficulty.MEDIUM },
+          { turn: 20, expectedDifficulty: QuizDifficulty.MEDIUM },
+          { turn: 25, expectedDifficulty: QuizDifficulty.HARD },
+        ];
+
+        for (const testCase of testCases) {
+          const game: Partial<Game> = {
+            gameId: 'test-game-id',
+            currentTurn: testCase.turn,
+            infrastructure: ['EC2'],
+            quizTurns: [5, 10, 15, 20, 25],
+          };
+
+          mockGameRepository.findOne.mockResolvedValue(game);
+          mockQuizHistoryRepository.findOne.mockResolvedValue(null);
+          mockQuizService.generateQuiz.mockResolvedValue({});
+
+          await service.checkForQuiz('test-game-id');
+
+          expect(mockQuizService.generateQuiz).toHaveBeenCalledWith(
+            expect.objectContaining({
+              difficulty: testCase.expectedDifficulty,
+            }),
+          );
+        }
+      });
+
+      it('게임을 찾을 수 없으면 NotFoundException을 던져야 함', async () => {
+        mockGameRepository.findOne.mockResolvedValue(null);
+
+        await expect(service.checkForQuiz('invalid-game-id')).rejects.toThrow(
+          NotFoundException,
+        );
+      });
+    });
+
+    describe('handleQuizAnswer', () => {
+      it('정답 처리 시 correctQuizCount와 quizBonus를 업데이트해야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          correctQuizCount: 2,
+          quizBonus: 5,
+        };
+
+        const quiz: Partial<Quiz> = {
+          quizId: 'quiz-123',
+          correctAnswer: 'A',
+          explanation: 'Explanation here',
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockQuizService.validateAnswer.mockResolvedValue(true);
+        mockQuizService.recordAnswer.mockResolvedValue({});
+        mockQuizService.calculateQuizBonus.mockReturnValue(15); // 3 correct = 15 bonus
+        mockQuizRepository.findOne.mockResolvedValue(quiz);
+
+        const updatedGame = { ...game, correctQuizCount: 3, quizBonus: 15 };
+        mockGameRepository.save.mockResolvedValue(updatedGame);
+
+        const result = await service.handleQuizAnswer('test-game-id', 'quiz-123', 'A');
+
+        expect(result.isCorrect).toBe(true);
+        expect(result.correctAnswer).toBe('A');
+        expect(result.explanation).toBe('Explanation here');
+        expect(mockQuizService.validateAnswer).toHaveBeenCalledWith('quiz-123', 'A');
+        expect(mockQuizService.recordAnswer).toHaveBeenCalledWith(
+          'test-game-id',
+          'quiz-123',
+          'A',
+          true,
+          5,
+        );
+        expect(mockQuizService.calculateQuizBonus).toHaveBeenCalledWith(3);
+        expect(mockGameRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            correctQuizCount: 3,
+            quizBonus: 15,
+          }),
+        );
+      });
+
+      it('오답 처리 시 correctQuizCount는 증가하지 않아야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          correctQuizCount: 2,
+          quizBonus: 5,
+        };
+
+        const quiz: Partial<Quiz> = {
+          quizId: 'quiz-123',
+          correctAnswer: 'A',
+          explanation: 'Explanation here',
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockQuizService.validateAnswer.mockResolvedValue(false);
+        mockQuizService.recordAnswer.mockResolvedValue({});
+        mockQuizService.calculateQuizBonus.mockReturnValue(5); // Still 2 correct = 5 bonus
+        mockQuizRepository.findOne.mockResolvedValue(quiz);
+
+        const updatedGame = { ...game, correctQuizCount: 2, quizBonus: 5 };
+        mockGameRepository.save.mockResolvedValue(updatedGame);
+
+        const result = await service.handleQuizAnswer('test-game-id', 'quiz-123', 'B');
+
+        expect(result.isCorrect).toBe(false);
+        expect(result.correctAnswer).toBe('A');
+        expect(mockQuizService.calculateQuizBonus).toHaveBeenCalledWith(2);
+        expect(mockGameRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            correctQuizCount: 2,
+            quizBonus: 5,
+          }),
+        );
+      });
+
+      it('게임을 찾을 수 없으면 NotFoundException을 던져야 함', async () => {
+        mockGameRepository.findOne.mockResolvedValue(null);
+
+        await expect(
+          service.handleQuizAnswer('invalid-game-id', 'quiz-123', 'A'),
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('퀴즈를 찾을 수 없으면 NotFoundException을 던져야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          correctQuizCount: 0,
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockQuizService.validateAnswer.mockResolvedValue(true);
+        mockQuizService.recordAnswer.mockResolvedValue({});
+        mockQuizService.calculateQuizBonus.mockReturnValue(0);
+        mockQuizRepository.findOne.mockResolvedValue(null);
+
+        await expect(
+          service.handleQuizAnswer('test-game-id', 'invalid-quiz-id', 'A'),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('executeChoice with quiz check', () => {
+      it('퀴즈를 풀지 않은 상태에서 선택 실행 시 BadRequestException을 던져야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          status: GameStatus.PLAYING,
+          quizTurns: [5, 10, 15, 20, 25],
+        };
+
+        const choice: Partial<Choice> = {
+          choiceId: 501,
+          turnNumber: 5,
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockChoiceRepository.findOne.mockResolvedValue(choice);
+        mockQuizHistoryRepository.findOne.mockResolvedValue(null); // No quiz answer
+
+        await expect(service.executeChoice('test-game-id', 501)).rejects.toThrow(
+          BadRequestException,
+        );
+        await expect(service.executeChoice('test-game-id', 501)).rejects.toThrow(
+          '퀴즈를 먼저 풀어야 다음 턴으로 진행할 수 있습니다.',
+        );
+      });
+
+      it('퀴즈를 풀었으면 선택 실행이 정상적으로 진행되어야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 5,
+          users: 1000,
+          cash: 5000000,
+          trust: 60,
+          infrastructure: ['EC2'],
+          status: GameStatus.PLAYING,
+          quizTurns: [5, 10, 15, 20, 25],
+          maxUserCapacity: 5000,
+          hiredStaff: [],
+          multiChoiceEnabled: false,
+          userAcquisitionMultiplier: 1.0,
+          trustMultiplier: 1.0,
+          hasConsultingEffect: false,
+          difficultyMode: 'NORMAL',
+          capacityExceededCount: 0,
+          resilienceStacks: 0,
+          consecutiveNegativeCashTurns: 0,
+          consecutiveCapacityExceeded: 0,
+          consecutiveStableTurns: 0,
+        };
+
+        const choice: Partial<Choice> = {
+          choiceId: 501,
+          turnNumber: 5,
+          text: 'Test choice after quiz',
+          nextTurn: 6,
+          effects: {
+            users: 100,
+            cash: 100000,
+            trust: 5,
+            infra: [],
+          },
+        };
+
+        const quizHistory: Partial<QuizHistory> = {
+          historyId: 1,
+          gameId: 'test-game-id',
+          turnNumber: 5,
+          isCorrect: true,
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockChoiceRepository.findOne.mockResolvedValue(choice);
+        mockQuizHistoryRepository.findOne.mockResolvedValue(quizHistory);
+        mockHistoryRepository.save.mockResolvedValue({});
+        mockGameRepository.save.mockResolvedValue({ ...game, currentTurn: 6 });
+
+        const result = await service.executeChoice('test-game-id', 501);
+
+        expect(result).toBeDefined();
+        expect(mockGameRepository.save).toHaveBeenCalled();
+      });
+
+      it('비퀴즈 턴에서는 퀴즈 체크 없이 선택 실행이 진행되어야 함', async () => {
+        const game: Partial<Game> = {
+          gameId: 'test-game-id',
+          currentTurn: 3, // Not a quiz turn
+          users: 1000,
+          cash: 5000000,
+          trust: 60,
+          infrastructure: ['EC2'],
+          status: GameStatus.PLAYING,
+          quizTurns: [5, 10, 15, 20, 25],
+          maxUserCapacity: 5000,
+          hiredStaff: [],
+          multiChoiceEnabled: false,
+          userAcquisitionMultiplier: 1.0,
+          trustMultiplier: 1.0,
+          hasConsultingEffect: false,
+          difficultyMode: 'NORMAL',
+          capacityExceededCount: 0,
+          resilienceStacks: 0,
+          consecutiveNegativeCashTurns: 0,
+          consecutiveCapacityExceeded: 0,
+          consecutiveStableTurns: 0,
+        };
+
+        const choice: Partial<Choice> = {
+          choiceId: 301,
+          turnNumber: 3,
+          text: 'Test choice on non-quiz turn',
+          nextTurn: 4,
+          effects: {
+            users: 100,
+            cash: 100000,
+            trust: 5,
+            infra: [],
+          },
+        };
+
+        mockGameRepository.findOne.mockResolvedValue(game);
+        mockChoiceRepository.findOne.mockResolvedValue(choice);
+        mockHistoryRepository.save.mockResolvedValue({});
+        mockGameRepository.save.mockResolvedValue({ ...game, currentTurn: 4 });
+
+        const result = await service.executeChoice('test-game-id', 301);
+
+        expect(result).toBeDefined();
+        expect(mockQuizHistoryRepository.findOne).not.toHaveBeenCalled();
       });
     });
   });

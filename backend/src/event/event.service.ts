@@ -7,6 +7,8 @@ import { EventHistory } from '../database/entities/event-history.entity';
 import { DynamicEvent, EventType, EventSeverity } from '../database/entities/dynamic-event.entity';
 import * as seedrandom from 'seedrandom';
 import { SecureRandomService } from '../security/secure-random.service';
+import { LLMEventGeneratorService } from '../llm/services/llm-event-generator.service';
+import { LLMConfig } from '../config/llm.config';
 
 /**
  * EventService
@@ -16,6 +18,7 @@ import { SecureRandomService } from '../security/secure-random.service';
  * - Evaluates trigger conditions
  * - Applies event effects
  * - Tracks event state and history
+ * - Generates dynamic LLM events (EPIC-05)
  */
 @Injectable()
 export class EventService {
@@ -31,50 +34,115 @@ export class EventService {
     @InjectRepository(DynamicEvent)
     private readonly dynamicEventRepository: Repository<DynamicEvent>,
     private readonly secureRandomService: SecureRandomService,
+    private readonly llmEventGenerator: LLMEventGeneratorService,
   ) {}
 
   /**
    * Check if a random event should trigger for the current game state
+   * EPIC-05: Integrated with LLM event generation
    */
   async checkRandomEvent(game: Game): Promise<DynamicEvent | null> {
     try {
-      // Get all available events
-      const allEvents = await this.dynamicEventRepository.find();
+      // Try LLM event generation first (with fallback to static events)
+      if (LLMConfig.features.enabled) {
+        // Use seeded random for reproducibility
+        const rng = seedrandom(`${game.gameId}-${game.eventSeed}-${game.currentTurn}`);
+        const randomValue = rng();
+        const triggerThreshold = LLMConfig.features.triggerRate || 0.1;
 
-      if (!allEvents || allEvents.length === 0) {
-        this.logger.warn('No events available in database');
-        return null;
-      }
-
-      // Filter events by trigger conditions
-      const eligibleEvents = await this.filterEligibleEvents(game, allEvents);
-
-      if (eligibleEvents.length === 0) {
-        return null;
-      }
-
-      // Use seeded random for reproducibility
-      const rng = seedrandom(`${game.gameId}-${game.eventSeed}-${game.currentTurn}`);
-      const randomValue = rng();
-
-      // Check probability for each eligible event
-      for (const event of eligibleEvents) {
-        const probability = event.triggerCondition?.probability || 15;
-        const threshold = probability / 100;
-
-        if (randomValue < threshold) {
-          this.logger.log(
-            `Event triggered: ${event.eventId} (probability: ${probability}%, roll: ${(randomValue * 100).toFixed(2)}%)`,
-          );
-          return event;
+        // Check if event should trigger
+        if (randomValue >= triggerThreshold) {
+          return null; // No event this turn
         }
+
+        this.logger.log(
+          `Event check triggered (roll: ${(randomValue * 100).toFixed(2)}%, threshold: ${(triggerThreshold * 100)}%)`,
+        );
+
+        const llmEvent = await this.llmEventGenerator.generateEventWithFallback(
+          {
+            gameState: {
+              currentTurn: game.currentTurn,
+              cash: game.cash,
+              users: game.users,
+              trust: game.trust,
+              infrastructure: game.infrastructure,
+            },
+          },
+          async () => this.selectStaticEvent(game),
+        );
+
+        if (llmEvent) {
+          // Convert to DynamicEvent entity if it's an LLM-generated event
+          if (llmEvent.generatedByLLM) {
+            return this.convertToEventEntity(llmEvent);
+          }
+          // Otherwise it's already a static DynamicEvent
+          return llmEvent;
+        }
+
+        return null;
       }
 
-      return null;
+      // Fallback to static event selection if LLM disabled (original behavior)
+      return await this.selectStaticEvent(game);
     } catch (error) {
       this.logger.error(`Error checking random event: ${error.message}`, error.stack);
       return null;
     }
+  }
+
+  /**
+   * Select a static event from the database (original logic)
+   */
+  private async selectStaticEvent(game: Game): Promise<DynamicEvent | null> {
+    // Get all available events
+    const allEvents = await this.dynamicEventRepository.find();
+
+    if (!allEvents || allEvents.length === 0) {
+      this.logger.warn('No events available in database');
+      return null;
+    }
+
+    // Filter events by trigger conditions
+    const eligibleEvents = await this.filterEligibleEvents(game, allEvents);
+
+    if (eligibleEvents.length === 0) {
+      return null;
+    }
+
+    // Use seeded random for reproducibility
+    const rng = seedrandom(`${game.gameId}-${game.eventSeed}-${game.currentTurn}-static`);
+    const randomValue = rng();
+
+    // Check probability for each eligible event
+    for (const event of eligibleEvents) {
+      const probability = event.triggerCondition?.probability || 15;
+      const threshold = probability / 100;
+
+      if (randomValue < threshold) {
+        this.logger.log(
+          `Static event triggered: ${event.eventId} (probability: ${probability}%, roll: ${(randomValue * 100).toFixed(2)}%)`,
+        );
+        return event;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Convert LLM-generated event to DynamicEvent entity
+   */
+  private convertToEventEntity(llmEvent: any): DynamicEvent {
+    const event = new DynamicEvent();
+    event.eventId = `LLM_${Date.now()}`; // Temporary ID for compatibility
+    event.eventType = llmEvent.eventType as EventType;
+    event.title = llmEvent.title;
+    event.description = llmEvent.description;
+    event.choices = llmEvent.choices;
+
+    return event;
   }
 
   /**
@@ -142,9 +210,11 @@ export class EventService {
     }
 
     // Check infrastructure requirements
+    const infrastructure = game.infrastructure || [];
+
     if (condition.requiredInfra) {
       const hasAll = condition.requiredInfra.every((infra) =>
-        game.infrastructure.includes(infra),
+        infrastructure.includes(infra),
       );
       if (!hasAll) {
         return false;
@@ -153,7 +223,7 @@ export class EventService {
 
     if (condition.excludedInfra) {
       const hasAny = condition.excludedInfra.some((infra) =>
-        game.infrastructure.includes(infra),
+        infrastructure.includes(infra),
       );
       if (hasAny) {
         return false;
@@ -162,14 +232,14 @@ export class EventService {
 
     if (
       condition.minInfraCount &&
-      game.infrastructure.length < condition.minInfraCount
+      infrastructure.length < condition.minInfraCount
     ) {
       return false;
     }
 
     if (
       condition.maxInfraCount &&
-      game.infrastructure.length > condition.maxInfraCount
+      infrastructure.length > condition.maxInfraCount
     ) {
       return false;
     }

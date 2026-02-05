@@ -7,6 +7,7 @@ import { Game, GameStatus } from '../database/entities/game.entity';
 import { EventState } from '../database/entities/event-state.entity';
 import { EventHistory } from '../database/entities/event-history.entity';
 import { SecureRandomService } from '../security/secure-random.service';
+import { LLMEventGeneratorService } from '../llm/services/llm-event-generator.service';
 import * as seedrandom from 'seedrandom';
 
 describe('EventService', () => {
@@ -39,6 +40,10 @@ describe('EventService', () => {
     generateSecureRandom: jest.fn(() => 0.5),
   };
 
+  const mockLLMEventGenerator = {
+    generateEventWithFallback: jest.fn((request, fallbackFn) => fallbackFn()),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -62,6 +67,10 @@ describe('EventService', () => {
         {
           provide: SecureRandomService,
           useValue: mockSecureRandomService,
+        },
+        {
+          provide: LLMEventGeneratorService,
+          useValue: mockLLMEventGenerator,
         },
       ],
     }).compile();

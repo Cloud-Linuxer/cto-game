@@ -197,6 +197,81 @@ graph TD
 
 ---
 
+### Step 8: Task 생성 및 추적 설정
+
+EPIC 문서 작성이 완료되면 **TaskCreate 도구**를 사용하여 각 Feature를 Task로 등록한다.
+
+**Task 생성 절차**:
+
+1. **Feature별 Task 생성**
+   - 각 Feature마다 하나의 Task를 생성한다
+   - Task subject는 `[EPIC-{번호}] Feature {번호} - {기능명}` 형식
+   - Task description에는 Feature의 상세 설명, 책임자, 예상 리스크 포함
+   - activeForm은 진행형으로 작성 (예: "트리거 시스템 구현 중")
+
+2. **의존성 설정**
+   - TaskUpdate 도구의 `addBlockedBy` 파라미터 사용
+   - Feature 의존성 맵을 기반으로 Task 간 의존성 설정
+   - 예: Feature 3이 Feature 1, 2에 의존 → Task 3의 blockedBy에 [Task 1, Task 2] 추가
+
+3. **책임자 할당**
+   - TaskUpdate 도구의 `owner` 파라미터 사용
+   - Designer AI, Server AI, Client AI, QA AI 중 적절한 역할 할당
+
+**예시**:
+
+```typescript
+// Feature 1: 트리거 조건 시스템 구현
+TaskCreate({
+  subject: "[EPIC-03] Feature 1 - 이벤트 트리거 조건 시스템 구현",
+  description: "게임 상태를 기반으로 이벤트 발생 조건을 평가하는 시스템 구현. 책임자: Server AI. 리스크: 조건 로직이 복잡해질 수 있음.",
+  activeForm: "트리거 조건 시스템 구현 중"
+})
+
+// Feature 2: 이벤트 풀 관리 시스템 구현
+TaskCreate({
+  subject: "[EPIC-03] Feature 2 - 이벤트 풀 관리 시스템 구현",
+  description: "이벤트 데이터를 로드하고 필터링하는 시스템 구현. 책임자: Server AI. 리스크: 이벤트 데이터가 많아지면 로딩 성능 저하.",
+  activeForm: "이벤트 풀 관리 구현 중"
+})
+
+// Feature 3: 이벤트 발생 로직 통합 (Feature 1, 2 의존)
+TaskCreate({
+  subject: "[EPIC-03] Feature 3 - 이벤트 발생 로직 통합",
+  description: "게임 턴 진행 시 이벤트 트리거 및 적용. 책임자: Server AI. 의존성: Feature 1, 2 완료 후. 리스크: 기존 게임 플로우와 충돌 가능성.",
+  activeForm: "이벤트 발생 로직 통합 중"
+})
+
+// 의존성 설정
+TaskUpdate({
+  taskId: "3",
+  addBlockedBy: ["1", "2"],
+  owner: "Server AI"
+})
+
+// Feature 4: 이벤트 팝업 UI 구현 (Feature 3 의존)
+TaskCreate({
+  subject: "[EPIC-03] Feature 4 - 이벤트 팝업 UI 구현",
+  description: "이벤트 발생 시 팝업 표시 및 선택 처리. 책임자: Client AI. 의존성: Feature 3 완료 후. 리스크: 모바일 반응형 처리.",
+  activeForm: "이벤트 팝업 UI 구현 중"
+})
+
+TaskUpdate({
+  taskId: "4",
+  addBlockedBy: ["3"],
+  owner: "Client AI"
+})
+```
+
+**Task 생성 체크리스트**:
+- [ ] 모든 Feature가 Task로 등록되었는가?
+- [ ] Task 간 의존성이 Feature 의존성 맵과 일치하는가?
+- [ ] 각 Task에 책임자(owner)가 할당되었는가?
+- [ ] Task subject가 명확하고 일관된 형식인가?
+- [ ] activeForm이 진행형으로 작성되었는가?
+
+---
+
 ## 품질 체크
 
 작성한 EPIC 문서가 아래 기준을 충족하는지 확인한다:
@@ -208,6 +283,7 @@ graph TD
 - [ ] 릴리즈 전략이 실행 가능한가?
 - [ ] 리스크가 식별되고 대응 방안이 있는가?
 - [ ] 조율 포인트가 명시되었는가?
+- [ ] **모든 Feature가 Task로 등록되었는가?**
 
 ---
 

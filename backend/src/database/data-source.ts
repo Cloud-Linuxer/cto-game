@@ -1,0 +1,36 @@
+import { DataSource } from 'typeorm';
+import { Game } from './entities/game.entity';
+import { Turn } from './entities/turn.entity';
+import { Choice } from './entities/choice.entity';
+import { ChoiceHistory } from './entities/choice-history.entity';
+import { Leaderboard } from './entities/leaderboard.entity';
+import { TrustHistory } from './entities/trust-history.entity';
+import { Quiz } from './entities/quiz.entity';
+import { QuizHistory } from './entities/quiz-history.entity';
+
+/**
+ * TypeORM DataSource for migrations
+ *
+ * This configuration is used by TypeORM CLI for generating and running migrations.
+ */
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USER || 'cto_admin',
+  password: process.env.DB_PASSWORD || 'cto_game_password',
+  database: process.env.DB_NAME || 'cto_game',
+  entities: [
+    Game,
+    Turn,
+    Choice,
+    ChoiceHistory,
+    Leaderboard,
+    TrustHistory,
+    Quiz,
+    QuizHistory,
+  ],
+  migrations: [__dirname + '/migrations/*.ts'],
+  synchronize: false, // Always false for migrations
+  logging: process.env.NODE_ENV === 'development',
+});

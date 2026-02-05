@@ -10,6 +10,9 @@ import { ChoiceHistory } from '../database/entities/choice-history.entity';
 import { EventState } from '../database/entities/event-state.entity';
 import { EventHistory } from '../database/entities/event-history.entity';
 import { SecureRandomService } from '../security/secure-random.service';
+import { LLMEventGeneratorService } from '../llm/services/llm-event-generator.service';
+import { TrustHistoryService } from '../game/trust-history.service';
+import { AlternativeInvestmentService } from '../game/alternative-investment.service';
 
 /**
  * 이벤트 시스템 통합 테스트
@@ -59,6 +62,24 @@ describe('EventService Integration Tests', () => {
     generateSecureRandom: jest.fn(() => 0.5),
   };
 
+  const mockTrustHistoryService = {
+    record: jest.fn(),
+    recordTrustChange: jest.fn(),
+  };
+
+  const mockAlternativeInvestmentService = {
+    canUseBridgeFinancing: jest.fn().mockReturnValue(true),
+    canUseGovernmentGrant: jest.fn().mockReturnValue(true),
+    executeBridgeFinancing: jest.fn(),
+    executeGovernmentGrant: jest.fn(),
+    submitGovernmentReport: jest.fn(),
+    needsAlternativeInvestment: jest.fn().mockReturnValue(false),
+  };
+
+  const mockLLMEventGenerator = {
+    generateEventWithFallback: jest.fn((request, fallbackFn) => fallbackFn()),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,6 +112,18 @@ describe('EventService Integration Tests', () => {
         {
           provide: SecureRandomService,
           useValue: mockSecureRandomService,
+        },
+        {
+          provide: TrustHistoryService,
+          useValue: mockTrustHistoryService,
+        },
+        {
+          provide: AlternativeInvestmentService,
+          useValue: mockAlternativeInvestmentService,
+        },
+        {
+          provide: LLMEventGeneratorService,
+          useValue: mockLLMEventGenerator,
         },
       ],
     }).compile();
@@ -191,6 +224,11 @@ describe('EventService Integration Tests', () => {
         infrastructure: ['EC2', 'Aurora'],
         status: GameStatus.PLAYING,
         activeEvents: [],
+        hiredStaff: [],
+        maxUserCapacity: 50000,
+        bridgeFinancingUsed: 0,
+        governmentGrantUsed: false,
+        governmentReportRequired: false,
       };
 
       // When: 일반 선택지 실행

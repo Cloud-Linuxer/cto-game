@@ -153,4 +153,25 @@ export class GameResponseDto {
       };
     }>;
   };
+
+  // --- EPIC-07: Quiz System ---
+
+  @ApiProperty({
+    description: '퀴즈 턴 번호 목록 (5개)',
+    type: [Number],
+    required: false,
+  })
+  quizTurns?: number[];
+
+  @ApiProperty({
+    description: '맞춘 퀴즈 개수 (0-5)',
+    required: false,
+  })
+  correctQuizCount?: number;
+
+  @ApiProperty({
+    description: '퀴즈 보너스 점수 (0-50)',
+    required: false,
+  })
+  quizBonus?: number;
 }

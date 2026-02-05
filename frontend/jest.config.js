@@ -37,8 +37,8 @@ const customJestConfig = {
     '!**/playwright-report/**',
   ],
 
-  // Coverage thresholds
-  coverageThresholds: {
+  // Coverage threshold (fixed typo)
+  coverageThreshold: {
     global: {
       statements: 80,
       branches: 75,
@@ -52,23 +52,6 @@ const customJestConfig = {
     '**/__tests__/**/*.{js,jsx,ts,tsx}',
     '**/*.{spec,test}.{js,jsx,ts,tsx}',
   ],
-
-  // Transform files
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['@swc/jest', {
-      jsc: {
-        parser: {
-          syntax: 'typescript',
-          tsx: true,
-        },
-        transform: {
-          react: {
-            runtime: 'automatic',
-          },
-        },
-      },
-    }],
-  },
 
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

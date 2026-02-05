@@ -7,6 +7,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import eventReducer from './slices/eventSlice';
+import quizReducer from './slices/quizSlice';
 import { gameApiRTK } from './api/gameApi';
 
 /**
@@ -16,6 +17,7 @@ export const store = configureStore({
   reducer: {
     // Slices
     event: eventReducer,
+    quiz: quizReducer,
 
     // RTK Query APIs
     [gameApiRTK.reducerPath]: gameApiRTK.reducer,

@@ -50,6 +50,9 @@
 - **릴리즈 규칙**: `.ai/context/release-rules.md` - 배포 전 체크리스트, 승인 프로세스
 - **모니터링 전략**: `.ai/context/monitoring.md` - 지표, 알람, 대시보드
 
+### 워크플로우
+- **Task 기반 워크플로우**: `.ai/context/workflow.md` - EPIC → Feature → Task 연결, 상태 관리, 디렉토리 구조 규칙
+
 ---
 
 ## 스킬 (Skills)
@@ -83,23 +86,77 @@ AI가 수행하는 작업의 절차가 정의되어 있습니다.
 
 ## 워크플로우 (Workflow)
 
+**전체 흐름** (Task 기반):
+
 ```
 1. [PO] 목표 정의 (3줄 이내)
    ↓
 2. [Producer AI] EPIC 설계 → epic-breakdown.md 실행
    ↓
-3. [Designer AI] 시스템 설계 → feature-spec.md 참조
+3. [Producer AI] Task 생성 → TaskCreate로 Feature별 Task 등록 + 의존성 설정
    ↓
-4. [Client/Server AI] 구현 계획 → implementation-plan.md 실행
+4. [Designer/Server/Client AI] Task 실행
+   - TaskList로 담당 Task 확인
+   - blockedBy 해결된 Task만 시작 (TaskUpdate: in_progress)
+   - Feature Spec / Implementation Plan 작성
+   - 코드 구현 및 테스트
+   - Task 완료 (TaskUpdate: completed)
    ↓
-5. [QA AI] 테스트 계획 → test-plan.md 실행
+5. [QA AI] 검증
+   - 모든 Feature Task가 completed 상태 확인
+   - Test Plan 작성 (test-plan.md 실행)
+   - Verification Report 작성
+   - Release Checklist 작성 (release-check.md 실행)
    ↓
 6. [Tech Lead] 코드 리뷰 및 승인
    ↓
-7. [QA AI] 릴리즈 체크 → release-check.md 실행
-   ↓
-8. [LiveOps AI] 배포 및 모니터링
+7. [LiveOps AI] 배포 및 모니터링
+   - Staging → Production 배포
+   - 모니터링 알람 설정
+   - Release Note 작성
 ```
+
+**상세 워크플로우**: `.ai/context/workflow.md` 참조
+
+---
+
+## 디렉토리 구조 (Directory Structure)
+
+모든 산출물은 아래 구조에 따라 저장됩니다.
+
+```
+docs/
+├── epics/                    # EPIC 문서 (전략적 계획)
+│   ├── EPIC-03-dynamic-event-system.md
+│   ├── EPIC-04-trust-system-improvement.md
+│   └── EPIC-{번호}-{kebab-case-제목}.md
+│
+├── features/                 # Feature Spec 문서 (설계)
+│   ├── epic-03/
+│   ├── epic-04/
+│   └── epic-{번호}/
+│       └── feature-{번호}-{kebab-case-기능명}.md
+│
+├── implementations/          # Implementation Plan 문서 (구현 계획)
+│   ├── epic-03/
+│   ├── epic-04/
+│   └── epic-{번호}/
+│       └── impl-{feature번호}-{kebab-case-설명}.md
+│
+├── verification/             # Verification Report 및 Checklist (검증)
+│   ├── epic-{번호}-verification-report.md
+│   ├── epic-{번호}-release-checklist.md
+│   └── epic-{번호}-final-verification-report.md
+│
+└── release-notes/           # Release Note (릴리즈 노트)
+    └── epic-{번호}-release-note.md
+```
+
+**명명 규칙**:
+- 모든 파일명은 **kebab-case** (소문자, 하이픈 구분)
+- EPIC: `EPIC-{번호}-{제목}.md` (예: `EPIC-05-user-analytics.md`)
+- Feature: `feature-{번호}-{기능명}.md` (예: `feature-1-data-collection.md`)
+- Implementation: `impl-{feature번호}-{설명}.md` (예: `impl-1-api-implementation.md`)
 
 ---
 
@@ -109,6 +166,11 @@ AI가 수행하는 작업의 절차가 정의되어 있습니다.
 - ❌ 컨텍스트를 대화로 전달하지 않는다 (반드시 파일에 기록)
 - ❌ 최종 승인은 AI가 하지 않는다 (사람이 검증)
 - ❌ 템플릿 없이 산출물을 작성하지 않는다
+- ❌ Task 없이 Feature를 구현하지 않는다 (Task 생성 및 추적 필수)
+- ❌ Task 상태를 업데이트하지 않는다 (작업 시작 시 in_progress, 완료 시 completed)
+- ❌ 의존성을 무시하고 작업을 시작하지 않는다 (blockedBy 해결 필수)
+- ❌ 명명 규칙을 무시하지 않는다 (kebab-case 통일)
+- ❌ 디렉토리 구조를 무시하지 않는다 (산출물을 올바른 위치에 저장)
 
 ---
 
@@ -130,9 +192,14 @@ AI가 수행하는 작업의 절차가 정의되어 있습니다.
 - [x] skills/ 6개 스킬 정의 완료
 - [x] templates/ 산출물 템플릿 작성
 - [x] 첫 EPIC으로 구조 검증
+- [x] Task 기반 워크플로우 통합 (v1.2)
+- [x] 디렉토리 구조 표준화 (v1.2)
+- [x] 명명 규칙 통일 (kebab-case) (v1.2)
+- [x] epic-breakdown.md에 Task 생성 단계 추가 (v1.2)
+- [x] workflow.md 작성 (v1.2)
 
 ---
 
 **마지막 업데이트**: 2026-02-04
-**문서 버전**: v1.1
-**상태**: ✅ 초기 구축 완료
+**문서 버전**: v1.2
+**상태**: ✅ Task 시스템 통합 완료

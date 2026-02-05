@@ -14,6 +14,24 @@ import GameSkeleton from '@/components/GameSkeleton';
 import EmergencyEventModal from '@/components/EmergencyEventModal';
 import EventPopup from '@/components/EventPopup/EventPopupLazy';
 import { useEventPopup } from '@/hooks/useEventPopup';
+import { QuizPopup, QuizSummary } from '@/components/QuizPopup';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import {
+  setCurrentQuiz,
+  selectAnswer,
+  submitAnswer,
+  closeQuiz,
+  addToHistory,
+  updateQuizBonus,
+  selectIsQuizActive,
+  selectCurrentQuiz,
+  selectSelectedAnswer,
+  selectHasSubmitted,
+  selectIsCorrect,
+  selectQuizHistory,
+  selectCorrectCount,
+  selectQuizBonus,
+} from '@/store/slices/quizSlice';
 
 // -- State & Reducer definitions --
 
@@ -132,6 +150,7 @@ export default function GameBoard() {
   const gameId = params.gameId as string;
 
   const [state, dispatch] = useReducer(gamePageReducer, initialState);
+  const reduxDispatch = useAppDispatch();
 
   // EventPopup 훅
   const {
@@ -142,6 +161,16 @@ export default function GameBoard() {
     openPopup: openEventPopup,
     handleSelectChoice: handleEventChoice,
   } = useEventPopup(gameId);
+
+  // Quiz state
+  const isQuizActive = useAppSelector(selectIsQuizActive);
+  const currentQuiz = useAppSelector(selectCurrentQuiz);
+  const selectedAnswer = useAppSelector(selectSelectedAnswer);
+  const hasSubmitted = useAppSelector(selectHasSubmitted);
+  const isCorrect = useAppSelector(selectIsCorrect);
+  const quizHistory = useAppSelector(selectQuizHistory);
+  const correctQuizCount = useAppSelector(selectCorrectCount);
+  const quizBonus = useAppSelector(selectQuizBonus);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -160,6 +189,9 @@ export default function GameBoard() {
         if (isEmergencyEvent) {
           dispatch({ type: 'SHOW_MODAL', modal: 'emergency' });
         }
+
+        // Check for quiz at current turn
+        await checkForQuiz();
       } catch {
         dispatch({ type: 'SET_ERROR', payload: '게임 데이터를 불러올 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.' });
         dispatch({ type: 'SET_LOADING', payload: false });
@@ -170,6 +202,13 @@ export default function GameBoard() {
       loadGameData();
     }
   }, [gameId]);
+
+  // Check for quiz when turn changes
+  useEffect(() => {
+    if (state.gameState?.gameId) {
+      checkForQuiz();
+    }
+  }, [state.gameState?.currentTurn]);
 
   // 랜덤 이벤트 자동 팝업
   useEffect(() => {
@@ -196,6 +235,25 @@ export default function GameBoard() {
     }
   }, [state.gameState?.randomEventTriggered, state.gameState?.randomEventData, openEventPopup]);
 
+  // Quiz check after choice execution
+  const checkForQuiz = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/game/${gameId}/quiz/next`);
+
+      if (response.status === 204) {
+        // No quiz for this turn
+        return;
+      }
+
+      if (response.ok) {
+        const quiz = await response.json();
+        reduxDispatch(setCurrentQuiz(quiz));
+      }
+    } catch (error) {
+      console.error('Quiz check failed:', error);
+    }
+  };
+
   // 선택 실행
   const handleChoiceSelect = async (choiceId: number | number[]) => {
     if (!state.gameState || state.executing) return;
@@ -207,6 +265,9 @@ export default function GameBoard() {
       // 선택 실행
       const updatedGame = await gameApi.executeChoice(gameId, choiceId);
       dispatch({ type: 'SET_GAME_STATE', payload: updatedGame });
+
+      // Check for quiz at new turn
+      await checkForQuiz();
 
       // 투자 실패 체크
       if (updatedGame.investmentFailed) {
@@ -265,6 +326,70 @@ export default function GameBoard() {
       router.push(`/game/${newGame.gameId}`);
     } catch {
       dispatch({ type: 'SET_ERROR', payload: '새 게임을 시작할 수 없습니다.' });
+    }
+  };
+
+  // Quiz answer handlers
+  const handleSelectAnswer = (answer: string) => {
+    reduxDispatch(selectAnswer(answer));
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (!currentQuiz || !selectedAnswer) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/game/${gameId}/quiz/${currentQuiz.quizId}/answer`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answer: selectedAnswer }),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+
+        // Update quiz state
+        reduxDispatch(
+          submitAnswer({
+            isCorrect: result.isCorrect,
+            correctAnswer: result.correctAnswer,
+          })
+        );
+
+        // Add to history
+        reduxDispatch(
+          addToHistory({
+            quizId: currentQuiz.quizId,
+            question: currentQuiz.question,
+            difficulty: currentQuiz.difficulty,
+            playerAnswer: selectedAnswer,
+            correctAnswer: result.correctAnswer,
+            isCorrect: result.isCorrect,
+            turnNumber: state.gameState?.currentTurn || 0,
+          })
+        );
+
+        // Update bonus
+        if (result.quizBonus !== undefined) {
+          reduxDispatch(updateQuizBonus(result.quizBonus));
+        }
+
+        // Auto-close after 3 seconds
+        setTimeout(() => {
+          reduxDispatch(closeQuiz());
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Quiz submission failed:', error);
+      dispatch({ type: 'SET_ERROR', payload: '퀴즈 제출에 실패했습니다. 다시 시도해주세요.' });
+    }
+  };
+
+  const handleCloseQuiz = () => {
+    if (hasSubmitted) {
+      reduxDispatch(closeQuiz());
     }
   };
 
@@ -537,6 +662,25 @@ export default function GameBoard() {
               </div>
             )}
           </div>
+
+          {/* Quiz Summary Section */}
+          {quizHistory.length > 0 && (
+            <div className="mt-8">
+              <QuizSummary
+                quizHistory={quizHistory.map((quiz) => ({
+                  quizId: quiz.quizId,
+                  question: quiz.question,
+                  difficulty: quiz.difficulty,
+                  isCorrect: quiz.isCorrect,
+                  playerAnswer: quiz.playerAnswer,
+                  correctAnswer: quiz.correctAnswer,
+                }))}
+                correctCount={correctQuizCount}
+                totalCount={quizHistory.length}
+                bonusScore={quizBonus}
+              />
+            </div>
+          )}
 
           <div className="flex gap-4 justify-center mt-6">
             {isWon && !state.playerRank && (
@@ -818,6 +962,18 @@ export default function GameBoard() {
           }}
         />
       )}
+
+      {/* Quiz Popup */}
+      <QuizPopup
+        isOpen={isQuizActive}
+        quiz={currentQuiz}
+        selectedAnswer={selectedAnswer}
+        hasSubmitted={hasSubmitted}
+        isCorrect={isCorrect}
+        onSelectAnswer={handleSelectAnswer}
+        onSubmit={handleSubmitQuiz}
+        onClose={handleCloseQuiz}
+      />
     </>
   );
 }

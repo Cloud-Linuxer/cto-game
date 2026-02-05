@@ -6,11 +6,13 @@ import { EventState } from '../database/entities/event-state.entity';
 import { EventHistory } from '../database/entities/event-history.entity';
 import { DynamicEvent } from '../database/entities/dynamic-event.entity';
 import { SecurityModule } from '../security/security.module';
+import { LLMModule } from '../llm/llm.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Game, EventState, EventHistory, DynamicEvent]),
     SecurityModule,
+    LLMModule,
   ],
   providers: [EventService],
   exports: [EventService],

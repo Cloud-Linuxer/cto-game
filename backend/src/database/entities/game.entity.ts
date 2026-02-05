@@ -139,6 +139,17 @@ export class Game {
   @Column({ type: 'boolean', default: false })
   governmentReportRequired: boolean; // Whether government report is required next turn
 
+  // --- EPIC-07: Quiz System fields ---
+
+  @Column({ type: 'simple-json', default: '[]' })
+  quizTurns: number[]; // Array of turn numbers when quizzes will appear (5 random turns)
+
+  @Column({ type: 'int', default: 0 })
+  correctQuizCount: number; // Number of correctly answered quizzes (0-5)
+
+  @Column({ type: 'int', default: 0 })
+  quizBonus: number; // Bonus score from quizzes (0-50)
+
   @CreateDateColumn()
   createdAt: Date;
 
