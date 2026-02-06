@@ -66,7 +66,7 @@ export const VICTORY_PATH_CONDITIONS: Record<DifficultyMode, Record<VictoryPath,
     IPO: {
       label: 'IPO 상장',
       description: '기업공개를 통해 주식시장에 상장합니다',
-      minUsers: 70_000, minCash: 200_000_000, minTrust: 60,
+      minUsers: 70_000, minCash: 200_000_000, minTrust: 70, // EPIC-08 Phase 2: 60 → 70
       requiredInfra: ['RDS', 'EKS'],
       scoreMultiplier: 1.0,
     },
@@ -95,7 +95,7 @@ export const VICTORY_PATH_CONDITIONS: Record<DifficultyMode, Record<VictoryPath,
     IPO: {
       label: 'IPO 상장',
       description: '기업공개를 통해 주식시장에 상장합니다',
-      minUsers: 80_000, minCash: 200_000_000, minTrust: 65,
+      minUsers: 80_000, minCash: 200_000_000, minTrust: 80, // EPIC-08 Phase 2: 65 → 80
       requiredInfra: ['RDS', 'EKS'],
       scoreMultiplier: 1.0,
     },
@@ -124,7 +124,7 @@ export const VICTORY_PATH_CONDITIONS: Record<DifficultyMode, Record<VictoryPath,
     IPO: {
       label: 'IPO 상장',
       description: '기업공개를 통해 주식시장에 상장합니다',
-      minUsers: 120_000, minCash: 400_000_000, minTrust: 85,
+      minUsers: 120_000, minCash: 400_000_000, minTrust: 90, // EPIC-08 Phase 2: 85 → 90
       requiredInfra: ['RDS', 'EKS'],
       scoreMultiplier: 1.0,
     },
@@ -160,14 +160,14 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
     initialMaxCapacity: 15_000,
     maxTurns: 30,
     earlyPitchTrustThreshold: 3,
-    seriesAMinTrust: 20,
-    seriesBMinTrust: 35,
-    seriesCMinTrust: 55,
+    seriesAMinTrust: 30,        // EPIC-08 Phase 2: 20 → 30 (+50%)
+    seriesBMinTrust: 50,        // EPIC-08 Phase 2: 35 → 50 (+43%)
+    seriesCMinTrust: 65,        // EPIC-08 Phase 2: 55 → 65 (+18%)
     trustOutageThreshold: 5,
     bankruptcyThreshold: -50_000_000,
     ipoMinUsers: 70_000,
     ipoMinCash: 200_000_000,
-    ipoMinTrust: 60,
+    ipoMinTrust: 70,            // EPIC-08 Phase 2: 60 → 70 (+17%)
     positiveEffectMultiplier: 1.3,
     negativeEffectMultiplier: 0.6,
     scoreMultiplier: 0.6,
@@ -180,14 +180,14 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
     initialMaxCapacity: 10_000,
     maxTurns: 25,
     earlyPitchTrustThreshold: 5,
-    seriesAMinTrust: 25,
-    seriesBMinTrust: 45,
-    seriesCMinTrust: 65,
+    seriesAMinTrust: 40,        // EPIC-08 Phase 2: 25 → 40 (+60%)
+    seriesBMinTrust: 60,        // EPIC-08 Phase 2: 45 → 60 (+33%)
+    seriesCMinTrust: 75,        // EPIC-08 Phase 2: 65 → 75 (+15%)
     trustOutageThreshold: 10,
     bankruptcyThreshold: -30_000_000,
     ipoMinUsers: 80_000,
     ipoMinCash: 200_000_000,
-    ipoMinTrust: 65,
+    ipoMinTrust: 80,            // EPIC-08 Phase 2: 65 → 80 (+23%)
     positiveEffectMultiplier: 1.0,
     negativeEffectMultiplier: 1.0,
     scoreMultiplier: 1.0,
@@ -200,14 +200,14 @@ export const DIFFICULTY_CONFIGS: Record<DifficultyMode, DifficultyConfig> = {
     initialMaxCapacity: 5_000,
     maxTurns: 22,
     earlyPitchTrustThreshold: 8,
-    seriesAMinTrust: 35,
-    seriesBMinTrust: 55,
-    seriesCMinTrust: 75,
+    seriesAMinTrust: 50,        // EPIC-08 Phase 2: 35 → 50 (+43%)
+    seriesBMinTrust: 70,        // EPIC-08 Phase 2: 55 → 70 (+27%)
+    seriesCMinTrust: 85,        // EPIC-08 Phase 2: 75 → 85 (+13%)
     trustOutageThreshold: 15,
     bankruptcyThreshold: 0,
     ipoMinUsers: 120_000,
     ipoMinCash: 400_000_000,
-    ipoMinTrust: 85,
+    ipoMinTrust: 90,            // EPIC-08 Phase 2: 85 → 90 (+6%)
     positiveEffectMultiplier: 0.8,
     negativeEffectMultiplier: 1.4,
     scoreMultiplier: 1.5,
@@ -239,15 +239,15 @@ export const GAME_CONSTANTS = {
 
   SERIES_A_TURN: 12,
   SERIES_A_MIN_CASH_EFFECT: 100_000_000,
-  SERIES_A_MIN_TRUST: 25,
+  SERIES_A_MIN_TRUST: 40,        // EPIC-08 Phase 2: 25 → 40 (NORMAL baseline)
 
   SERIES_B_TURN: 18,
   SERIES_B_MIN_CASH_EFFECT: 1_000_000_000,
-  SERIES_B_MIN_TRUST: 45,
+  SERIES_B_MIN_TRUST: 60,        // EPIC-08 Phase 2: 45 → 60 (NORMAL baseline)
 
   SERIES_C_TURN: 23,
   SERIES_C_MIN_CASH_EFFECT: 3_000_000_000,
-  SERIES_C_MIN_TRUST: 65,
+  SERIES_C_MIN_TRUST: 75,        // EPIC-08 Phase 2: 65 → 75 (NORMAL baseline)
 
   // --- Capacity (graduated penalty system) ---
   // Old: flat -10 trust. New: ratio-based.
@@ -302,7 +302,7 @@ export const GAME_CONSTANTS = {
   // --- IPO conditions (defaults, overridden by difficulty) ---
   IPO_MIN_USERS: 80_000,
   IPO_MIN_CASH: 200_000_000,
-  IPO_MIN_TRUST: 65,
+  IPO_MIN_TRUST: 80,             // EPIC-08 Phase 2: 65 → 80 (NORMAL baseline)
   IPO_REQUIRED_INFRA: ['RDS', 'EKS'] as readonly string[],
   IPO_SELECTION_TURN: 950,
   IPO_FINAL_SUCCESS_TURN: 999,
@@ -398,5 +398,21 @@ export const GAME_CONSTANTS = {
 
     // Trust threshold for triggering alternative investment options
     TRUST_THRESHOLD_RATIO: 0.6,  // If trust < 60% of required, show alternatives
+  },
+
+  // --- EPIC-08: Trust System Rebalancing ---
+
+  // Phase 1: Trust multiplier cap (prevents extreme stacking)
+  TRUST_MULTIPLIER_CAP: 2.0,  // Maximum effective multiplier for trust gains
+
+  // Phase 3: Diminishing returns system (progressive growth curve)
+  TRUST_DIMINISHING_RETURNS: {
+    ENABLED: true,
+    TIERS: [
+      { minTrust: 0,  maxTrust: 60,  multiplier: 1.0 },   // Normal growth (0-60)
+      { minTrust: 60, maxTrust: 75,  multiplier: 0.7 },   // 30% reduction (60-75)
+      { minTrust: 75, maxTrust: 85,  multiplier: 0.5 },   // 50% reduction (75-85)
+      { minTrust: 85, maxTrust: 100, multiplier: 0.3 },   // 70% reduction (85-100)
+    ] as readonly { minTrust: number; maxTrust: number; multiplier: number }[],
   },
 } as const;

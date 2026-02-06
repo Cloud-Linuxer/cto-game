@@ -282,21 +282,50 @@ export class GameService {
       }
       game.cash += cashEffect;
 
-      // Trust: apply multiplier + comeback + transparency bonus (EPIC-04 Feature 3)
-      let trustGain = this.applyTrustEffectMultiplier(
-        Math.floor(choice.effects.trust * game.trustMultiplier),
-        config,
-      );
-      if (trustGain > 0 && comebackMult > 1.0) {
-        trustGain = Math.floor(trustGain * comebackMult);
+      // Trust: apply multipliers with EPIC-08 cap
+      const originalTrustEffect = choice.effects.trust;
+
+      // Step 1: Calculate total multiplier (staff × difficulty × comeback)
+      let totalMultiplier = game.trustMultiplier;
+      if (originalTrustEffect > 0) {
+        totalMultiplier *= config.positiveEffectMultiplier;
+        totalMultiplier *= this.getComebackMultiplier(game, config);
+      } else if (originalTrustEffect < 0) {
+        // Negative effects: only difficulty multiplier, no staff/comeback
+        totalMultiplier = config.negativeEffectMultiplier;
       }
 
-      // Transparency bonus: 1.5x trust recovery for transparency-tagged choices after capacity warning
+      // Step 2: Apply EPIC-08 cap to positive effects
+      if (originalTrustEffect > 0) {
+        totalMultiplier = Math.min(totalMultiplier, GAME_CONSTANTS.TRUST_MULTIPLIER_CAP);
+      }
+
+      // Step 3: Calculate trust gain
+      let trustGain = Math.floor(originalTrustEffect * totalMultiplier);
+
+      // Step 4: Transparency bonus (EPIC-04 Feature 3)
       if (choice.tags?.includes('transparency') && game.capacityWarningActive && trustGain > 0) {
-        const originalTrustGain = trustGain;
+        const beforeTransparency = trustGain;
         trustGain = Math.floor(trustGain * GAME_CONSTANTS.TRANSPARENCY.EFFECT_MULTIPLIER);
-        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${originalTrustGain} → ${trustGain})`);
-        this.logger.debug(`Transparency bonus applied: ${originalTrustGain} → ${trustGain}`);
+
+        // EPIC-08: Re-apply cap after transparency bonus
+        const maxAllowedGain = Math.floor(originalTrustEffect * GAME_CONSTANTS.TRUST_MULTIPLIER_CAP);
+        if (trustGain > maxAllowedGain) {
+          trustGain = maxAllowedGain;
+        }
+
+        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${beforeTransparency} → ${trustGain})`);
+        this.logger.debug(`Transparency bonus applied: ${beforeTransparency} → ${trustGain}, capped at ${GAME_CONSTANTS.TRUST_MULTIPLIER_CAP}x`);
+      }
+
+      // Step 5: Apply diminishing returns based on current trust level (EPIC-08 Phase 3)
+      if (trustGain > 0) {
+        const beforeDiminishing = trustGain;
+        trustGain = this.applyDiminishingReturns(trustGain, game.trust);
+
+        if (trustGain < beforeDiminishing) {
+          this.logger.debug(`Diminishing returns: ${beforeDiminishing} → ${trustGain} at trust ${game.trust}`);
+        }
       }
 
       game.trust += trustGain;
@@ -670,17 +699,38 @@ export class GameService {
       if (cashEffect > 0 && comebackMult > 1.0) cashEffect = Math.floor(cashEffect * comebackMult);
       game.cash += cashEffect;
 
-      let trustGain = this.applyTrustEffectMultiplier(
-        Math.floor(choice.effects.trust * game.trustMultiplier),
-        config,
-      );
-      if (trustGain > 0 && comebackMult > 1.0) trustGain = Math.floor(trustGain * comebackMult);
+      // Trust: apply multipliers with EPIC-08 cap
+      const originalTrustEffect = choice.effects.trust;
+
+      // Calculate total multiplier (staff × difficulty × comeback) with cap
+      let totalMultiplier = game.trustMultiplier;
+      if (originalTrustEffect > 0) {
+        totalMultiplier *= config.positiveEffectMultiplier;
+        totalMultiplier *= this.getComebackMultiplier(game, config);
+        totalMultiplier = Math.min(totalMultiplier, GAME_CONSTANTS.TRUST_MULTIPLIER_CAP);
+      } else if (originalTrustEffect < 0) {
+        totalMultiplier = config.negativeEffectMultiplier;
+      }
+
+      let trustGain = Math.floor(originalTrustEffect * totalMultiplier);
 
       // EPIC-04 Feature 3: Transparency bonus
       if (choice.tags?.includes('transparency') && game.capacityWarningActive && trustGain > 0) {
-        const originalTrustGain = trustGain;
+        const beforeTransparency = trustGain;
         trustGain = Math.floor(trustGain * GAME_CONSTANTS.TRANSPARENCY.EFFECT_MULTIPLIER);
-        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${originalTrustGain} → ${trustGain})`);
+
+        // EPIC-08: Re-apply cap after transparency bonus
+        const maxAllowedGain = Math.floor(originalTrustEffect * GAME_CONSTANTS.TRUST_MULTIPLIER_CAP);
+        if (trustGain > maxAllowedGain) {
+          trustGain = maxAllowedGain;
+        }
+
+        recoveryMessages.push(`💬 투명한 소통이 신뢰 회복을 가속화했습니다 (신뢰도 회복 ${beforeTransparency} → ${trustGain})`);
+      }
+
+      // EPIC-08 Phase 3: Apply diminishing returns
+      if (trustGain > 0) {
+        trustGain = this.applyDiminishingReturns(trustGain, game.trust);
       }
 
       game.trust += trustGain;
@@ -888,13 +938,67 @@ export class GameService {
   }
 
   /**
+   * Apply diminishing returns to trust gains based on current trust level (EPIC-08 Phase 3).
+   * Higher trust = harder to gain more trust (natural market saturation).
+   *
+   * Tiers:
+   * - 0-60: 1.0x (normal growth)
+   * - 60-75: 0.7x (30% reduction)
+   * - 75-85: 0.5x (50% reduction)
+   * - 85-100: 0.3x (70% reduction)
+   */
+  private applyDiminishingReturns(trustGain: number, currentTrust: number): number {
+    const settings = GAME_CONSTANTS.TRUST_DIMINISHING_RETURNS;
+
+    if (!settings.ENABLED || trustGain <= 0) {
+      return trustGain;
+    }
+
+    // Find the tier for current trust level
+    const currentTier = settings.TIERS.find(
+      (tier) => currentTrust >= tier.minTrust && currentTrust < tier.maxTrust
+    ) || settings.TIERS[settings.TIERS.length - 1]; // Default to last tier if >= 100
+
+    const adjustedGain = Math.floor(trustGain * currentTier.multiplier);
+
+    this.logger.debug(
+      `Diminishing returns applied: trust=${currentTrust}, tier=${currentTier.minTrust}-${currentTier.maxTrust}, ` +
+      `multiplier=${currentTier.multiplier}, gain=${trustGain} → ${adjustedGain}`
+    );
+
+    return adjustedGain;
+  }
+
+  /**
    * 신뢰도 효과 배율 적용
    */
-  private applyTrustEffectMultiplier(value: number, config: DifficultyConfig): number {
-    if (value >= 0) {
-      return Math.floor(value * config.positiveEffectMultiplier);
+  /**
+   * Apply trust effect multiplier with cap (EPIC-08).
+   * Combines difficulty multiplier and comeback bonus, then applies cap.
+   * Note: Staff multiplier (game.trustMultiplier) should be applied BEFORE calling this.
+   */
+  private applyTrustEffectMultiplier(
+    value: number,
+    config: DifficultyConfig,
+    game: Game
+  ): number {
+    if (value === 0) return 0;
+
+    let totalMultiplier = 1.0;
+
+    if (value > 0) {
+      // Positive effects: apply difficulty multiplier + comeback
+      totalMultiplier = config.positiveEffectMultiplier;
+      totalMultiplier *= this.getComebackMultiplier(game, config);
+
+      // Apply multiplier cap (EPIC-08) to prevent extreme stacking
+      totalMultiplier = Math.min(totalMultiplier, GAME_CONSTANTS.TRUST_MULTIPLIER_CAP);
+    } else {
+      // Negative effects: only difficulty multiplier (no cap needed)
+      totalMultiplier = config.negativeEffectMultiplier;
     }
-    return Math.floor(value * config.negativeEffectMultiplier);
+
+    return Math.floor(value * totalMultiplier);
   }
 
   /**
