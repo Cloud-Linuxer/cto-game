@@ -536,7 +536,7 @@ describe('GameService', () => {
   });
 
   describe('EPIC-04 Feature 2: Capacity Warning System', () => {
-    it('첫 용량 초과 시 50% 감소된 페널티를 적용하고 경고 메시지를 반환해야 함', async () => {
+    it('첫 용량 초과 시 33% 감소된 페널티를 적용하고 경고 메시지를 반환해야 함 (EPIC-09)', async () => {
       const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 1,
@@ -595,7 +595,7 @@ describe('GameService', () => {
         currentTurn: 2,
         users: 17000,
         cash: 9000000,
-        trust: 49, // 50 - 1 (50% of 2 penalty for ~13% excess)
+        trust: 50, // 50 - 0 (33% of 2 penalty = 0.66 → floor to 0)
         capacityWarningActive: true,
         consecutiveCapacityExceeded: 1,
         capacityExceededCount: 1,
@@ -614,7 +614,7 @@ describe('GameService', () => {
       expect(result.capacityWarningMessage).toContain('다음 턴까지 인프라를 개선하세요');
     });
 
-    it('두 번째 연속 용량 초과 시 전체 페널티를 적용해야 함', async () => {
+    it('두 번째 연속 용량 초과 시 67% 페널티를 적용해야 함 (EPIC-09)', async () => {
       const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 2,
@@ -671,7 +671,7 @@ describe('GameService', () => {
         ...game,
         currentTurn: 3,
         users: 20000,
-        trust: 45, // 49 - 4 (full penalty for 33% excess)
+        trust: 47, // 49 - 2 (67% of 3 penalty = 2.01 → floor to 2)
         consecutiveCapacityExceeded: 2,
         capacityExceededCount: 2,
         resilienceStacks: 2,
@@ -685,7 +685,7 @@ describe('GameService', () => {
       const result = await service.executeChoice('test-game-id', 2);
 
       expect(result.capacityExceeded).toBe(true);
-      expect(result.capacityWarningMessage).toContain('🔥 서비스 장애 발생!');
+      expect(result.capacityWarningMessage).toContain('⚠️ 서비스 지연 심화!');
       expect(result.capacityWarningMessage).toContain('연속 2회');
     });
 
@@ -747,7 +747,7 @@ describe('GameService', () => {
         currentTurn: 4,
         users: 78000,
         cash: 5000000,
-        trust: 44, // 45 - 1 (50% of 2 penalty for 11% excess)
+        trust: 45, // 45 - 0 (33% of 2 penalty = 0.66 → floor to 0)
         capacityWarningActive: true,
         consecutiveCapacityExceeded: 1, // Back to first warning
         capacityExceededCount: 3,
@@ -766,7 +766,7 @@ describe('GameService', () => {
       expect(result.capacityWarningMessage).not.toContain('연속');
     });
 
-    it('연속 3회 용량 초과 시 누적 카운터가 증가해야 함', async () => {
+    it('연속 3회 용량 초과 시 전체 100% 페널티를 적용해야 함 (EPIC-09)', async () => {
       const game: Partial<Game> = {
         gameId: 'test-game-id',
         currentTurn: 3,
@@ -823,7 +823,7 @@ describe('GameService', () => {
         ...game,
         currentTurn: 4,
         users: 23000,
-        trust: 39, // 45 - 6 (full penalty for 53% excess)
+        trust: 40, // 45 - 5 (100% of 5 penalty for 53% excess, EPIC-09 reduced from 6)
         consecutiveCapacityExceeded: 3,
         capacityExceededCount: 3,
         resilienceStacks: 3,

@@ -253,9 +253,9 @@ export const GAME_CONSTANTS = {
   // Old: flat -10 trust. New: ratio-based.
   CAPACITY_PENALTY_TIERS: [
     { excessRatio: 0.10, penalty: 2 },  // 10% over  -> -2 trust
-    { excessRatio: 0.30, penalty: 4 },  // 30% over  -> -4 trust
-    { excessRatio: 0.50, penalty: 6 },  // 50% over  -> -6 trust
-    { excessRatio: 1.00, penalty: 8 },  // 100%+ over -> -8 trust
+    { excessRatio: 0.30, penalty: 3 },  // 30% over  -> -3 trust (reduced from 4)
+    { excessRatio: 0.50, penalty: 5 },  // 50% over  -> -5 trust (reduced from 6)
+    { excessRatio: 1.00, penalty: 6 },  // 100%+ over -> -6 trust (reduced from 8)
   ] as readonly { excessRatio: number; penalty: number }[],
   CAPACITY_EXCEEDED_TRUST_PENALTY: 8, // max penalty (kept for backward compat)
 

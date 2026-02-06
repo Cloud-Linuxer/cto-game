@@ -406,20 +406,27 @@ export class GameService {
     if (game.users > game.maxUserCapacity) {
       const fullPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
 
-      // Determine penalty based on consecutive counter
+      // EPIC-09: 3-tier progressive penalty system
       if (game.consecutiveCapacityExceeded === 0) {
-        // First capacity exceeded: 50% penalty
-        capacityPenalty = Math.floor(fullPenalty * 0.5);
+        // First capacity exceeded: 33% penalty
+        capacityPenalty = Math.floor(fullPenalty * 0.33);
         capacityWarningMessage = '⚠️ 서비스 응답 지연 발생 - 다음 턴까지 인프라를 개선하세요';
         this.logger.warn(
-          `첫 용량 초과 경고: users=${game.users}, maxCapacity=${game.maxUserCapacity}, reducedPenalty=-${capacityPenalty} (원래 -${fullPenalty})`,
+          `첫 용량 초과 경고: users=${game.users}, maxCapacity=${game.maxUserCapacity}, reducedPenalty=-${capacityPenalty} (원래 -${fullPenalty}, 33%)`,
+        );
+      } else if (game.consecutiveCapacityExceeded === 1) {
+        // Second capacity exceeded: 67% penalty
+        capacityPenalty = Math.floor(fullPenalty * 0.67);
+        capacityWarningMessage = `⚠️ 서비스 지연 심화! (연속 2회) - 즉시 조치 필요`;
+        this.logger.warn(
+          `2회 연속 용량 초과: users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${capacityPenalty} (원래 -${fullPenalty}, 67%)`,
         );
       } else {
-        // Second or subsequent: full penalty
+        // Third or subsequent: full penalty
         capacityPenalty = fullPenalty;
         capacityWarningMessage = `🔥 서비스 장애 발생! (연속 ${game.consecutiveCapacityExceeded + 1}회)`;
         this.logger.warn(
-          `연속 용량 초과 (${game.consecutiveCapacityExceeded + 1}회): users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${fullPenalty}`,
+          `연속 용량 초과 (${game.consecutiveCapacityExceeded + 1}회): users=${game.users}, maxCapacity=${game.maxUserCapacity}, penalty=-${fullPenalty} (100%)`,
         );
       }
 
@@ -762,11 +769,17 @@ export class GameService {
     if (game.users > game.maxUserCapacity) {
       const fullPenalty = this.calculateCapacityPenalty(game.users, game.maxUserCapacity);
 
-      // EPIC-04 Feature 2: Apply warning system
+      // EPIC-09: 3-tier progressive penalty system
       if (game.consecutiveCapacityExceeded === 0) {
-        capacityPenalty = Math.floor(fullPenalty * 0.5);
+        // First capacity exceeded: 33% penalty
+        capacityPenalty = Math.floor(fullPenalty * 0.33);
         capacityWarningMessage = '⚠️ 서비스 응답 지연 발생 - 다음 턴까지 인프라를 개선하세요';
+      } else if (game.consecutiveCapacityExceeded === 1) {
+        // Second capacity exceeded: 67% penalty
+        capacityPenalty = Math.floor(fullPenalty * 0.67);
+        capacityWarningMessage = `⚠️ 서비스 지연 심화! (연속 2회) - 즉시 조치 필요`;
       } else {
+        // Third or subsequent: full penalty
         capacityPenalty = fullPenalty;
         capacityWarningMessage = `🔥 서비스 장애 발생! (연속 ${game.consecutiveCapacityExceeded + 1}회)`;
       }
