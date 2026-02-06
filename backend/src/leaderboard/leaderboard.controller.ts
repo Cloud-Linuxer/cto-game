@@ -35,8 +35,9 @@ export class LeaderboardController {
     // 게임 상태 확인
     const gameState = await this.gameService.getGame(dto.gameId);
 
-    if (gameState.status !== 'WON_IPO') {
-      throw new BadRequestException('IPO를 달성하지 못한 게임입니다.');
+    // 게임이 진행 중이면 점수 제출 불가
+    if (gameState.status === 'PLAYING') {
+      throw new BadRequestException('게임이 아직 진행 중입니다.');
     }
 
     // 리더보드에 추가
