@@ -23,8 +23,12 @@ export class LeaderboardService {
     // 신뢰도 점수 (1%당 1000점)
     const trustScore = gameState.trust * 1000;
 
+    // 퀴즈 보너스 점수 (EPIC-07: 0/5/15/30/50 * 1000배 = 0/5K/15K/30K/50K)
+    // 게임 스케일에 맞춰 1000배 곱함 (5개 전부 맞추면 50,000점 = 전체 점수의 ~26% 보너스)
+    const quizBonus = (gameState.quizBonus || 0) * 1000;
+
     // 기본 점수
-    const baseScore = userScore + cashScore + trustScore;
+    const baseScore = userScore + cashScore + trustScore + quizBonus;
 
     // 난이도 배율 적용
     const mode = (gameState.difficultyMode || 'NORMAL') as DifficultyMode;
@@ -57,6 +61,8 @@ export class LeaderboardService {
       teamSize: gameState.hiredStaff ? gameState.hiredStaff.length : 0,
       difficulty: gameState.difficultyMode || 'NORMAL',
       victoryPath: gameState.victoryPath || gameState.status || 'WON_IPO',
+      correctQuizCount: gameState.correctQuizCount || 0,
+      quizBonus: gameState.quizBonus || 0,
     });
 
     return await this.leaderboardRepository.save(leaderboardEntry);

@@ -35,6 +35,13 @@ export class Leaderboard {
   @Column({ type: 'varchar', length: 30, default: 'WON_IPO' })
   victoryPath: string; // 'WON_IPO', 'WON_ACQUISITION', 'WON_PROFITABILITY', 'WON_TECH_LEADER'
 
+  // EPIC-07: Quiz System
+  @Column({ type: 'int', default: 0 })
+  correctQuizCount: number; // 맞춘 퀴즈 개수 (0-5)
+
+  @Column({ type: 'int', default: 0 })
+  quizBonus: number; // 퀴즈 보너스 점수 (0-50)
+
   @CreateDateColumn({ type: 'timestamptz' })
   achievedAt: Date;
 }
