@@ -839,19 +839,19 @@ export default function GameBoard() {
           {/* 배경 효과 */}
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20"></div>
 
-          <div className="relative z-10 container mx-auto px-4 py-3 md:py-4">
+          <div className="relative z-10 container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               {/* 로고와 타이틀 */}
               <div className="flex items-center gap-3">
-                <div className="hidden md:flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur rounded-xl">
+                <div className="flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur rounded-xl">
                   <span className="text-2xl">🚀</span>
                 </div>
                 <div>
-                  <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                     AWS 스타트업 타이쿤
                   </h1>
-                  {/* EPIC-11: 턴 표시 개선 - 모든 화면에서 표시, 크기 확대 */}
-                  <p className="text-sm md:text-base font-semibold text-purple-200">
+                  {/* EPIC-11: 턴 표시 개선 - 모든 화면에서 동일한 크기 */}
+                  <p className="text-base font-semibold text-purple-200">
                     Turn {state.gameState.currentTurn} / {state.gameState.maxTurns || 25}
                   </p>
                 </div>
@@ -859,52 +859,38 @@ export default function GameBoard() {
 
               {/* 우측 버튼 그룹 */}
               <div className="flex items-center gap-2">
-                {/* 현재 상태 뱃지 */}
-                <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur rounded-lg">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-purple-200">유저</span>
-                    <span className="text-sm font-bold text-white">{state.gameState.users.toLocaleString()}</span>
-                  </div>
-                  <div className="w-px h-4 bg-white/20"></div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-purple-200">신뢰도</span>
-                    <span className="text-sm font-bold text-white">{state.gameState.trust}%</span>
-                  </div>
-                </div>
-
                 {/* 홈 버튼 */}
                 <button
                   onClick={() => router.push('/')}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                  className="px-4 py-2 bg-white/10 backdrop-blur border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
-                  <span className="hidden md:inline">홈으로</span>
+                  <span>홈으로</span>
                 </button>
 
                 {/* 리더보드 버튼 */}
                 <button
                   onClick={() => router.push('/leaderboard')}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105 flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
-                  <span className="hidden md:inline">리더보드</span>
+                  <span>리더보드</span>
                 </button>
               </div>
             </div>
 
             {/* 프로그레스 바 */}
-            <div className="mt-3 md:hidden">
+            <div className="mt-3">
               <div className="w-full bg-white/20 rounded-full h-1.5">
                 <div
                   className="bg-gradient-to-r from-green-400 to-blue-400 h-1.5 rounded-full transition-all duration-500"
                   style={{ width: `${(state.gameState.currentTurn / (state.gameState.maxTurns || 25)) * 100}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-purple-200 mt-1 text-center">Turn {state.gameState.currentTurn} / {state.gameState.maxTurns || 25}</p>
             </div>
           </div>
         </header>
