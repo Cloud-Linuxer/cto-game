@@ -122,17 +122,19 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 자금 변화 - 간단한 1줄 표시 (상세정보는 모달에서) */}
+          {/* 자금 변화 - 숫자만 표시 (단위 생략) */}
           {choice.effects.cash !== 0 && (() => {
-            const formatted = formatCurrencyChange(choice.effects.cash, 'compact');
+            const manwon = Math.floor(choice.effects.cash / 10000);
+            const sign = choice.effects.cash > 0 ? '+' : '';
+            const formatted = formatCurrencyChange(choice.effects.cash, 'both');
             return (
               <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold ${
                 choice.effects.cash > 0
                   ? 'bg-emerald-100 text-emerald-700'
                   : 'bg-rose-100 text-rose-700'
-              }`} title={`자금 ${formatted.primary}`}>
+              }`} title={`자금 ${formatted.primary} (${formatted.secondary})`}>
                 <span>💰</span>
-                <span>{formatted.primary}</span>
+                <span>{sign}{Math.abs(manwon).toLocaleString()}</span>
               </div>
             );
           })()}
@@ -149,13 +151,18 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 인프라 추가 - 간단한 1줄 표시 (상세정보는 모달에서) */}
-          {choice.effects.infra.length > 0 && (
-            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700" title={choice.effects.infra.join(', ')}>
-              <span>☁️</span>
-              <span>{choice.effects.infra.join(', ')}</span>
-            </div>
-          )}
+          {/* 인프라 추가 - 수용량 숫자만 표시 (이름은 툴팁) */}
+          {choice.effects.infra.length > 0 && (() => {
+            const capacityIncrease = calculateCapacityIncrease(choice.effects.infra);
+            const capacityK = Math.floor(capacityIncrease / 1000); // K 단위로 변환
+            return (
+              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700"
+                   title={`${choice.effects.infra.join(', ')} (+${capacityIncrease.toLocaleString()}명 수용량)`}>
+                <span>☁️</span>
+                <span>+{capacityK}</span>
+              </div>
+            );
+          })()}
         </div>
 
       </div>

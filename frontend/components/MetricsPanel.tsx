@@ -1,7 +1,6 @@
 import type { GameState, DifficultyMode, VictoryPath } from '@/lib/types';
 import { VICTORY_PATH_INFO } from '@/lib/types';
 import { DIFFICULTY_GOALS } from '@/lib/game-constants';
-import TrustGauge from '@/components/metrics/TrustGauge';
 import { formatCurrency as formatCurrencyUtil } from '@/lib/utils/currency';
 
 interface MetricsPanelProps {
@@ -148,17 +147,23 @@ export default function MetricsPanel({ gameState }: MetricsPanelProps) {
               </svg>
             </div>
             <div className="flex-1">
-              <div className="text-xs sm:text-sm text-slate-600 font-medium">신뢰도 상세</div>
-              <div className="text-xs text-slate-500">목표: {goals.trust}%</div>
+              <div className="text-xs sm:text-sm text-slate-600 font-medium">신뢰도</div>
+              <div className="text-lg lg:text-xl font-bold text-purple-600">
+                {gameState.trust}%
+              </div>
             </div>
           </div>
-          <TrustGauge
-            trust={gameState.trust}
-            difficultyMode={mode}
-            vertical={true}
-          />
-          <div className="text-right text-xs text-slate-500 font-medium mt-2">
-            목표 달성률: {trustProgress.toFixed(1)}%
+          <div className="text-xs text-slate-500 mb-2">목표: {goals.trust}%</div>
+          <div className="w-full bg-slate-200 rounded-full h-2 sm:h-2.5 lg:h-3 overflow-hidden shadow-inner">
+            <div
+              className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500 relative overflow-hidden shadow-sm"
+              style={{ width: `${trustProgress}%` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
+            </div>
+          </div>
+          <div className="text-right text-xs text-purple-600 font-semibold mt-1">
+            {trustProgress.toFixed(1)}%
           </div>
         </div>
 
