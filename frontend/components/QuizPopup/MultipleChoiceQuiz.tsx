@@ -92,7 +92,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     <div className="w-full">
       {/* Question Section */}
       <div className="mb-6">
-        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
+        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed break-keep">
           {question}
         </h3>
       </div>

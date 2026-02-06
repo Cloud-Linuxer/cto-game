@@ -151,7 +151,7 @@ export default function StoryPanel({ turn, onSelectChoice, onSelectMultipleChoic
               </div>
 
               {/* 이벤트 텍스트 - 더 작은 폰트 */}
-              <div className="text-sm sm:text-base font-semibold leading-snug text-slate-800 whitespace-pre-line break-words overflow-wrap-anywhere flex-1">
+              <div className="text-sm sm:text-base font-semibold leading-snug text-slate-800 whitespace-pre-line break-keep flex-1">
                 {turn.eventText}
               </div>
             </div>

@@ -97,13 +97,13 @@ export default function ChoiceCard({
 
       <div className="relative z-10 flex-1 flex flex-col">
         {/* 타이틀 */}
-        <div className="text-sm font-bold text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors break-words line-clamp-2 leading-tight">
+        <div className="text-sm font-bold text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
           {title}
         </div>
 
         {/* 설명 - 더 잘 보이게 */}
         {description && (
-          <div className="text-xs text-slate-600 mb-2 leading-snug break-words line-clamp-4">
+          <div className="text-xs text-slate-600 mb-2 leading-snug line-clamp-4" style={{ wordBreak: 'keep-all', overflowWrap: 'break-word' }}>
             {description}
           </div>
         )}

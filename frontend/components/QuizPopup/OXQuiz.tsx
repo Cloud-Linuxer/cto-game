@@ -99,7 +99,7 @@ const OXQuiz: React.FC<OXQuizProps> = ({
     <div className="w-full">
       {/* Question Section */}
       <div className="mb-8">
-        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed text-center">
+        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed text-center break-keep">
           {question}
         </h3>
       </div>
