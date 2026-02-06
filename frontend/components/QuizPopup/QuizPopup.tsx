@@ -195,7 +195,7 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
               </div>
 
               {/* 본문 컨텐츠 */}
-              <div className="p-3 xs:p-4 sm:p-6">
+              <div className="p-3 xs:p-4 sm:p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                 {!hasSubmitted ? (
                   // 퀴즈 문제 화면
                   <div>
