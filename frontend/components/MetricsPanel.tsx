@@ -2,18 +2,22 @@ import type { GameState, DifficultyMode, VictoryPath } from '@/lib/types';
 import { VICTORY_PATH_INFO } from '@/lib/types';
 import { DIFFICULTY_GOALS } from '@/lib/game-constants';
 import TrustGauge from '@/components/metrics/TrustGauge';
+import { formatCurrency as formatCurrencyUtil } from '@/lib/utils/currency';
 
 interface MetricsPanelProps {
   gameState: GameState;
 }
 
 export default function MetricsPanel({ gameState }: MetricsPanelProps) {
+  // EPIC-11: 비용 표시 통일 - 새로운 포맷 함수 사용
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-      maximumFractionDigits: 0,
-    }).format(value);
+    const result = formatCurrencyUtil(value, 'both');
+    return result.primary;
+  };
+
+  const formatCurrencyFull = (value: number) => {
+    const result = formatCurrencyUtil(value, 'full');
+    return result.primary;
   };
 
   const formatNumber = (value: number) => {
@@ -61,30 +65,7 @@ export default function MetricsPanel({ gameState }: MetricsPanelProps) {
           </div>
         )}
 
-        {/* 현재 턴 */}
-        <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md lg:shadow-lg border border-slate-200">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
-              <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-xs sm:text-sm text-slate-600 font-medium">턴</div>
-              <div className="text-xl lg:text-2xl font-bold text-blue-600">
-                {gameState.currentTurn} <span className="text-lg lg:text-xl text-slate-400">/ {maxTurns}</span>
-              </div>
-            </div>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-2 sm:h-2.5 lg:h-3 overflow-hidden shadow-inner">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-full rounded-full transition-all duration-500 relative overflow-hidden"
-              style={{ width: `${turnProgress}%` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
-            </div>
-          </div>
-        </div>
+        {/* EPIC-11: 턴 표시 카드 제거 - 헤더로 이동 */}
 
         {/* 유저 수 */}
         <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md lg:shadow-lg border border-slate-200">
@@ -133,8 +114,14 @@ export default function MetricsPanel({ gameState }: MetricsPanelProps) {
             </div>
             <div className="flex-1">
               <div className="text-xs sm:text-sm text-slate-600 font-medium">자금</div>
-              <div className="text-lg lg:text-xl font-bold text-amber-600">
-                {formatCurrency(gameState.cash)}
+              {/* EPIC-11: 비용 표시 통일 - 2줄 레이아웃 */}
+              <div className="flex flex-col">
+                <div className="text-lg lg:text-xl font-bold text-amber-600">
+                  {formatCurrency(gameState.cash)}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {formatCurrencyFull(gameState.cash)}
+                </div>
               </div>
             </div>
           </div>

@@ -850,7 +850,10 @@ export default function GameBoard() {
                   <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
                     AWS 스타트업 타이쿤
                   </h1>
-                  <p className="text-xs text-purple-200 hidden md:block">Turn {state.gameState.currentTurn}/{state.gameState.maxTurns || 25}</p>
+                  {/* EPIC-11: 턴 표시 개선 - 모든 화면에서 표시, 크기 확대 */}
+                  <p className="text-sm md:text-base font-semibold text-purple-200">
+                    Turn {state.gameState.currentTurn} / {state.gameState.maxTurns || 25}
+                  </p>
                 </div>
               </div>
 

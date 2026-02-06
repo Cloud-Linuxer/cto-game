@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { Choice } from '@/lib/types';
+import { formatCurrencyChange } from '@/lib/utils/currency';
+import { calculateCapacityIncrease, formatCapacity, INFRASTRUCTURE_CAPACITY_MAP } from '@/lib/constants/infrastructure-capacity';
 
 interface ChoiceCardProps {
   choice: Choice;
@@ -120,17 +122,27 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 자금 변화 */}
-          {choice.effects.cash !== 0 && (
-            <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold ${
-              choice.effects.cash > 0
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-rose-100 text-rose-700'
-            }`} title={`자금 ${choice.effects.cash > 0 ? '+' : ''}${choice.effects.cash.toLocaleString()}원`}>
-              <span>💰</span>
-              <span>{choice.effects.cash > 0 ? '+' : ''}{(Math.abs(choice.effects.cash) / 10000).toLocaleString()}</span>
-            </div>
-          )}
+          {/* 자금 변화 - EPIC-11: 비용 표시 통일 */}
+          {choice.effects.cash !== 0 && (() => {
+            const cashColor = choice.effects.cash > 0
+              ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-rose-100 text-rose-700';
+            const formatted = formatCurrencyChange(choice.effects.cash, 'both');
+
+            return (
+              <div className={`inline-flex flex-col items-start px-2 py-1 rounded-lg text-xs font-medium ${cashColor}`}>
+                <span className="text-sm font-bold flex items-center gap-0.5">
+                  <span>💰</span>
+                  <span>{formatted.primary}</span>
+                </span>
+                {formatted.secondary && (
+                  <span className="text-[10px] opacity-70">
+                    {formatted.secondary}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
           {/* 신뢰도 변화 */}
           {choice.effects.trust !== 0 && (
@@ -144,12 +156,28 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 인프라 추가 */}
-          {choice.effects.infra.length > 0 && (
-            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold bg-indigo-100 text-indigo-700" title={choice.effects.infra.join(', ')}>
-              <span>☁️</span>
-            </div>
-          )}
+          {/* 인프라 추가 - EPIC-11: 수용량 증가 정보 추가 */}
+          {choice.effects.infra.length > 0 && (() => {
+            const capacityIncrease = calculateCapacityIncrease(choice.effects.infra);
+
+            return (
+              <div className="inline-flex flex-col items-start px-2 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700">
+                <span className="text-sm font-bold flex items-center gap-0.5">
+                  <span>☁️</span>
+                  <span>{choice.effects.infra.join(', ')}</span>
+                </span>
+                {capacityIncrease > 0 ? (
+                  <span className="text-[10px] text-purple-600">
+                    🔼 +{formatCapacity(capacityIncrease)} 수용량
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-purple-600 opacity-70">
+                    (수용량 증가 없음)
+                  </span>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
       </div>
@@ -223,23 +251,31 @@ export default function ChoiceCard({
                 </div>
               )}
 
-              {choice.effects.cash !== 0 && (
-                <div className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
-                  choice.effects.cash > 0
-                    ? 'bg-emerald-50 border-2 border-emerald-300'
-                    : 'bg-rose-50 border-2 border-rose-300'
-                }`}>
-                  <span className="text-2xl">💰</span>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-slate-600">자금 변화</div>
-                    <div className={`text-base font-bold ${
-                      choice.effects.cash > 0 ? 'text-emerald-700' : 'text-rose-700'
-                    }`}>
-                      {choice.effects.cash > 0 ? '+' : ''}{choice.effects.cash.toLocaleString()}원
+              {choice.effects.cash !== 0 && (() => {
+                const formatted = formatCurrencyChange(choice.effects.cash, 'both');
+                return (
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
+                    choice.effects.cash > 0
+                      ? 'bg-emerald-50 border-2 border-emerald-300'
+                      : 'bg-rose-50 border-2 border-rose-300'
+                  }`}>
+                    <span className="text-2xl">💰</span>
+                    <div className="flex-1">
+                      <div className="text-xs font-semibold text-slate-600">자금 변화</div>
+                      <div className={`text-base font-bold ${
+                        choice.effects.cash > 0 ? 'text-emerald-700' : 'text-rose-700'
+                      }`}>
+                        {formatted.primary}
+                      </div>
+                      {formatted.secondary && (
+                        <div className="text-sm text-slate-600 mt-0.5">
+                          {formatted.secondary}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {choice.effects.trust !== 0 && (
                 <div className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
@@ -259,17 +295,40 @@ export default function ChoiceCard({
                 </div>
               )}
 
-              {choice.effects.infra.length > 0 && (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-50 border-2 border-indigo-300">
-                  <span className="text-2xl">☁️</span>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-slate-600">인프라 추가</div>
-                    <div className="text-base font-bold text-indigo-700">
-                      {choice.effects.infra.join(', ')}
+              {choice.effects.infra.length > 0 && (() => {
+                const capacityIncrease = calculateCapacityIncrease(choice.effects.infra);
+
+                return (
+                  <div className="col-span-2 bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl">☁️</span>
+                      <span className="text-xs font-semibold text-slate-600">인프라 추가</span>
                     </div>
+                    <ul className="space-y-1">
+                      {choice.effects.infra.map((infra, idx) => {
+                        const singleCapacity = INFRASTRUCTURE_CAPACITY_MAP[infra] || 0;
+                        return (
+                          <li key={idx} className="text-purple-800 text-sm flex justify-between items-center">
+                            <span className="font-medium">+ {infra}</span>
+                            {singleCapacity > 0 && (
+                              <span className="text-purple-600 text-xs">
+                                (+{formatCapacity(singleCapacity)} 수용량)
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {capacityIncrease > 0 && (
+                      <div className="mt-3 pt-3 border-t border-purple-200">
+                        <p className="text-sm font-bold text-purple-900">
+                          🔼 총 수용량 증가: +{capacityIncrease.toLocaleString()}명
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           </div>
 
