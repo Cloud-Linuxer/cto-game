@@ -12,15 +12,7 @@
  */
 
 import React, { useMemo } from 'react';
-
-export interface QuizHistoryItem {
-  quizId: string;
-  question: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
-  isCorrect: boolean;
-  playerAnswer: string;
-  correctAnswer: string;
-}
+import type { QuizHistoryItem } from '@/types/quiz.types';
 
 export interface QuizSummaryProps {
   quizHistory: QuizHistoryItem[];

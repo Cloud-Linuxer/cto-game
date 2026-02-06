@@ -2,26 +2,26 @@
 
 import { useState } from 'react';
 import { IPO_REQUIRED_INFRA } from '@/lib/game-constants';
+import {
+  getInfrastructureIconPath,
+  getInfrastructureFallbackEmoji,
+  getInfrastructureLabel,
+  isSupportedInfrastructure,
+} from '@/lib/icons';
+import type { SupportedInfrastructure, IconSize } from '@/types/infrastructure.types';
 
 interface InfraListProps {
   infrastructure: string[];
+  iconSize?: IconSize;
+  useAwsIcons?: boolean; // true = AWS 아이콘, false = 이모지만 사용
 }
 
-export default function InfraList({ infrastructure }: InfraListProps) {
+export default function InfraList({
+  infrastructure,
+  iconSize = 32,
+  useAwsIcons = true, // 기본값: AWS 아이콘 사용
+}: InfraListProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const infraIcons: Record<string, string> = {
-    'EC2': '🖥️',
-    'Aurora': '🗄️',
-    'Aurora Global DB': '🌍',
-    'EKS': '⚙️',
-    'Redis': '⚡',
-    'S3': '📦',
-    'CloudFront': '🌐',
-    'Lambda': '⚡',
-    'Bedrock': '🤖',
-    'ALB': '⚖️',
-    'Karpenter': '🔧',
-  };
 
   const requiredInfra: readonly string[] = IPO_REQUIRED_INFRA;
   const hasRequired = requiredInfra.filter(req => infrastructure.includes(req));
@@ -64,33 +64,65 @@ export default function InfraList({ infrastructure }: InfraListProps) {
             <div className="text-responsive-xs sm:text-xs text-slate-300 mt-2">선택을 통해 AWS 서비스를 추가하세요</div>
           </div>
         ) : (
-          infrastructure.map((infra, index) => (
-            <div
-              key={`infra-${infra}`}
-              className="group bg-white p-3 sm:p-4 rounded-lg lg:rounded-xl border border-slate-200 shadow-sm lg:shadow-md hover:shadow-lg lg:hover:shadow-xl hover:scale-[1.02] lg:hover:scale-105 transition-all duration-300"
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center text-xl sm:text-2xl shadow-md group-hover:scale-110 transition-transform">
-                  {infraIcons[infra] || '☁️'}
+          infrastructure.map((infraString) => {
+            // 타입 가드를 통한 안전한 변환
+            const isSupported = isSupportedInfrastructure(infraString);
+            const infra = infraString as SupportedInfrastructure;
+
+            const iconPath = isSupported ? getInfrastructureIconPath(infra, 'svg', iconSize) : '';
+            const fallbackEmoji = isSupported ? getInfrastructureFallbackEmoji(infra) : '☁️';
+            const label = isSupported ? getInfrastructureLabel(infra) : infraString;
+
+            return (
+              <div
+                key={`infra-${infraString}`}
+                className="group bg-white p-3 sm:p-4 rounded-lg lg:rounded-xl border border-slate-200 shadow-sm lg:shadow-md hover:shadow-lg lg:hover:shadow-xl hover:scale-[1.02] lg:hover:scale-105 transition-all duration-300"
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center text-xl sm:text-2xl shadow-md group-hover:scale-110 transition-transform overflow-hidden">
+                    {useAwsIcons && iconPath ? (
+                      <>
+                        <img
+                          src={iconPath}
+                          alt={label}
+                          width={iconSize}
+                          height={iconSize}
+                          loading="lazy"
+                          className="object-contain p-1"
+                          onError={(e) => {
+                            // 아이콘 로드 실패 시 폴백
+                            e.currentTarget.style.display = 'none';
+                            const fallbackEl = e.currentTarget.nextElementSibling;
+                            if (fallbackEl instanceof HTMLElement) {
+                              fallbackEl.classList.remove('hidden');
+                            }
+                          }}
+                        />
+                        <span className="hidden">{fallbackEmoji}</span>
+                      </>
+                    ) : (
+                      <span>{fallbackEmoji}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-responsive-sm lg:text-responsive-base text-slate-800 group-hover:text-cyan-600 transition-colors truncate">
+                      {infraString}
+                    </div>
+                    <div className="text-responsive-xs text-slate-500 truncate">
+                      {label !== infraString ? label : 'AWS 서비스'}
+                    </div>
+                  </div>
+                  {requiredInfra.includes(infraString) && (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-responsive-sm lg:text-responsive-base text-slate-800 group-hover:text-cyan-600 transition-colors truncate">
-                    {infra}
-                  </div>
-                  <div className="text-responsive-xs text-slate-500">
-                    AWS 서비스
-                  </div>
-                </div>
-                {requiredInfra.includes(infra) && (
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

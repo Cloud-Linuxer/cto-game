@@ -11,7 +11,24 @@
 export type EventType = 'RANDOM' | 'CHAIN' | 'CRISIS' | 'OPPORTUNITY' | 'SEASONAL';
 
 /**
- * 선택지 효과
+ * 이벤트 심각도
+ */
+export type EventSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+/**
+ * 선택지 효과 (백엔드 응답 형식)
+ * GameState.randomEventData에서 사용
+ */
+export interface BackendEventChoiceEffects {
+  usersDelta?: number;
+  cashDelta?: number;
+  trustDelta?: number;
+  addInfrastructure?: string[];
+}
+
+/**
+ * 선택지 효과 (EventPopup 컴포넌트 형식)
+ * EventPopup에서 사용
  */
 export interface EventChoiceEffects {
   users?: number;
@@ -21,7 +38,16 @@ export interface EventChoiceEffects {
 }
 
 /**
- * 이벤트 선택지
+ * 백엔드 이벤트 선택지
+ */
+export interface BackendEventChoice {
+  choiceId: string;
+  text: string;
+  effects: BackendEventChoiceEffects;
+}
+
+/**
+ * 이벤트 선택지 (EventPopup용)
  */
 export interface EventChoice {
   choiceId: string;
@@ -30,14 +56,28 @@ export interface EventChoice {
 }
 
 /**
- * 이벤트 데이터 (백엔드 응답)
+ * 백엔드 이벤트 데이터
+ * GameState.randomEventData에서 사용
+ */
+export interface BackendEventData {
+  eventId: string;
+  eventType: string;
+  eventText: string;
+  choices: BackendEventChoice[];
+  title?: string;
+  severity?: string;
+}
+
+/**
+ * 이벤트 데이터 (EventPopup 컴포넌트용)
  */
 export interface EventData {
   eventId: string;
   eventType: EventType;
   eventText: string;
   choices: EventChoice[];
-  title?: string; // 선택적 제목
+  title?: string;
+  severity?: EventSeverity;
 }
 
 /**

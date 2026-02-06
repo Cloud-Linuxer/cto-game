@@ -1,5 +1,7 @@
 // Game 관련 타입 정의
 
+import type { BackendEventData } from '@/types/event.types';
+
 export type DifficultyMode = 'EASY' | 'NORMAL' | 'HARD';
 export type GameGrade = 'S' | 'A' | 'B' | 'C' | 'F';
 export type CapacityWarningLevel = 'GREEN' | 'YELLOW' | 'RED';
@@ -39,23 +41,7 @@ export interface GameState {
   recoveryMessages?: string[];
   // Event system
   randomEventTriggered?: boolean;
-  randomEventData?: {
-    eventId: string;
-    eventType: string;
-    eventText: string;
-    title?: string;
-    severity?: string;
-    choices: Array<{
-      choiceId: string;
-      text: string;
-      effects: {
-        usersDelta?: number;
-        cashDelta?: number;
-        trustDelta?: number;
-        addInfrastructure?: string[];
-      };
-    }>;
-  };
+  randomEventData?: BackendEventData;
 }
 
 export enum GameStatus {

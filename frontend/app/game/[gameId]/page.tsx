@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { gameApi, leaderboardApi } from '@/lib/api';
 import type { GameState, Turn } from '@/lib/types';
 import { GameStatus, VICTORY_PATH_INFO } from '@/lib/types';
+import type { EventType, EventSeverity } from '@/types/event.types';
 import MetricsPanel from '@/components/MetricsPanel';
 import CompactMetricsBar from '@/components/CompactMetricsBar';
 import StoryPanel from '@/components/StoryPanel';
@@ -28,6 +29,8 @@ import {
   selectSelectedAnswer,
   selectHasSubmitted,
   selectIsCorrect,
+  selectCorrectAnswer,
+  selectExplanation,
   selectQuizHistory,
   selectCorrectCount,
   selectQuizBonus,
@@ -168,6 +171,8 @@ export default function GameBoard() {
   const selectedAnswer = useAppSelector(selectSelectedAnswer);
   const hasSubmitted = useAppSelector(selectHasSubmitted);
   const isCorrect = useAppSelector(selectIsCorrect);
+  const correctAnswer = useAppSelector(selectCorrectAnswer);
+  const explanation = useAppSelector(selectExplanation);
   const quizHistory = useAppSelector(selectQuizHistory);
   const correctQuizCount = useAppSelector(selectCorrectCount);
   const quizBonus = useAppSelector(selectQuizBonus);
@@ -216,10 +221,10 @@ export default function GameBoard() {
       // EventData 타입으로 변환
       const eventData = {
         eventId: state.gameState.randomEventData.eventId,
-        eventType: state.gameState.randomEventData.eventType as any,
+        eventType: state.gameState.randomEventData.eventType as EventType,
         eventText: state.gameState.randomEventData.eventText,
         title: state.gameState.randomEventData.title,
-        severity: state.gameState.randomEventData.severity,
+        severity: state.gameState.randomEventData.severity as EventSeverity | undefined,
         choices: state.gameState.randomEventData.choices.map((choice) => ({
           choiceId: choice.choiceId,
           text: choice.text,
@@ -238,7 +243,7 @@ export default function GameBoard() {
   // Quiz check after choice execution
   const checkForQuiz = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/game/${gameId}/quiz/next`);
+      const response = await fetch(`/api/game/${gameId}/quiz/next`);
 
       if (response.status === 204) {
         // No quiz for this turn
@@ -246,8 +251,20 @@ export default function GameBoard() {
       }
 
       if (response.ok) {
-        const quiz = await response.json();
-        reduxDispatch(setCurrentQuiz(quiz));
+        // Check if response has content
+        const text = await response.text();
+        if (!text || text.trim() === '' || text === 'null') {
+          return;
+        }
+
+        try {
+          const quiz = JSON.parse(text);
+          if (quiz && quiz.quizId) {
+            reduxDispatch(setCurrentQuiz(quiz));
+          }
+        } catch (parseError) {
+          console.error('Quiz JSON parse error:', parseError);
+        }
       }
     } catch (error) {
       console.error('Quiz check failed:', error);
@@ -339,7 +356,7 @@ export default function GameBoard() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/game/${gameId}/quiz/${currentQuiz.quizId}/answer`,
+        `/api/game/${gameId}/quiz/${currentQuiz.quizId}/answer`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -355,6 +372,7 @@ export default function GameBoard() {
           submitAnswer({
             isCorrect: result.isCorrect,
             correctAnswer: result.correctAnswer,
+            explanation: result.explanation,
           })
         );
 
@@ -970,6 +988,8 @@ export default function GameBoard() {
         selectedAnswer={selectedAnswer}
         hasSubmitted={hasSubmitted}
         isCorrect={isCorrect}
+        correctAnswer={correctAnswer}
+        explanation={explanation}
         onSelectAnswer={handleSelectAnswer}
         onSubmit={handleSubmitQuiz}
         onClose={handleCloseQuiz}

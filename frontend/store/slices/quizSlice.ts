@@ -6,43 +6,12 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { Quiz, QuizType, QuizDifficulty } from '@/types/quiz.types';
-
-/**
- * 퀴즈 히스토리 항목 (Redux State용)
- */
-export interface QuizHistory {
-  quizId: string;
-  question: string;
-  difficulty: QuizDifficulty;
-  playerAnswer: string;
-  correctAnswer: string;
-  isCorrect: boolean;
-  turnNumber: number;
-}
-
-/**
- * 퀴즈 상태 인터페이스
- */
-export interface QuizState {
-  currentQuiz: Quiz | null;
-  isQuizActive: boolean;
-  selectedAnswer: string | null; // 'A', 'B', 'C', 'D' or 'true', 'false'
-  hasSubmitted: boolean;
-  isCorrect: boolean | null;
-  quizHistory: QuizHistory[];
-  correctCount: number;
-  totalCount: number;
-  quizBonus: number;
-}
-
-/**
- * 정답 제출 페이로드
- */
-export interface SubmitAnswerPayload {
-  isCorrect: boolean;
-  correctAnswer: string;
-}
+import type {
+  Quiz,
+  QuizHistoryItem,
+  QuizState,
+  SubmitAnswerPayload,
+} from '@/types/quiz.types';
 
 /**
  * 초기 상태
@@ -53,6 +22,8 @@ const initialState: QuizState = {
   selectedAnswer: null,
   hasSubmitted: false,
   isCorrect: null,
+  correctAnswer: null,
+  explanation: null,
   quizHistory: [],
   correctCount: 0,
   totalCount: 0,
@@ -90,6 +61,8 @@ export const quizSlice = createSlice({
     submitAnswer(state, action: PayloadAction<SubmitAnswerPayload>) {
       state.hasSubmitted = true;
       state.isCorrect = action.payload.isCorrect;
+      state.correctAnswer = action.payload.correctAnswer;
+      state.explanation = action.payload.explanation;
     },
 
     /**
@@ -101,12 +74,14 @@ export const quizSlice = createSlice({
       state.selectedAnswer = null;
       state.hasSubmitted = false;
       state.isCorrect = null;
+      state.correctAnswer = null;
+      state.explanation = null;
     },
 
     /**
      * 히스토리에 퀴즈 결과 추가
      */
-    addToHistory(state, action: PayloadAction<QuizHistory>) {
+    addToHistory(state, action: PayloadAction<QuizHistoryItem>) {
       state.quizHistory.push(action.payload);
       state.totalCount += 1;
       if (action.payload.isCorrect) {
@@ -151,6 +126,8 @@ export const selectIsQuizActive = (state: { quiz: QuizState }) => state.quiz.isQ
 export const selectSelectedAnswer = (state: { quiz: QuizState }) => state.quiz.selectedAnswer;
 export const selectHasSubmitted = (state: { quiz: QuizState }) => state.quiz.hasSubmitted;
 export const selectIsCorrect = (state: { quiz: QuizState }) => state.quiz.isCorrect;
+export const selectCorrectAnswer = (state: { quiz: QuizState }) => state.quiz.correctAnswer;
+export const selectExplanation = (state: { quiz: QuizState }) => state.quiz.explanation;
 export const selectQuizHistory = (state: { quiz: QuizState }) => state.quiz.quizHistory;
 export const selectCorrectCount = (state: { quiz: QuizState }) => state.quiz.correctCount;
 export const selectTotalCount = (state: { quiz: QuizState }) => state.quiz.totalCount;
