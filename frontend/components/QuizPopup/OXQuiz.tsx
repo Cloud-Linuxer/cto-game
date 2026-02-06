@@ -48,7 +48,7 @@ const OXQuiz: React.FC<OXQuizProps> = ({
    * @returns TailwindCSS 클래스명 문자열
    */
   const getButtonStyle = (answerType: 'true' | 'false'): string => {
-    const baseStyle = 'py-6 px-8 rounded-xl font-bold text-xl transition-all duration-200 flex flex-col items-center justify-center gap-3 border-2';
+    const baseStyle = 'py-4 xs:py-6 px-4 xs:px-8 min-h-[44px] rounded-xl font-bold text-responsive-lg xs:text-xl transition-all duration-200 flex flex-col items-center justify-center gap-3 border-2';
 
     if (!showResult) {
       // 결과 표시 전: 기본 스타일 + 선택 상태
@@ -99,13 +99,13 @@ const OXQuiz: React.FC<OXQuizProps> = ({
     <div className="w-full">
       {/* Question Section */}
       <div className="mb-8">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed text-center">
+        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed text-center">
           {question}
         </h3>
       </div>
 
       {/* O/X Buttons */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4">
         {/* O (True) Button */}
         <button
           onClick={() => handleClick('true')}
@@ -116,8 +116,8 @@ const OXQuiz: React.FC<OXQuizProps> = ({
           aria-pressed={selectedAnswer === 'true'}
           type="button"
         >
-          <span className="text-5xl font-black">✓</span>
-          <span className="text-lg font-bold">참 (True)</span>
+          <span className="text-4xl xs:text-5xl font-black">✓</span>
+          <span className="text-base xs:text-lg font-bold">참 (True)</span>
 
           {showResult && correctAnswer === 'true' && (
             <span className="text-sm font-semibold mt-1">정답!</span>
@@ -134,8 +134,8 @@ const OXQuiz: React.FC<OXQuizProps> = ({
           aria-pressed={selectedAnswer === 'false'}
           type="button"
         >
-          <span className="text-5xl font-black">✗</span>
-          <span className="text-lg font-bold">거짓 (False)</span>
+          <span className="text-4xl xs:text-5xl font-black">✗</span>
+          <span className="text-base xs:text-lg font-bold">거짓 (False)</span>
 
           {showResult && correctAnswer === 'false' && (
             <span className="text-sm font-semibold mt-1">정답!</span>

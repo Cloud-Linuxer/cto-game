@@ -49,24 +49,24 @@ const QuizResult: React.FC<QuizResultProps> = ({
     >
       {/* 상태 배너 */}
       <div
-        className={`w-full py-4 px-6 ${
+        className={`w-full py-3 xs:py-4 px-4 xs:px-6 ${
           isCorrect
             ? 'bg-green-500 text-white'
             : 'bg-red-500 text-white'
         }`}
       >
         <div className="flex items-center justify-center gap-2">
-          <span className="text-2xl" aria-hidden="true">
+          <span className="text-xl xs:text-2xl" aria-hidden="true">
             {isCorrect ? '✓' : '✗'}
           </span>
-          <h2 className="text-xl font-bold">
+          <h2 className="text-responsive-lg xs:text-xl font-bold">
             {isCorrect ? '정답입니다!' : '오답입니다'}
           </h2>
         </div>
       </div>
 
       {/* 카드 본문 */}
-      <div className="p-6">
+      <div className="p-4 xs:p-6">
         {/* 오답인 경우 정답/선택한 답 표시 */}
         {!isCorrect && (
           <div className="mb-6 space-y-3">

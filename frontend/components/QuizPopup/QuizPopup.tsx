@@ -138,10 +138,10 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
           />
 
           {/* 팝업 컨테이너 */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 xs:p-4">
             <motion.div
               ref={popupRef}
-              className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-[calc(100vw-2rem)] xs:max-w-md sm:max-w-lg md:max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden"
               variants={popupVariants}
               initial="hidden"
               animate="visible"
@@ -174,13 +174,13 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
               </button>
 
               {/* 헤더 */}
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 text-white">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-3 xs:px-4 sm:px-6 py-3 xs:py-4 text-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium opacity-90">
                       {quiz.type === 'MULTIPLE_CHOICE' ? '4지선다' : 'OX 퀴즈'}
                     </span>
-                    <h2 id="quiz-title" className="text-2xl font-bold mt-1">
+                    <h2 id="quiz-title" className="text-responsive-xl sm:text-2xl font-bold mt-1">
                       AWS 퀴즈
                     </h2>
                   </div>
@@ -195,7 +195,7 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
               </div>
 
               {/* 본문 컨텐츠 */}
-              <div className="p-6">
+              <div className="p-3 xs:p-4 sm:p-6">
                 {!hasSubmitted ? (
                   // 퀴즈 문제 화면
                   <div>
@@ -223,7 +223,7 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
                       <button
                         onClick={onSubmit}
                         disabled={!selectedAnswer}
-                        className={`px-8 py-3 rounded-lg font-semibold transition-all ${
+                        className={`px-4 xs:px-6 sm:px-8 py-3.5 min-h-[44px] rounded-lg font-semibold transition-all ${
                           selectedAnswer
                             ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -247,7 +247,7 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
                     <div className="flex justify-end">
                       <button
                         onClick={onClose}
-                        className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                        className="px-4 xs:px-6 sm:px-8 py-3.5 min-h-[44px] bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
                       >
                         확인
                       </button>

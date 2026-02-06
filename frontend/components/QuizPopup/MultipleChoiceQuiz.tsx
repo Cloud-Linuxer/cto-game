@@ -92,7 +92,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
     <div className="w-full">
       {/* Question Section */}
       <div className="mb-6">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
+        <h3 className="text-responsive-lg xs:text-xl font-bold text-slate-900 dark:text-slate-100 leading-relaxed">
           {question}
         </h3>
       </div>
@@ -110,7 +110,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
             <div
               key={label}
               className={`
-                relative rounded-lg p-4 cursor-pointer
+                relative rounded-lg p-3 xs:p-4 cursor-pointer
                 ${styles}
                 ${disabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}
               `}
@@ -144,7 +144,7 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
                 <div className="flex-1 pt-1">
                   <p
                     className={`
-                      text-base leading-relaxed
+                      text-responsive-sm xs:text-base leading-relaxed
                       ${
                         showResult && isCorrect
                           ? 'text-green-900 font-semibold'
