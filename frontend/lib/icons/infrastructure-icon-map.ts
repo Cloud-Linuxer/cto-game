@@ -42,8 +42,8 @@ export const INFRASTRUCTURE_ICON_CONFIG: Record<
   },
   'Auto Scaling': {
     awsServiceName: 'AWS Auto Scaling',
-    category: 'Compute',
-    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Compute/32/Arch_AWS-Auto-Scaling_32`,
+    category: 'Management',
+    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Management-Governance/32/Arch_AWS-Auto-Scaling_32`,
     fallbackEmoji: '📈',
   },
 
@@ -123,7 +123,7 @@ export const INFRASTRUCTURE_ICON_CONFIG: Record<
   S3: {
     awsServiceName: 'Amazon S3',
     category: 'Storage',
-    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Storage/32/Arch_Amazon-S3_32`,
+    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Storage/32/Arch_Amazon-Simple-Storage-Service_32`,
     fallbackEmoji: '📦',
   },
 
@@ -133,7 +133,7 @@ export const INFRASTRUCTURE_ICON_CONFIG: Record<
   Bedrock: {
     awsServiceName: 'Amazon Bedrock',
     category: 'AI-ML',
-    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Machine-Learning/32/Arch_Amazon-Bedrock_32`,
+    awsIconPath: `${AWS_ICON_BASE_PATH}/Arch_Artificial-Intelligence/32/Arch_Amazon-Bedrock_32`,
     fallbackEmoji: '🤖',
   },
 
