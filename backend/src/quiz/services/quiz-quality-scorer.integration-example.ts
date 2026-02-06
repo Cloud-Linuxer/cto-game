@@ -45,12 +45,11 @@ export class QuizGenerationWorkflowExample {
 
       try {
         // Generate quiz with LLM
-        const quiz = await this.llmGenerator.generateQuiz({
+        const quiz = await this.llmGenerator.generateQuiz(
           difficulty,
           infraContext,
-          turnNumber,
-          useCache: true,
-        });
+          { turnNumber, useCache: true },
+        );
 
         // Evaluate quality
         const score = await this.qualityScorer.scoreQuiz(quiz, infraContext);

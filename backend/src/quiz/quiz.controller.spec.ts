@@ -285,8 +285,6 @@ describe('QuizController', () => {
 
   describe('3. POST /api/game/:gameId/quiz/:quizId/answer', () => {
     const submitDto: SubmitAnswerDto = {
-      gameId: 'game-123',
-      quizId: 'quiz-123',
       answer: 'A',
     };
 

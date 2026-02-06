@@ -45,7 +45,7 @@ import { Quiz } from '../database/entities/quiz.entity';
  * Task: Task #10
  */
 @ApiTags('Quiz')
-@Controller('api')
+@Controller()
 export class QuizController {
   private readonly logger = new Logger(QuizController.name);
 

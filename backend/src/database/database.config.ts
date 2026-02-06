@@ -26,7 +26,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     QuizHistory,
   ],
   synchronize: process.env.NODE_ENV !== 'production',
-  logging: process.env.NODE_ENV === 'development',
+  logging: true,
   extra: {
     timezone: 'Z', // UTC 타임존 명시
   },

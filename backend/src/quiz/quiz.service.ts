@@ -97,6 +97,8 @@ export class QuizService {
   private async selectFallbackQuiz(
     options: QuizGenerationOptions,
   ): Promise<Quiz | null> {
+    this.logger.debug(`selectFallbackQuiz called with: ${JSON.stringify(options)}`);
+
     const queryBuilder = this.quizRepository
       .createQueryBuilder('quiz')
       .where('quiz.difficulty = :difficulty', {
@@ -105,7 +107,13 @@ export class QuizService {
       .andWhere('quiz.isActive = :isActive', { isActive: true })
       .andWhere('quiz.source = :source', { source: QuizSource.FALLBACK });
 
-    // 턴 범위 필터링
+    // Debug: count after basic filters
+    const countAfterBasic = await queryBuilder.getCount();
+    this.logger.debug(`After basic filters (difficulty, isActive, source): ${countAfterBasic} quizzes`);
+
+    // TEMP FIX: 턴 범위 필터링 비활성화 (모든 퀴즈를 모든 턴에서 사용 가능)
+    // TODO: fallback-quizzes.json 재생성 시 turnRange를 1-25로 설정
+    /*
     if (options.turnNumber !== undefined) {
       queryBuilder.andWhere(
         '(quiz.turnRangeStart IS NULL OR quiz.turnRangeStart <= :turnNumber)',
@@ -115,7 +123,11 @@ export class QuizService {
         '(quiz.turnRangeEnd IS NULL OR quiz.turnRangeEnd >= :turnNumber)',
         { turnNumber: options.turnNumber },
       );
+
+      const countAfterTurn = await queryBuilder.getCount();
+      this.logger.debug(`After turn range filter (turnNumber=${options.turnNumber}): ${countAfterTurn} quizzes`);
     }
+    */
 
     // 게임 이력에서 중복 제외
     if (options.gameId) {
@@ -126,10 +138,15 @@ export class QuizService {
         .getRawMany()
         .then((rows) => rows.map((row) => row.quizId));
 
+      this.logger.debug(`Used quiz IDs for game ${options.gameId}: ${usedQuizIds.length} quizzes`);
+
       if (usedQuizIds.length > 0) {
         queryBuilder.andWhere('quiz.quizId NOT IN (:...usedQuizIds)', {
           usedQuizIds,
         });
+
+        const countAfterExclude = await queryBuilder.getCount();
+        this.logger.debug(`After excluding used quizzes: ${countAfterExclude} quizzes`);
       }
     }
 
@@ -143,6 +160,8 @@ export class QuizService {
       this.logger.debug(
         `Selected fallback quiz: quizId=${quiz.quizId}, usageCount=${quiz.usageCount}`,
       );
+    } else {
+      this.logger.warn(`No quiz found with options: ${JSON.stringify(options)}`);
     }
 
     return quiz;
