@@ -1,3 +1,5 @@
+'use client';
+
 import type { GameState, DifficultyMode, VictoryPath } from '@/lib/types';
 import { VICTORY_PATH_INFO } from '@/lib/types';
 import { DIFFICULTY_GOALS } from '@/lib/game-constants';
