@@ -122,24 +122,17 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 자금 변화 - EPIC-11: 비용 표시 통일 */}
+          {/* 자금 변화 - 간단한 1줄 표시 (상세정보는 모달에서) */}
           {choice.effects.cash !== 0 && (() => {
-            const cashColor = choice.effects.cash > 0
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-rose-100 text-rose-700';
-            const formatted = formatCurrencyChange(choice.effects.cash, 'both');
-
+            const formatted = formatCurrencyChange(choice.effects.cash, 'compact');
             return (
-              <div className={`inline-flex flex-col items-start px-2 py-1 rounded-lg text-xs font-medium ${cashColor}`}>
-                <span className="text-sm font-bold flex items-center gap-0.5">
-                  <span>💰</span>
-                  <span>{formatted.primary}</span>
-                </span>
-                {formatted.secondary && (
-                  <span className="text-[10px] opacity-70">
-                    {formatted.secondary}
-                  </span>
-                )}
+              <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold ${
+                choice.effects.cash > 0
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-rose-100 text-rose-700'
+              }`} title={`자금 ${formatted.primary}`}>
+                <span>💰</span>
+                <span>{formatted.primary}</span>
               </div>
             );
           })()}
@@ -156,28 +149,13 @@ export default function ChoiceCard({
             </div>
           )}
 
-          {/* 인프라 추가 - EPIC-11: 수용량 증가 정보 추가 */}
-          {choice.effects.infra.length > 0 && (() => {
-            const capacityIncrease = calculateCapacityIncrease(choice.effects.infra);
-
-            return (
-              <div className="inline-flex flex-col items-start px-2 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700">
-                <span className="text-sm font-bold flex items-center gap-0.5">
-                  <span>☁️</span>
-                  <span>{choice.effects.infra.join(', ')}</span>
-                </span>
-                {capacityIncrease > 0 ? (
-                  <span className="text-[10px] text-purple-600">
-                    🔼 +{formatCapacity(capacityIncrease)} 수용량
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-purple-600 opacity-70">
-                    (수용량 증가 없음)
-                  </span>
-                )}
-              </div>
-            );
-          })()}
+          {/* 인프라 추가 - 간단한 1줄 표시 (상세정보는 모달에서) */}
+          {choice.effects.infra.length > 0 && (
+            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700" title={choice.effects.infra.join(', ')}>
+              <span>☁️</span>
+              <span>{choice.effects.infra.join(', ')}</span>
+            </div>
+          )}
         </div>
 
       </div>
