@@ -434,11 +434,21 @@ export class GameService {
       capacityExceeded = true;
       game.capacityExceededCount++;
 
+      // 수용량 초과 시 사용자 20% 이탈 (churn)
+      const usersBefore = game.users;
+      const churnRate = 0.20; // 20% 이탈
+      const usersLost = Math.floor(game.users * churnRate);
+      game.users = Math.max(0, game.users - usersLost);
+
+      this.logger.warn(
+        `수용량 초과로 사용자 이탈: ${usersBefore.toLocaleString()} → ${game.users.toLocaleString()} (-${usersLost.toLocaleString()}, -20%)`,
+      );
+
       // Track capacity penalty
       trustFactors.push({
         type: 'penalty',
         amount: -capacityPenalty,
-        message: `용량 초과 (${game.users.toLocaleString()}명 > ${game.maxUserCapacity.toLocaleString()}명)`,
+        message: `용량 초과 (${usersBefore.toLocaleString()}명 > ${game.maxUserCapacity.toLocaleString()}명) → 사용자 ${usersLost.toLocaleString()}명 이탈`,
       });
 
       // Award resilience stack + crisis recovery bonus (EPIC-04 Feature 3: increased to 5)
@@ -787,6 +797,16 @@ export class GameService {
       game.trust = Math.max(0, game.trust - capacityPenalty);
       capacityExceeded = true;
       game.capacityExceededCount++;
+
+      // 수용량 초과 시 사용자 20% 이탈 (churn)
+      const usersBefore = game.users;
+      const churnRate = 0.20; // 20% 이탈
+      const usersLost = Math.floor(game.users * churnRate);
+      game.users = Math.max(0, game.users - usersLost);
+
+      this.logger.warn(
+        `[MultiChoice] 수용량 초과로 사용자 이탈: ${usersBefore.toLocaleString()} → ${game.users.toLocaleString()} (-${usersLost.toLocaleString()}, -20%)`,
+      );
 
       const resilienceMsg = this.awardResilienceStack(game);
       if (resilienceMsg) recoveryMessages.push(resilienceMsg);
