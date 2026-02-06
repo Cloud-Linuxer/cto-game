@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { gameApi, leaderboardApi } from '@/lib/api';
 import type { GameState, Turn } from '@/lib/types';
@@ -154,6 +154,12 @@ export default function GameBoard() {
 
   const [state, dispatch] = useReducer(gamePageReducer, initialState);
   const reduxDispatch = useAppDispatch();
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트 전용 렌더링 (카카오톡 브라우저 hydration 에러 방지)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // EventPopup 훅
   const {
@@ -733,6 +739,11 @@ export default function GameBoard() {
 
   // 게임 진행 중
   if (!state.gameState || !state.currentTurn) {
+    return null;
+  }
+
+  // 카카오톡 브라우저 hydration 에러 방지: 클라이언트 전용 렌더링
+  if (!mounted) {
     return null;
   }
 

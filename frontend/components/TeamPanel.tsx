@@ -1,3 +1,5 @@
+'use client';
+
 import type { GameState } from '@/lib/types';
 
 interface TeamPanelProps {
