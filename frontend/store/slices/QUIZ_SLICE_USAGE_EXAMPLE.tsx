@@ -25,9 +25,8 @@ import {
   selectTotalCount,
   selectAccuracyRate,
   selectQuizBonus,
-  QuizHistory,
 } from './quizSlice';
-import type { Quiz } from '@/types/quiz.types';
+import type { Quiz, QuizHistoryItem } from '@/types/quiz.types';
 
 /**
  * Example 1: 퀴즈 시작 버튼
@@ -77,6 +76,7 @@ export function MultipleChoiceQuizComponent({ gameId, currentTurn }: { gameId: s
   const selectedAnswer = useAppSelector(selectSelectedAnswer);
   const hasSubmitted = useAppSelector(selectHasSubmitted);
   const isCorrect = useAppSelector(selectIsCorrect);
+  const correctAnswer = useAppSelector((state) => state.quiz.correctAnswer);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!currentQuiz || currentQuiz.type !== 'MULTIPLE_CHOICE') {
@@ -106,10 +106,11 @@ export function MultipleChoiceQuizComponent({ gameId, currentTurn }: { gameId: s
       dispatch(submitAnswer({
         isCorrect: result.isCorrect,
         correctAnswer: result.correctAnswer,
+        explanation: result.explanation || '해설 정보가 없습니다.',
       }));
 
       // 히스토리 추가
-      const historyItem: QuizHistory = {
+      const historyItem: QuizHistoryItem = {
         quizId: currentQuiz.quizId,
         question: currentQuiz.question,
         difficulty: currentQuiz.difficulty,
@@ -152,7 +153,7 @@ export function MultipleChoiceQuizComponent({ gameId, currentTurn }: { gameId: s
         {currentQuiz.options?.map((option) => {
           const optionLetter = option.split('.')[0]; // 'A', 'B', 'C', 'D'
           const isSelected = selectedAnswer === optionLetter;
-          const isCorrectOption = hasSubmitted && option.startsWith(submitAnswer.correctAnswer);
+          const isCorrectOption = hasSubmitted && correctAnswer && option.startsWith(correctAnswer);
           const isWrongOption = hasSubmitted && isSelected && !isCorrect;
 
           return (
@@ -237,9 +238,10 @@ export function OXQuizComponent({ gameId, currentTurn }: { gameId: string; curre
       dispatch(submitAnswer({
         isCorrect: result.isCorrect,
         correctAnswer: result.correctAnswer,
+        explanation: result.explanation || '해설 정보가 없습니다.',
       }));
 
-      const historyItem: QuizHistory = {
+      const historyItem: QuizHistoryItem = {
         quizId: currentQuiz.quizId,
         question: currentQuiz.question,
         difficulty: currentQuiz.difficulty,

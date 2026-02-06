@@ -18,7 +18,9 @@ export { default as MultipleChoiceQuiz } from './MultipleChoiceQuiz';
 export type { MultipleChoiceQuizProps } from './MultipleChoiceQuiz';
 
 export { default as QuizSummary } from './QuizSummary';
-export type { QuizSummaryProps, QuizHistoryItem } from './QuizSummary';
+export type { QuizSummaryProps } from './QuizSummary';
+// QuizHistoryItem is now in @/types/quiz.types
+export type { QuizHistoryItem } from '@/types/quiz.types';
 
 export { default as QuizTimer } from './QuizTimer';
 export type { QuizTimerProps } from './QuizTimer';

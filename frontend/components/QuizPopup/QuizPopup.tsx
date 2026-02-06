@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import type { Quiz } from '@/types/quiz.types';
 import MultipleChoiceQuiz from './MultipleChoiceQuiz';
 import OXQuiz from './OXQuiz';
@@ -27,6 +27,8 @@ export interface QuizPopupProps {
   selectedAnswer: string | null;
   hasSubmitted: boolean;
   isCorrect: boolean | null;
+  correctAnswer?: string | null;
+  explanation?: string | null;
   onSelectAnswer: (answer: string) => void;
   onSubmit: () => void;
   onClose: () => void;
@@ -41,14 +43,14 @@ const backdropVariants = {
   exit: { opacity: 0 },
 };
 
-const popupVariants = {
+const popupVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95, y: 20 },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       damping: 25,
       stiffness: 300,
     },
@@ -72,6 +74,8 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
   selectedAnswer,
   hasSubmitted,
   isCorrect,
+  correctAnswer,
+  explanation,
   onSelectAnswer,
   onSubmit,
   onClose,
@@ -234,8 +238,8 @@ const QuizPopup: React.FC<QuizPopupProps> = ({
                   <div className="space-y-6">
                     <QuizResult
                       isCorrect={isCorrect || false}
-                      correctAnswer="정답" // 실제로는 백엔드에서 받아야 함
-                      explanation="이 문제의 해설입니다. 실제로는 백엔드에서 전달됩니다."
+                      correctAnswer={correctAnswer || '정답 정보 없음'}
+                      explanation={explanation || '해설 정보가 없습니다.'}
                       playerAnswer={selectedAnswer || ''}
                     />
 
